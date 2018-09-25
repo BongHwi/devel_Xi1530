@@ -107,6 +107,7 @@ void run(
     handler->SetNeedField(1);
     mgr->SetInputEventHandler(handler);
     
+    std::cout << "Before add task" << std::endl;
 #if !defined (__CINT__) || defined (__CLING__)
     // ROOT 6 MODE
     //
@@ -165,7 +166,7 @@ void run(
     
     gROOT->LoadMacro("AliAnalysisTaskXi1530.cxx++g");
 #endif
-  
+  std::cout << "After Add task" << std::endl;
     //hybrid track : AOD 086 -> Filter bit 272
     //hybrid track : AOD 160 -> Filter bit 768
     //hybrid track : AOD 145 -> Filter bit 768
@@ -178,6 +179,8 @@ void run(
     taskXi1530 -> SetMixing(kFALSE);
     taskXi1530 -> SetIsMC(ismc);
     taskXi1530 -> SetParticleType(99999);
+    
+    std::cout << "Task generated" << std::endl;
     
     // Create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();

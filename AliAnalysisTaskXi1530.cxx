@@ -243,7 +243,7 @@ void AliAnalysisTaskXi1530::XiStarInit()
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 {
-    std::cout << "User Create Object" << std::end;
+    std::cout << "User Create Object" << std::endl;
     // Histograms container
     fOutput = new TList();
     fOutput->SetOwner(kTRUE);
@@ -318,7 +318,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserExec(Option_t *)
 {
-    std::cout << "UserExec" << std::end;
+    std::cout << "UserExec" << std::endl;
     // Pointer to a event----------------------------------------------------
     AliVEvent *event = InputEvent();
     if (!event)
