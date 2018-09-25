@@ -107,7 +107,6 @@ void run(
     handler->SetNeedField(1);
     mgr->SetInputEventHandler(handler);
     
-    std::cout << "Before add task" << std::endl;
 #if !defined (__CINT__) || defined (__CLING__)
     // ROOT 6 MODE
     //
@@ -166,7 +165,6 @@ void run(
     
     gROOT->LoadMacro("AliAnalysisTaskXi1530.cxx++g");
 #endif
-  std::cout << "After Add task" << std::endl;
     //hybrid track : AOD 086 -> Filter bit 272
     //hybrid track : AOD 160 -> Filter bit 768
     //hybrid track : AOD 145 -> Filter bit 768
@@ -180,16 +178,16 @@ void run(
     taskXi1530 -> SetIsMC(ismc);
     taskXi1530 -> SetParticleType(99999);
     
-    std::cout << "Task generated" << std::endl;
     
     // Create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("outputXi1530", TDirectory::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    std::cout << "After input/output setup" << std::endl;
     
     mgr->AddTask(taskXi1530);
     mgr->ConnectInput(taskXi1530, 0, cinput);
     mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
-    
+    std::cout << "After input/output connecting" << std::endl;
     // enable debug printouts
     mgr->SetDebugLevel(5);
     if (!mgr->InitAnalysis()) return;
