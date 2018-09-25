@@ -33,6 +33,7 @@
 #include "AliAnalysisTaskXi1530.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliGenEventHeader.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
@@ -370,7 +371,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         if(!mcEvent) return;
         
         fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
-        fMCStack = (AliStack*) fEvt->Stack();
+        fMCStack = (AliStack*) mcEvent->Stack();
     }
 
     // Load InputHandler for each event---------------------------------------
