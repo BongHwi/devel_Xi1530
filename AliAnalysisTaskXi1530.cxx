@@ -106,7 +106,7 @@ AliAnalysisTaskXi1530& AliAnalysisTaskXi1530::operator =
     return *this;
 }
 //___________________________________________________________________
-AliAnalysisTaskXi1530::AliAnalysisTaskXi1530()
+AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
 {
     delete fOutput;
     delete fTrigger;
@@ -258,10 +258,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fTrackCuts -> SetPtRange(0.15, 1e20);
     // ----------------------------------------------------------------------
     
-    // Create histograms
-    fOutputList = new TList();
-    fOutputList->SetOwner();
-    
     fHistos = new THistManager("Xi1530hists");
     
     auto binType = AxisStr("Type",{"PN","PP","NN","NP","Mixing"});
@@ -289,7 +285,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos->CreateTH1("hZvtx","",600,-30,30,"s");
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     
-    if (fMCcase)
+    if (IsMC)
     {
         // To get Trigger efficiency in each trk/V0M Multiplicity region
         
@@ -318,14 +314,14 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskXi1530::Exec(Option_t *)
+void AliAnalysisTaskXi1530::UserExec(Option_t *)
 {
 
     // Pointer to a event----------------------------------------------------
     AliVEvent *event = InputEvent();
     if (!event)
     {
-        std::cout << "ERROR: Could not retrieve event" std::endl;
+        std::cout << "ERROR: Could not retrieve event" << std::endl;
         return;
     }
     // ----------------------------------------------------------------------
@@ -365,6 +361,14 @@ void AliAnalysisTaskXi1530::Exec(Option_t *)
     // Preparation for MC ---------------------------------------------------
     if (IsMC)
     {
+        AliMCEvent  *mcEvent        = 0x0;
+        AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
+        if(eventHandler){
+            AliMCEventHandler* mcEventHandler = dynamic_cast<AliMCEventHandler*>(eventHandler);
+            if(mcEventHandler) mcEvent = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
+        }
+        if(!mcEvent) return;
+        
         fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
         fMCStack = (AliStack*) fEvt->Stack();
     }
@@ -376,7 +380,7 @@ void AliAnalysisTaskXi1530::Exec(Option_t *)
     
     fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
     if(!fPIDResponse){
-        std::cout << "AliAnalysisTaskXi1530:: No PIDd\n" std::endl;
+        std::cout << "AliAnalysisTaskXi1530:: No PIDd\n" << std::endl;
     }
     
     
@@ -1463,13 +1467,6 @@ TAxis AliAnalysisTaskXi1530::AxisStr( TString name, std::vector<TString> bin ){
     for( auto blabel : bin )
         ax.SetBinLabel( i++, blabel );
     return ax;
-}
-THnSparse * AliAnalysisTaskXi1530::CreateTHnSparse(TString name
-                                                   , TString title, Int_t ndim, std::vector<TAxis> bins, Option_t * opt){
-    const TAxis * axises[bins.size()];
-    for( UInt_t i=0;i<bins.size();i++ ) axises[i]= &bins[i];
-    THnSparse * h= fHistos->CreateTHnSparse(name, title, ndim, axises,opt );
-    return h;
 }
 
 TAxis AliAnalysisTaskXi1530::AxisVar( TString name, std::vector<Double_t> bin ){
