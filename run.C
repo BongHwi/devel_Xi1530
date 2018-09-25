@@ -188,7 +188,7 @@ void run(
     mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
     
     // enable debug printouts
-    mgr->SetDebugLevel(2);
+    mgr->SetDebugLevel(5);
     if (!mgr->InitAnalysis()) return;
     mgr->PrintStatus();
     

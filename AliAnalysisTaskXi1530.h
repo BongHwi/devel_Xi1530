@@ -53,7 +53,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     
         virtual void    UserCreateOutputObjects();
         virtual void    UserExec(Option_t *);
-        virtual void    FinishTaskOutput();
         virtual void    Terminate(Option_t *);
     
         void SetOption(char * option) {fOption = option;}
