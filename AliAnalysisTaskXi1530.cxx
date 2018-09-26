@@ -303,7 +303,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         auto htrkINELg0 = fHistos->CreateTH1("htriggered_INELg0_tracklet","",ntrklet.size(), 0, ntrklet.size());
         auto htrkCINT7 = fHistos->CreateTH1("htriggered_CINT7_tracklet","",ntrklet.size(), 0, ntrklet.size());
         auto hmultCINT7 = fHistos->CreateTH1("htriggered_CINT7_VOM","",nmult.size(), 0, nmult.size());
-        
+        /*
         for(auto i=0u;i<mcent.size();i++) hNofEvtMC->GetXaxis()->SetBinLabel(i+1,mcent.at(i).Data());
         htrkINELg0->GetXaxis()->SetBinLabel(1,"0 to Inf (MB)");
         for(auto i=1u;i<ntrklet.size();i++) htrkINELg0->GetXaxis()->SetBinLabel(i+1,Form("%d to %d",ntrklet.at(i),ntrklet.at(i)+5));
@@ -311,7 +311,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         for(auto i=1u;i<ntrklet.size();i++) htrkCINT7->GetXaxis()->SetBinLabel(i+1,Form("%d to %d",ntrklet.at(i),ntrklet.at(i)+5));
         hmultCINT7->GetXaxis()->SetBinLabel(1,"0 - 100 % (MB)");
         for(auto i=1u;i<nmult.size();i++) hmultCINT7->GetXaxis()->SetBinLabel(i+1,Form("%d - %d%%",nmult.at(i),nmult.at(i+1)));
-        
+        */
         CreateTHnSparse("hMult_MC","Multiplicity",1,{binCent},"s");
         CreateTHnSparse("hMult_MC_selected","Multiplicity",1,{binCent},"s");
     }
