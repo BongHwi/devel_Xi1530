@@ -132,6 +132,16 @@ void run(
     //taskWDV -> SetCentralityInterval(0,0.5);
     
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
+    
+    //!! Need to be added in ROOT6 mode!!
+    std::stringstream esdChain;
+    esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateESDChain.C(";
+    esdChain << "\"" << "data.txt" << "\", ";
+    esdChain << 1 << ", ";
+    esdChain << 0 << ", ";
+    esdChain << std::boolalpha << kFALSE << ");";
+    chain = reinterpret_cast<TChain *>(gROOT->ProcessLine(esdChain.str().c_str()));
+    
 #else
     // ROOT 5 MODE
     //
