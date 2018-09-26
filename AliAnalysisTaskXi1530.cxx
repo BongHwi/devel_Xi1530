@@ -269,15 +269,12 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos = new THistManager("Xi1530hists");
     
     auto binType = AxisStr("Type",{"PN","PP","NN","NP","Mixing"});
-    if (IsAA) binCent = AxisFix("Cent",10,0,300);
+    if (IsAA) binCent = AxisFix("Cent",30,0,300);
     else binCent = AxisFix("Cent",300,0,300);
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",1000,10,20);
     
     CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s");
-    //CreateTHnSparse("hInvMass2track","InvMass",3,{binCent,binPt,binMass},"s");
-    //CreateTHnSparse("hInvMass4track","InvMass",3,{binCent,binPt,binMass},"s");
-    //CreateTHnSparse("hInvMass6track","InvMass",3,{binCent,binPt,binMass},"s");
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
     CreateTHnSparse("hPtInvMResponse","InvMass Res",6
                     ,{binType,binCent,binPt,binPt,binMass,binMass},"s");
@@ -415,7 +412,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     Bool_t IsGoodVertex = kFALSE;
     Bool_t IsGoodVertexCut = kFALSE;
     AliVTrack * track1;
-    
+    std::cout << "01" << std::endl;
     if (spdVtx) {
         fZ = spdVtx->GetZ();
         if (spdVtx->GetNContributors()<1) IsGoodVertex = kFALSE;
@@ -425,7 +422,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
             fHistos->FillTH1("hZvtx",fZ);
         }
     } else IsGoodVertex = kFALSE;
-    
+    std::cout << "02" << std::endl;
     if ( IsGoodVertex && fabs(fZ)<10.) {
         IsGoodVertexCut = kTRUE;
         if (IsMinimumBias) {
@@ -434,7 +431,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         }
     }
     zbin = binZ.FindBin(fZ) -1;
-    
+    std::cout << "03" << std::endl;
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection()) this -> FillTracks();
     }
@@ -443,7 +440,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
-    
+    std::cout << "04" << std::endl;
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
     
@@ -491,6 +488,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             ep->pop_front();
         }
     }
+    std::cout << "05" << std::endl;
     return goodtrackindices.size();
 }
 void AliAnalysisTaskXi1530::FillTracks(){
@@ -514,7 +512,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             for (auto track: pool) trackpool->push_back((AliVTrack*)track);
         }
     }
-    
+    std::cout << "06" << std::endl;
     for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
         Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(i);
         if(!Xicandidate) continue;
@@ -600,7 +598,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
         }
     }
-    
+    std::cout << "07" << std::endl;
     if (fsetmixing){
         for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(i);
@@ -679,7 +677,7 @@ THnSparse * AliAnalysisTaskXi1530::CreateTHnSparse(TString name
 Long64_t AliAnalysisTaskXi1530::FillTHnSparse( TString name, std::vector<Double_t> x, Double_t w ){
     auto hsparse = dynamic_cast<THnSparse*>( fHistos->FindObject(name) );
     if(! hsparse ){
-        cout<<"ERROR : no "<<name<<endl;
+        std::cout<<"ERROR : no "<<name<<std::endl;
         exit(1);
     }
     return FillTHnSparse( hsparse, x, w );
@@ -687,7 +685,7 @@ Long64_t AliAnalysisTaskXi1530::FillTHnSparse( TString name, std::vector<Double_
 
 Long64_t AliAnalysisTaskXi1530::FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w ){
     if( int(x.size()) != h->GetNdimensions() ){
-        cout<<"ERROR : wrong sized of array while Fill "<<h->GetName()<<endl;
+        std::cout<<"ERROR : wrong sized of array while Fill "<<h->GetName()<<std::endl;
         exit(1);
     }
     return h->Fill( &x.front(), w );
