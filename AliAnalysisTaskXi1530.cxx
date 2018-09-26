@@ -73,6 +73,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530()
 :AliAnalysisTaskSE("AliAnalysisTaskXi1530"),
     fOption(),
     goodtrackindices(),
+    goodcascadeindices(),
     fEMpool ()
 {
     DefineInput (0, TChain::Class());
@@ -86,6 +87,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(
     :AliAnalysisTaskSE(name),
     fOption(option),
     goodtrackindices(),
+    goodcascadeindices(),
     fEMpool ()
 {
     DefineInput (0, TChain::Class());
@@ -97,6 +99,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530
  )
 : fOption(ap.fOption)
 , goodtrackindices(ap.goodtrackindices)
+, goodcascadeindices(ap.goodcascadeindices)
 , fEMpool (ap.fEMpool)
 {
 }
@@ -285,6 +288,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
     fHistos -> CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
+    fHistos -> CreateTH2("hPhiEta_Xi","",180,0,2*pi,40,-2,2);
     
     binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
     fHistos->CreateTH1("hMul","",200,0,200,"s");
@@ -407,9 +411,10 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // -----------------------------------------------------------------------
     
     // Vertex Check-----------------------------------------------------------
+    const AliVVertex* pVtx  = fEvt->GetPrimaryVertex() ;
     const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTPC() ;
-    const AliVVertex* spdVtx      = fEvt->GetPrimaryVertexSPD() ;
-    
+    const AliVVertex* spdVtx    = fEvt->GetPrimaryVertexSPD() ;
+
     Bool_t IsGoodVertex = kFALSE;
     Bool_t IsGoodVertexCut = kFALSE;
     AliVTrack * track1;
@@ -436,7 +441,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     std::cout << "centbin: " << centbin << std::endl;
     
     if (IsGoodVertexCut){
-        if (this -> GoodTracksSelection()) this -> FillTracks();
+        if (this -> GoodTracksSelection() && this -> GoodCascadeSelection()) this -> FillTracks();
     }
     
     PostData(1, fHistos->GetListOfHistograms());
@@ -493,6 +498,67 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     }
     return goodtrackindices.size();
 }
+
+Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
+    const UInt_t ncascade = fEvt->GetNumberOfCascades();
+    goodcascadeindices.clear();
+    
+    AliESDcascade *Xicandidate;
+    
+    fNCascade = 0;
+    for (UInt_t it = 0; it<ncascade; it++){
+        if (fEvt->IsA()==AliESDEvent::Class()){
+            Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(it);
+            if (!Xicandidate) continue;
+            
+            if (TMath::Abs( Xicandidate->GetPindex()) == TMath::Abs( Xicandidate->GetNindex())) continue;
+            if (TMath::Abs( Xicandidate->GetPindex()) == TMath::Abs( Xicandidate->GetBindex())) continue;
+            if (TMath::Abs( Xicandidate->GetNindex()) == TMath::Abs( Xicandidate->GetBindex())) continue;
+            
+            AliESDtrack *pTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
+            AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
+            AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
+            
+            // Standard track QA cuts
+            if (!fTrackCut->AcceptTrack(pTrackXi)) continue;
+            if (!fTrackCut->AcceptTrack(nTrackXi)) continue;
+            if (!fTrackCut->AcceptTrack(bTrackXi)) continue;
+            
+            // PID cuts for Xi daughters
+            fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
+            fTPCNSigPion1 = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
+            fTPCNSigPion2 = fPIDResponse->NumberOfSigmasTPC(bTrackXi, AliPID::kPion);
+            
+            if (abs(fTPCNSigProton) > 3.) continue; // PID for proton
+            if (abs(fTPCNSigPion1) > 3.) continue; // PID for 1st pion
+            if (abs(fTPCNSigPion2) > 3.) continue; // PID for 2nd pion
+            
+            if(fabs(Xicandidate->GetDcaV0Daughters()) > 1.6) continue;// DCA proton-pion
+            if(fabs(Xicandidate->GetDcaXiDaughters()) > 1.6) continue;// DCA Lambda-pion
+            
+            if(Xicandidate->GetV0CosineOfPointingAngle(pVtx->GetX(), pVtx->GetY(), pVtx->GetZ()) < 0.97) continue;// CPA Lambda
+            if(Xicandidate->GetCascadeCosineOfPointingAngle(pVtx->GetX(), pVtx->GetY(), pVtx->GetZ()) < 0.97) continue;// CPA Xi
+            
+            fHistos->FillTH2("hPhiEta_Xi",Xicandidate->Phi(),Xicandidate->Eta());
+        }
+        else {
+            // !! NEED TO MODIFY !!
+            /*
+            track = (AliAODTrack*) fEvt ->GetTrack(it);
+            if (!track) continue;
+            if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue;
+            if (track->Pt()<fptcut) continue;
+            if (abs(track->Eta())>fetacut) continue;
+            fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
+            */
+        }
+        fNCascade++;
+        goodcascadeindices.push_back(it);
+    }
+    
+    return goodcascadeindices.size();
+}
+
 void AliAnalysisTaskXi1530::FillTracks(){
     
     AliVTrack *track1;
@@ -504,7 +570,10 @@ void AliAnalysisTaskXi1530::FillTracks(){
     
     TLorentzVector temp1,temp2;
     TLorentzVector vecsum;
+    
+    const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
+    
     std::cout << "check--" << std::endl;
     tracklist *trackpool;
     if (fsetmixing){
@@ -519,8 +588,9 @@ void AliAnalysisTaskXi1530::FillTracks(){
         }
     }
     std::cout << "checkend" << std::endl;
-    for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
-        Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(i);
+    
+    for (Int_t i = 0; i < ncascade; i++) {
+        Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
         if(!Xicandidate) continue;
         
         AliESDtrack *pTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
@@ -528,7 +598,6 @@ void AliAnalysisTaskXi1530::FillTracks(){
         AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
         
         temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
-        
         
         for (UInt_t i = 0; i < ntracks; i++) {
             track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[i]);

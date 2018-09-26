@@ -67,6 +67,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Int_t GetPID(AliPIDResponse *pid, const AliVTrack *trk);
         
         Bool_t  GoodTracksSelection();
+        Bool_t  GoodCascadeSelection();
         void FillTracks();
         void SetMixing (Bool_t setmixing) {fsetmixing = setmixing;}
         void SetIsAA (Bool_t isaa) {IsAA = isaa;}
@@ -103,6 +104,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Double_t                        fCent=-1;
         Double_t                        fZ=-30;
         std::vector < UInt_t >          goodtrackindices; //!
+        std::vector < UInt_t >          goodcascadeindices; //!
     
         AliPIDResponse                 *fPIDResponse=nullptr; //!
         AliPIDCombined                 *fPIDCombined=nullptr; //!
