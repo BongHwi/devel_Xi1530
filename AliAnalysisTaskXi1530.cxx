@@ -317,6 +317,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     }
 
     PostData(1, fHistos->GetListOfHistograms());
+    std::cout << "User Create Object:: done" << std::endl;
 }
 
 //________________________________________________________________________

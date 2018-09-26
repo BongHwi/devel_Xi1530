@@ -12,7 +12,7 @@ vector<Int_t> LHC16kRuns = {257605}; // for test
 class AliAnalysisGrid;
 void run(
          const char *taskname = "Xi1530"
-         , const char *option = "LHC16k" // when scanning AOD, add "AOD"
+         , const char *option = "LHC16kMC" // when scanning AOD, add "AOD"
          , const char *gridmode = "full" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
@@ -161,10 +161,17 @@ void run(
         plugin->SetMergeViaJDL(1);
         
         if (foption.Contains("LHC16k")){
-            plugin->SetGridDataDir("/alice/data/2016/LHC16k/");
+            if(!foption.Contains("MC")){
+                plugin->SetGridDataDir("/alice/data/2016/LHC16k/");
+                plugin->SetDataPattern("/pass2/*/AliESDs.root");
+            }
+            else {
+                plugin->SetGridDataDir("/alice/sim/2018/LHC18c6b2");
+                plugin->SetDataPattern("*AliESDs.root");
+            }
             for(auto i=0u;i<LHC16kRuns.size();i++)
                 plugin->AddRunNumber(LHC16kRuns.at(i));
-            plugin->SetDataPattern("/pass2/*/AliESDs.root");
+            
         }
         
         
