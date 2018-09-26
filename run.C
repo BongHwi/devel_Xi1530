@@ -174,7 +174,7 @@ void run(
     else{
         // create the alien handler and attach it to the manager
         AliAnalysisAlien *plugin = new AliAnalysisAlien();
-        plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
+        plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
         plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
         plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h");
         plugin->SetAliPhysicsVersion("vAN-20180925-1");
