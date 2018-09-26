@@ -155,6 +155,10 @@ void run(
      */
     chain->Add("/afs/cern.ch/user/b/blim/sim/AliESDs.root");
     chain->Lookup();
+    
+    gROOT->LoadMacro("AddTaskXi1530.C");
+    AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option
+    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.C(%s,%s)",taskname,option)));
 #else
     // ROOT 5 MODE
     //
@@ -182,7 +186,11 @@ void run(
     gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
     TChain* chain = CreateESDChain("data.txt");
     chain->Lookup();
+    
+    gROOT->LoadMacro("AddTaskXi1530.C");
+    AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option);
 #endif
+    /*
     //hybrid track : AOD 086 -> Filter bit 272
     //hybrid track : AOD 160 -> Filter bit 768
     //hybrid track : AOD 145 -> Filter bit 768
@@ -212,7 +220,7 @@ void run(
     std::cout << "Add Input" << std::endl;
     mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
     std::cout << "Add Output" << std::endl;
-    
+    */
     // enable debug printouts
     mgr->SetDebugLevel(5);
     if (!mgr->InitAnalysis()) return;
