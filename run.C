@@ -195,6 +195,10 @@ void run(
     taskXi1530 -> SetMixing(kFALSE);
     taskXi1530 -> SetIsMC(ismc);
     taskXi1530 -> SetParticleType(99999);
+    if(!taskXi1530){
+        std::cout << "NO Task Ready" << std::endl;
+        return 0x0;
+    }
     std::cout << "After Task Ready" << std::endl;
     
     // Create containers for input/output
