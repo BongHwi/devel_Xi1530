@@ -230,7 +230,6 @@ void run(
         if(strcmp(gridmode,"test")==0)plugin->SetNtestFiles(1);
         
         plugin->SetRunMode(gridmode);
-        mgr->StartAnalysis("grid");
         mgr->SetGridHandler(plugin);
         mgr->StartAnalysis(localorgrid);
     }
