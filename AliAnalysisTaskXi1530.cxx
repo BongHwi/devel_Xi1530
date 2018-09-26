@@ -481,7 +481,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         goodtrackindices.push_back(it);
         
         //Event mixing pool
-        if (fsetmixing) etl->push_back( ((AliVTrack*)track) -> Clone() );
+        if (fsetmixing) etl->push_back( (AliVTrack*)track -> Clone() );
     }
     
     if (fsetmixing){
@@ -509,12 +509,12 @@ void AliAnalysisTaskXi1530::FillTracks(){
     tracklist *trackpool;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
-        if (ep.size()<5 ) return;
+        if (ep.size()<0 ) return;
         for (auto pool: ep){
             std::cout << "check1" << std::endl;
             for (auto track: pool) {
                 std::cout << "check2" << std::endl;
-                trackpool->push_back(track);
+                trackpool->push_back(((AliVTrack*)track));
             }
         }
     }
