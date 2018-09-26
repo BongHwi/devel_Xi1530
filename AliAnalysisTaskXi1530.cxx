@@ -503,7 +503,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
     goodcascadeindices.clear();
     
-    AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
+    const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
     
     const AliESDcascade *Xicandidate;
     
