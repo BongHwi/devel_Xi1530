@@ -43,8 +43,8 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliMultSelection.h"
 #include "AliESDcascade.h"
-//#include "AliAODMCHeader.h"
-//#include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
+#include "AliAODMCParticle.h"
 #include "AliMultiplicity.h"
 
 // Some constants
@@ -521,11 +521,11 @@ void AliAnalysisTaskXi1530::FillTracks(){
         Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(i);
         if(!Xicandidate) continue;
         
-        AliESDtrack *pTrackXi   = fEvt->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
-        AliESDtrack *nTrackXi   = fEvt->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
-        AliESDtrack *bTrackXi   = fEvt->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
+        AliESDtrack *pTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
+        AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
+        AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
         
-        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M(););
+        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
         
         
         for (UInt_t i = 0; i < ntracks; i++) {
@@ -579,6 +579,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 }// ESD
                 else{
                     // !! NEED TO UPDATE FOR AOD CASE !!
+                    /*
                     AliAODMCParticle *par1 =
                     dynamic_cast<AliAODMCParticle*>(fMCArray->At(track1->GetLabel()));
                     AliAODMCParticle *par2 =
@@ -595,6 +596,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     auto vecsumtrue = temp1 + temp2;
                     FillTHnSparse("hPtInvMResponse",{(double)sign,fCent
                         ,vecsum.Pt(),vecsumtrue.Pt(), vecsum.M(),vecsumtrue.M()});
+                     */
                 }// AOD
             }// MC
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
@@ -603,15 +605,15 @@ void AliAnalysisTaskXi1530::FillTracks(){
     
     if (fsetmixing){
         for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
-            Xicandidate = fEvt->GetCascade(i);
+            Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(i);
             if(!Xicandidate) continue;
-            temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M(););
+            temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
             
             for (UInt_t jt = 0; jt < ntracks; jt++) {
                 track1 = trackpool->at(jt);
                 temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
                 vecsum = temp1+temp2; // two pion vector sum
-                if (track1->Charge()*track2->Charge() = -1) continue;
+                if (track1->Charge()*Xicandidate->Charge() = -1) continue;
                 if (fabs(vecsum.Eta())>0.5) continue; //rapidity cut
                 FillTHnSparse("hInvMass",{kMixing,fCent,vecsum.M(),vecsum.Pt()});
             }
