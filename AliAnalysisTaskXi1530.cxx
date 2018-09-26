@@ -21,7 +21,7 @@
 //  exer with primary charged pions.
 //
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
-//  Origin of the Code: Beomkyu KIM ()
+//  Origin of the Code: Beomkyu KIM (kimb@cern.ch)
 //
 //  Last Modified Date: 2018/09/25
 //

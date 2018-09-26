@@ -5,7 +5,7 @@
 //
 // AliAnalysisTaskXi1530
 // author:
-//  (Original Code) Beomkyu KIM ()
+//  (Original Code) Beomkyu KIM (kimb@cern.ch)
 //  (Modification) Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 
 #include "THnSparse.h"

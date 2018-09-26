@@ -1,13 +1,3 @@
-// Macro for analisys task of preselected-central-diffractive events
-//------------------------------------------------------------------
-// When there is no time to wait for legotrain results,
-// please use this macro to run jobs on grid.
-// Recommended for pp or pA runs, not for AA runs.
-//------------------------------------------------------------------
-// Author: Beomkyu Kim
-// email:  kimb@cern.ch
-//
-
 #if !defined (__CINT__) || defined (__CLING__)
 #include "AliAnalysisAlien.h"
 #include "AliAnalysisManager.h"
@@ -141,7 +131,7 @@ void run(
     //taskWDV->SetOnlyCombineMCTrue(kTRUE);
     //taskWDV -> SetCentralityInterval(0,0.5);
     
-    gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx++g");
+    gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
 #else
     // ROOT 5 MODE
     //
@@ -163,7 +153,7 @@ void run(
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AliAnalysisTask *fPIDResponse = AddTaskPIDResponse(ismc); //! PID response object
     
-    gROOT->LoadMacro("AliAnalysisTaskXi1530.cxx++g");
+    gROOT->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
 #endif
     //hybrid track : AOD 086 -> Filter bit 272
     //hybrid track : AOD 160 -> Filter bit 768
@@ -182,11 +172,11 @@ void run(
     // Create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("outputXi1530", TDirectory::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-    std::cout << "After input/output setup" << std::endl;
     
     mgr->AddTask(taskXi1530);
     mgr->ConnectInput(taskXi1530, 0, cinput);
     mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
+    
     std::cout << "After input/output connecting" << std::endl;
     // enable debug printouts
     mgr->SetDebugLevel(5);
