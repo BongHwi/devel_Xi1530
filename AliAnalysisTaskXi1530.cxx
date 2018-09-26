@@ -412,7 +412,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     Bool_t IsGoodVertex = kFALSE;
     Bool_t IsGoodVertexCut = kFALSE;
     AliVTrack * track1;
-    std::cout << "01" << std::endl;
+    
     if (spdVtx) {
         fZ = spdVtx->GetZ();
         if (spdVtx->GetNContributors()<1) IsGoodVertex = kFALSE;
@@ -422,7 +422,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
             fHistos->FillTH1("hZvtx",fZ);
         }
     } else IsGoodVertex = kFALSE;
-    std::cout << "02" << std::endl;
+    
     if ( IsGoodVertex && fabs(fZ)<10.) {
         IsGoodVertexCut = kTRUE;
         if (IsMinimumBias) {
@@ -431,7 +431,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         }
     }
     zbin = binZ.FindBin(fZ) -1;
-    std::cout << "03" << std::endl;
+    Int_t centbin = GetCentBin(fCent);
+    
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection()) this -> FillTracks();
     }
@@ -621,7 +622,24 @@ void AliAnalysisTaskXi1530::Terminate(Option_t *)
 {
     //if(fDevelopeMode)std::cout<<"Done"<<std::endl;
 }
-
+Int_t AliAnalysisTaskXi1530::GetCentBin(Double_t cent) const
+{
+    // Get centrality bin.
+    Int_t centbin = -1;
+    if (cent>=0 && cent<10)
+        centbin = 0;
+    else if (cent>=10 && cent<20)
+        centbin = 1;
+    else if (cent>=20 && cent<30)
+        centbin = 2;
+    else if (cent>=30 && cent<40)
+        centbin = 3;
+    else if (cent>=40 && cent<50)
+        centbin = 4;
+    else if (cent>=50 && cent<101)
+        centbin = 5;
+    return centbin;
+}
 Int_t AliAnalysisTaskXi1530::GetPID(AliPIDResponse *pid, const AliVTrack *trk){
     if (!pid) return -1; // no pid available
     
