@@ -759,8 +759,7 @@ Int_t AliAnalysisTaskXi1530::GetPID(AliPIDResponse *pid, const AliVTrack *trk){
     
 }
 
-THnSparse * AliAnalysisTaskXi1530::CreateTHnSparse(TString name
-                                                   , TString title, Int_t ndim, std::vector<TAxis> bins, Option_t * opt){
+THnSparse* AliAnalysisTaskXi1530::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t * opt){
     const TAxis * axises[bins.size()];
     for( UInt_t i=0;i<bins.size();i++ ) axises[i]= &bins[i];
     THnSparse * h= fHistos->CreateTHnSparse(name, title, ndim, axises,opt );

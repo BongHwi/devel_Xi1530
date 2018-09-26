@@ -177,8 +177,8 @@ void run(
         plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
         plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
         plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h");
-        plugin->SetAPIVersion("V1.1x");
         plugin->SetAliPhysicsVersion("vAN-20180925-1");
+        plugin->SetAPIVersion("V1.1x");
         if(!ismc)plugin->SetRunPrefix("000");
         //plugin->SetDropToShell(0);
         
@@ -198,27 +198,27 @@ void run(
             for (int i=0; i<1; i++) plugin->AddRunNumber(LHC16kRuns[i]);
 #endif
         }
-        plugin->SetNrunsPerMaster(0);
-        plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
-        plugin->SetGridOutputDir("out");
-        
         plugin->SetSplitMaxInputFileNumber(2000);
         plugin->SetExecutable(Form("%s%s.sh",taskname,option));
         plugin->SetTTL(20000);
         plugin->SetJDLName(Form("%s%s.jdl",taskname,option));
-        //plugin->SetOutputToRunNo(kTRUE);
         plugin->SetKeepLogs(kTRUE);
         plugin->SetMaxMergeStages(3);
         plugin->SetMaxMergeFiles(100);
         plugin->SetMergeViaJDL(kTRUE);
         plugin->SetCheckCopy(kFALSE);
+        
+        plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
+        plugin->SetGridOutputDir("out");
+        
+        //plugin->SetOutputToRunNo(kTRUE);
         plugin->SetOverwriteMode(kTRUE);
         plugin->SetUser("blim");
-        
-        if(strcmp(gridmode,"test")==0)plugin->SetNtestFiles(1);
-        plugin->SetRunMode(gridmode);
-        
         mgr->SetGridHandler(plugin);
+        
+        plugin->SetRunMode(gridmode);
+        if(strcmp(gridmode,"test")==0)plugin->SetNtestFiles(1);
+        
         mgr->StartAnalysis(localorgrid);
     }
 }
