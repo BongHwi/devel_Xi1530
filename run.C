@@ -13,10 +13,10 @@ class AliAnalysisGrid;
 void run(
          const char *taskname = "Xi1530"
          , const char *option = "LHC16kMC" // when scanning AOD, add "AOD"
-         , const char *gridmode = "full" // or "terminate" to merge
+         , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
-         , const char *localorgrid = "local"
+         , const char *localorgrid = "grid"
          )
 {
 #if !defined (__CINT__) || defined (__CLING__)
