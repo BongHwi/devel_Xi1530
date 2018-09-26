@@ -5,7 +5,7 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530", const char *option = "LHC16k", bool isAA=kFALSE, bool ismc=kFALSE)
+AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530", const char *option = "LHC16k", bool isaa=kFALSE, bool ismc=kFALSE)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {

@@ -156,7 +156,7 @@ void run(
     chain->Add("/afs/cern.ch/user/b/blim/sim/AliESDs.root");
     chain->Lookup();
     
-    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(%s,%s,%d,%d)",taskname,option,isAA,ismc)));
+    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(%s,%s,%d,%d)",taskname,option,isaa,ismc)));
 #else
     // ROOT 5 MODE
     //
@@ -186,7 +186,7 @@ void run(
     chain->Lookup();
     
     gROOT->LoadMacro("AddTaskXi1530.c");
-    AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option,isAA,ismc);
+    AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option,isaa,ismc);
 #endif
     /*
     //hybrid track : AOD 086 -> Filter bit 272
