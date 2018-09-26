@@ -46,7 +46,7 @@ void run(
     bool ismc = kFALSE;
     TString foption = option;
     if(foption.Contains("MC")) ismc = true;
-    if(foption.Contains("Mix"))setmixing
+    if(foption.Contains("Mix")) setmixing = true;
     
     // analysis manager
     AliAnalysisManager* mgr = new AliAnalysisManager(Form("%s%s",taskname,option));
