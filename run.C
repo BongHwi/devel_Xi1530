@@ -97,6 +97,7 @@ void run(
     handler->SetNeedField(1);
     mgr->SetInputEventHandler(handler);
     
+    TChain* chain = 0;
 #if !defined (__CINT__) || defined (__CLING__)
     // ROOT 6 MODE
     //
@@ -141,7 +142,7 @@ void run(
     esdChain << 0 << ", ";
     esdChain << std::boolalpha << kFALSE << ");";
     chain = reinterpret_cast<TChain *>(gROOT->ProcessLine(esdChain.str().c_str()));
-    
+    chain->Lookup();
 #else
     // ROOT 5 MODE
     //
@@ -175,22 +176,26 @@ void run(
     //hybrid track : AOD 145 -> Filter bit 768
     //hybrid track : AOD 115 -> Filter bit 768
     // TPC AOD086 : 128
-    
+    std::cout << "Task Prepare" << std::endl;
     AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(taskname, Form("%s_%s",taskname,option));
     //taskXi1530 -> SetFilterBit(768);
     taskXi1530 -> SetIsAA(isaa);
     taskXi1530 -> SetMixing(kFALSE);
     taskXi1530 -> SetIsMC(ismc);
     taskXi1530 -> SetParticleType(99999);
-    
+    std::cout << "After Task Ready" << std::endl;
     
     // Create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("outputXi1530", TDirectory::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    std::cout << "Container ready" << std::endl;
     
     mgr->AddTask(taskXi1530);
+    std::cout << "AddTask" << std::endl;
     mgr->ConnectInput(taskXi1530, 0, cinput);
+    std::cout << "Add Input" << std::endl;
     mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
+    std::cout << "Add Output" << std::endl;
     
     std::cout << "After input/output connecting" << std::endl;
     // enable debug printouts
@@ -200,11 +205,6 @@ void run(
     
     // start analysis
     Printf("Starting Analysis....");
-    if (localorgrid.Contains("local")){
-        mgr->StartAnalysis(localorgrid,chain);
-    }
-    else{
-        mgr->StartAnalysis(localorgrid);
-    }
+    mgr->StartAnalysis(localorgrid,chain);
 }
 
