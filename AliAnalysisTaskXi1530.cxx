@@ -42,6 +42,7 @@
 #include "AliGenDPMjetEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliMultSelection.h"
+#include "AliESDcascade.h"
 //#include "AliAODMCHeader.h"
 //#include "AliAODMCParticle.h"
 #include "AliMultiplicity.h"
@@ -163,7 +164,7 @@ void AliAnalysisTaskXi1530::XiStarInit()
     }
     
     fTempStruct = new AliAnalysisTaskXi1530TrackStruct[kNbinsM * 8];
-    fESDTrack4 = new AliESDtrack();
+    fEvtTrack4 = new AliESDtrack();
     fXiTrack = new AliESDtrack();
     
     
@@ -515,13 +516,13 @@ void AliAnalysisTaskXi1530::FillTracks(){
         }
     }
     
-    for (Int_t i = 0; i < fESD->GetNumberOfCascades(); i++) {
-        Xicandidate = fESD->GetCascade(i);
+    for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
+        Xicandidate = fEvt->GetCascade(i);
         if(!Xicandidate) continue;
         
-        AliESDtrack *pTrackXi   = fESD->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
-        AliESDtrack *nTrackXi   = fESD->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
-        AliESDtrack *bTrackXi   = fESD->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
+        AliESDtrack *pTrackXi   = fEvt->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
+        AliESDtrack *nTrackXi   = fEvt->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
+        AliESDtrack *bTrackXi   = fEvt->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
         
         temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M(););
         
@@ -540,7 +541,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             mcXiFilled = kFALSE;
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){
-                    TParticle* MCXiD2esd = (TParticle*)mcstack->Particle(abs(bTrackXi->GetLabel()));
+                    TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
                     TParticle* MCLamD1esd;
                     TParticle* MCLamD2esd;
                     TParticle* MCLamesd;
@@ -549,18 +550,18 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     TParticle* MCXiStarD2esd;
                     
                     if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
-                        MCLamD1esd = (TParticle*)mcstack->Particle(abs(pTrackXi->GetLabel()));
-                        MCLamD2esd = (TParticle*)mcstack->Particle(abs(nTrackXi->GetLabel()));
+                        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
+                        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
                         if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) {
                             if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) {
-                                MCLamesd = (TParticle*)mcstack->Particle(abs(MCLamD1esd->GetMother(0)));
+                                MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
                                 if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) {
                                     if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) {
-                                        MCXiesd = (TParticle*)mcstack->Particle(abs(MCLamesd->GetMother(0)));
+                                        MCXiesd = (TParticle*)fMCStack->Particle(abs(MCLamesd->GetMother(0)));
                                         if (abs(MCXiesd->GetPdgCode()) == kXiCode) {
-                                            MCXiStarD2esd = (TParticle*)mcstack->Particle(track1->GetLabel());
+                                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(track1->GetLabel());
                                             if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) {
-                                                MCXiStaresd = (TParticle*)mcstack->Particle(abs(MCXiesd->GetMother(0)));
+                                                MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
                                                 if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) {
                                                     temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
                                                     temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
@@ -600,8 +601,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
     }
     
     if (fsetmixing){
-        for (Int_t i = 0; i < fESD->GetNumberOfCascades(); i++) {
-            Xicandidate = fESD->GetCascade(i);
+        for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
+            Xicandidate = fEvt->GetCascade(i);
             if(!Xicandidate) continue;
             temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M(););
             
