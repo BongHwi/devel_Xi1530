@@ -190,7 +190,7 @@ void run(
     
     // Create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("outputXi1530", TDirectory::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("outputXi1530", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     std::cout << "Container ready" << std::endl;
     
     mgr->AddTask(taskXi1530);

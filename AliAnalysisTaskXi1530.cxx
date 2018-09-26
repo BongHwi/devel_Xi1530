@@ -30,6 +30,7 @@
 
 #include "TFile.h"
 #include "TChain.h"
+#include "TList.h"
 #include "TSystem.h"
 #include "AliAnalysisTaskXi1530.h"
 #include "AliStack.h"
@@ -73,7 +74,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530()
     fEMpool ()
 {
     DefineInput (0, TChain::Class());
-    DefineOutput (1, TDirectory::Class());
+    DefineOutput (1, TList::Class());
 }
 //___________________________________________________________________
 AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(
@@ -86,7 +87,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(
     fEMpool ()
 {
     DefineInput (0, TChain::Class());
-    DefineOutput (1, TDirectory::Class());
+    DefineOutput (1, TList::Class());
 }
 AliAnalysisTaskXi1530::AliAnalysisTaskXi1530
 (
