@@ -97,7 +97,7 @@ void run(
     handler->SetNeedField(1);
     mgr->SetInputEventHandler(handler);
     
-    TChain* chain = 0;
+    TChain* chain = new TChain("ESDTree");
 #if !defined (__CINT__) || defined (__CLING__)
     // ROOT 6 MODE
     //
@@ -135,6 +135,7 @@ void run(
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
     
     //!! Need to be added in ROOT6 mode!!
+    /*
     std::stringstream esdChain;
     esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateESDChain.C(";
     esdChain << "\"" << "data.txt" << "\", ";
@@ -142,6 +143,8 @@ void run(
     esdChain << 0 << ", ";
     esdChain << std::boolalpha << kFALSE << ");";
     chain = reinterpret_cast<TChain *>(gROOT->ProcessLine(esdChain.str().c_str()));
+     */
+    chain->Add("/afs/cern.ch/user/b/blim/sim/AliESDs.root");
     chain->Lookup();
 #else
     // ROOT 5 MODE
