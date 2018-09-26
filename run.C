@@ -201,7 +201,6 @@ void run(
         plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
         plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
         plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h");
-        plugin->SetOutputFiles("AnalysisResults.root");
         
         plugin->SetSplitMaxInputFileNumber(2000);
         plugin->SetMasterResubmitThreshold(90);
