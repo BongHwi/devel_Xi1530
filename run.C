@@ -70,7 +70,7 @@ void run(
     plugin->SetOutputFiles("AnalysisResults.root");
     plugin->SetSplitMaxInputFileNumber(300);
     plugin->SetMasterResubmitThreshold(90);
-    plugin->SetFileForTestMode("data.txt");
+    //plugin->SetFileForTestMode("data.txt");
     //plugin->SetUseSubmitPolicy();
     
     // Optionally set time to live (default 30000 sec)
@@ -96,7 +96,10 @@ void run(
     
     handler->SetNeedField(1);
     mgr->SetInputEventHandler(handler);
-    
+    if (localorgrid.Contains("local")){
+        TChain *chain = new TChain("ESDTree");
+        chain = CreateChain(data.txt); // for KIAF use
+    }
 #if !defined (__CINT__) || defined (__CLING__)
     // ROOT 6 MODE
     //
@@ -162,7 +165,7 @@ void run(
     // TPC AOD086 : 128
     
     AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(taskname, Form("%s_%s",taskname,option));
-    taskXi1530 -> SetFilterBit(768);
+    //taskXi1530 -> SetFilterBit(768);
     taskXi1530 -> SetIsAA(isaa);
     taskXi1530 -> SetMixing(kFALSE);
     taskXi1530 -> SetIsMC(ismc);
@@ -185,6 +188,11 @@ void run(
     
     // start analysis
     Printf("Starting Analysis....");
-    mgr->StartAnalysis(localorgrid,1234567890,0);
+    if (localorgrid.Contains("local")){
+        mgr->StartAnalysis(localorgrid,chain);
+    }
+    else{
+        mgr->StartAnalysis(localorgrid);
+    }
 }
 
