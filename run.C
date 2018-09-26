@@ -12,7 +12,7 @@ vector<Int_t> LHC16kRuns = {257605}; // for test
 class AliAnalysisGrid;
 void run(
          const char *taskname = "Xi1530"
-         , const char *option = "LHC16k" // when scanning AOD, add "AOD"
+         , const char *option = "LHC16kMC" // when scanning AOD, add "AOD"
          , const char *gridmode = "full" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
@@ -92,10 +92,15 @@ void run(
     if (foption.Contains("AOD"))
         handler = new AliAODInputHandler();
     else
-        handler = new AliESDInputHandler() ;
+        handler = new AliESDInputHandler();
     
     handler->SetNeedField(1);
     mgr->SetInputEventHandler(handler);
+    
+    if(ismc) {
+        AliMCEventHandler *mcHandler  = new AliMCEventHandler();
+        mgr->SetMCtruthEventHandler(mcHandler);
+    }
     
     TChain* chain = new TChain("ESDTree");
 #if !defined (__CINT__) || defined (__CLING__)
@@ -190,7 +195,7 @@ void run(
     
     // Create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("outputXi1530", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
+    AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("outputXi1530", TDirectory::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     std::cout << "Container ready" << std::endl;
     
     mgr->AddTask(taskXi1530);
