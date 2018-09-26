@@ -291,6 +291,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos->CreateTH1("hZvtx","",600,-30,30,"s");
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     
+    
     if (IsMC)
     {
         // To get Trigger efficiency in each trk/V0M Multiplicity region
@@ -432,6 +433,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     }
     zbin = binZ.FindBin(fZ) -1;
     Int_t centbin = GetCentBin(fCent);
+    std::cout << "centbin: " << centbin << std::endl;
     
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection()) this -> FillTracks();
@@ -451,6 +453,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     eventpool *ep;
     //Event mixing pool
     if (fsetmixing){
+        std::cout << "Cent bin: " << centbin << ", zbin: " << zbin << std::endl;
         ep = &fEMpool[centbin][zbin];
         ep -> push_back( tracklist() );
         etl = &(ep->back());
@@ -483,13 +486,15 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     }
     
     if (fsetmixing){
+        std::cout << "05" << std::endl;
         if (!goodtrackindices.size()) ep->pop_back();
+        std::cout << "06" << std::endl;
         if ( ep->size() > 5 ){
             for (auto it: ep->front()) delete it;
             ep->pop_front();
         }
     }
-    std::cout << "05" << std::endl;
+    std::cout << "07" << std::endl;
     return goodtrackindices.size();
 }
 void AliAnalysisTaskXi1530::FillTracks(){
