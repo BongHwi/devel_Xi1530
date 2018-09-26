@@ -5,7 +5,7 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530", const char *option = "LHC16k", bool isaa=kFALSE, bool ismc=kFALSE)
+AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530", const char *option = "LHC16k", bool isaa=kFALSE, bool ismc=kFALSE, bool setmixing=kFALSE)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -18,7 +18,7 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530", const char
     AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(taskname, Form("%s_%s",taskname,option));
     //taskXi1530 -> SetFilterBit(768);
     taskXi1530 -> SetIsAA(isaa);
-    taskXi1530 -> SetMixing(kFALSE);
+    taskXi1530 -> SetMixing(setmixing);
     taskXi1530 -> SetIsMC(ismc);
     taskXi1530 -> SetParticleType(99999);
     

@@ -270,7 +270,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     
     auto binType = AxisStr("Type",{"PN","PP","NN","NP","Mixing"});
     if (IsAA) binCent = AxisFix("Cent",10,0,300);
-    else binCent = AxisFix("Cent",1,0,300);
+    else binCent = AxisFix("Cent",300,0,300);
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",1000,10,20);
     
@@ -326,7 +326,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserExec(Option_t *)
 {
-    std::cout << "UserExec" << std::endl;
     // Pointer to a event----------------------------------------------------
     AliVEvent *event = InputEvent();
     if (!event)
@@ -435,7 +434,6 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         }
     }
     zbin = binZ.FindBin(fZ) -1;
-    std::cout << "zbin :" << zbin << std::endl;
     
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection()) this -> FillTracks();
