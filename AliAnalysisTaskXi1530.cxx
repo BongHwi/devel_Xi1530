@@ -438,7 +438,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     }
     zbin = binZ.FindBin(fZ) -1;
     centbin = GetCentBin(fCent);
-    std::cout << "centbin: " << centbin << std::endl;
+    //std::cout << "centbin: " << centbin << std::endl;
     
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection() && this -> GoodCascadeSelection()) this -> FillTracks();
@@ -457,7 +457,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     eventpool *ep;
     //Event mixing pool
     if (fsetmixing){
-        std::cout << "Cent bin: " << centbin << ", zbin: " << zbin << std::endl;
+        //std::cout << "Cent bin: " << centbin << ", zbin: " << zbin << std::endl;
         ep = &fEMpool[centbin][zbin];
         ep -> push_back( tracklist() );
         etl = &(ep->back());
@@ -505,7 +505,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     
     AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
     
-    AliESDcascade *Xicandidate;
+    const AliESDcascade *Xicandidate;
     
     fNCascade = 0;
     for (UInt_t it = 0; it<ncascade; it++){
@@ -576,7 +576,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
     
-    std::cout << "check--" << std::endl;
+    //std::cout << "check--" << std::endl;
     tracklist *trackpool;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
@@ -589,7 +589,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             }
         }
     }
-    std::cout << "checkend" << std::endl;
+    //std::cout << "checkend" << std::endl;
     
     for (Int_t i = 0; i < ncascade; i++) {
         Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);

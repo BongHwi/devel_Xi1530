@@ -24,7 +24,7 @@ void run(
          , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
-         , const char *localorgrid = "local"
+         , const char *localorgrid = "grid"
          )
 {
     gSystem->Load("libTree.so");
@@ -175,10 +175,11 @@ void run(
         AliAnalysisAlien *plugin = new AliAnalysisAlien();
         plugin->SetAPIVersion("V1.1x");
         plugin->SetAliPhysicsVersion("vAN-20180925-1");
+        if(!ismc)plugin->SetRunPrefix("000");
         
         if (foption.Contains("LHC16k")){
             if(!foption.Contains("MC")){
-                plugin->SetGridDataDir("/alice/data/2016/LHC16k/");
+                plugin->SetGridDataDir("/alice/data/2016/LHC16k");
                 plugin->SetDataPattern("/pass2/*/AliESDs.root");
             }
             else {
@@ -202,7 +203,7 @@ void run(
         //plugin->SetOutputFiles("AnalysisResults.root RecTree.root");
         plugin->SetOutputFiles("AnalysisResults.root");
         
-        if(!ismc)plugin->SetRunPrefix("000");
+        
         plugin->SetSplitMaxInputFileNumber(2000);
         plugin->SetExecutable("myTask.sh");
         plugin->SetTTL(10000);
