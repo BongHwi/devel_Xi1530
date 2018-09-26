@@ -31,6 +31,7 @@
 #include "TFile.h"
 #include "TChain.h"
 #include "TSystem.h"
+#include "THistManager.h"
 #include "AliAnalysisTaskXi1530.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
@@ -392,7 +393,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     std::cout << "AliAnalysisTaskXi1530:: Fill" << std::endl;
     Bool_t IsMinimumBias = kFALSE;
     fHistos -> FillTH1("hEventNumbers","All",1);
-    
+    std::cout << "AliAnalysisTaskXi1530:: Fill done" << std::endl;
     if(fRunTable->IsAA() || fRunTable->IsPA()){
         IsMinimumBias = (inputHandler -> IsEventSelected()) & (AliVEvent::kMB);
     }
