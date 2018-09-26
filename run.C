@@ -190,8 +190,8 @@ void run(
         plugin->SetMergeViaJDL(kTRUE);
         plugin->SetCheckCopy(kFALSE);
         
-        plugin->SetGridWorkingDir(working_directory);
-        plugin->SetGridOutputDir("output");
+        plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
+        plugin->SetGridOutputDir("out");
         
         plugin->SetOverwriteMode(kTRUE);
         plugin->SetUser("blim");
@@ -199,7 +199,7 @@ void run(
         mgr->SetGridHandler(plugin);
         
         // speficy on how many files you want to run
-        if(strcmp(mode,"test")==0)plugin->SetNtestFiles(1);
+        if(strcmp(gridmode,"test")==0)plugin->SetNtestFiles(1);
         
         plugin->SetRunMode(gridmode);
         mgr->StartAnalysis("grid");
