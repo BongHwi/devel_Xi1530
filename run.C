@@ -44,6 +44,7 @@ void run(
     
     bool isaa = kFALSE;
     bool ismc = kFALSE;
+    bool setmixing = kFALSE;
     TString foption = option;
     if(foption.Contains("MC")) ismc = true;
     if(foption.Contains("Mix")) setmixing = true;
