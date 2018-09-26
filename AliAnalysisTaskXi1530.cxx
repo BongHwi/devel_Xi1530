@@ -341,6 +341,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     ? fEvt = dynamic_cast<AliESDEvent*>(event)
     : fEvt = dynamic_cast<AliAODEvent*>(event);
     if (!fEvt) return;
+    
     // ----------------------------------------------------------------------
     
     // Multiplicity(centrality) ---------------------------------------------
@@ -517,7 +518,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     }
     
     for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
-        Xicandidate = fEvt->GetCascade(i);
+        Xicandidate = (AliESDcascade*)fEvt->GetCascade(i);
         if(!Xicandidate) continue;
         
         AliESDtrack *pTrackXi   = fEvt->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
