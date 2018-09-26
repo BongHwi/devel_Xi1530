@@ -432,7 +432,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         }
     }
     zbin = binZ.FindBin(fZ) -1;
-    Int_t centbin = GetCentBin(fCent);
+    centbin = GetCentBin(fCent);
     std::cout << "centbin: " << centbin << std::endl;
     
     if (IsGoodVertexCut){
@@ -443,7 +443,6 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
-    std::cout << "04" << std::endl;
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
     
@@ -486,15 +485,12 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     }
     
     if (fsetmixing){
-        std::cout << "05" << std::endl;
         if (!goodtrackindices.size()) ep->pop_back();
-        std::cout << "06" << std::endl;
         if ( ep->size() > 5 ){
             for (auto it: ep->front()) delete it;
             ep->pop_front();
         }
     }
-    std::cout << "07" << std::endl;
     return goodtrackindices.size();
 }
 void AliAnalysisTaskXi1530::FillTracks(){
@@ -509,16 +505,20 @@ void AliAnalysisTaskXi1530::FillTracks(){
     TLorentzVector temp1,temp2;
     TLorentzVector vecsum;
     const UInt_t ntracks = goodtrackindices.size();
-    
+    std::cout << "check--" << std::endl;
     tracklist *trackpool;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
         if (ep.size()<5 ) return;
         for (auto pool: ep){
-            for (auto track: pool) trackpool->push_back((AliVTrack*)track);
+            std::cout << "check1" << std::endl;
+            for (auto track: pool) {
+                std::cout << "check2" << std::endl;
+                trackpool->push_back((AliVTrack*)track);
+            }
         }
     }
-    std::cout << "06" << std::endl;
+    std::cout << "checkend" << std::endl;
     for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
         Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(i);
         if(!Xicandidate) continue;
@@ -604,7 +604,6 @@ void AliAnalysisTaskXi1530::FillTracks(){
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
         }
     }
-    std::cout << "07" << std::endl;
     if (fsetmixing){
         for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(i);
