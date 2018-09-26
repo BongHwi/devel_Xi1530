@@ -199,37 +199,32 @@ void run(
         plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
         plugin->SetGridOutputDir("out");
         plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
-        plugin->SetAnalysisSource("AliXiStarpp13TeVDevelEventCollection.cxx AliXiStarpp13TeVDevel.cxx");
         plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
         plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h");
-        plugin->SetDefaultOutputs(kFALSE);
-        //plugin->SetOutputFiles("AnalysisResults.root RecTree.root");
         plugin->SetOutputFiles("AnalysisResults.root");
         
-        
         plugin->SetSplitMaxInputFileNumber(2000);
-        plugin->SetExecutable("myTask.sh");
-        plugin->SetTTL(10000);
-        plugin->SetJDLName("myTask.jdl");
+        plugin->SetMasterResubmitThreshold(90);
+        plugin->SetTTL(20000);
+        plugin->SetInputFormat("xml-single");
+        plugin->SetJDLName(Form("%s%s.jdl",taskname,option));
+        plugin->SetExecutable(Form("%s%s.sh",taskname,option));
+        plugin->SetPrice(1);
+        plugin->SetSplitMode("se");
         //plugin->SetOutputToRunNo(kTRUE);
         plugin->SetKeepLogs(kTRUE);
         plugin->SetMaxMergeStages(3);
         plugin->SetMaxMergeFiles(100);
         plugin->SetMergeViaJDL(kTRUE);
         plugin->SetCheckCopy(kFALSE);
-        
         plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
         plugin->SetGridOutputDir("out");
         
         plugin->SetOverwriteMode(0);
         plugin->SetUser("blim");
-        
-        mgr->SetGridHandler(plugin);
-        
-        // speficy on how many files you want to run
         if(strcmp(gridmode,"test")==0)plugin->SetNtestFiles(1);
-        
         plugin->SetRunMode(gridmode);
+        
         mgr->SetGridHandler(plugin);
         mgr->StartAnalysis(localorgrid);
     }
