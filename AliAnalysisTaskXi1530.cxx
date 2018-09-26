@@ -518,7 +518,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     }
     
     for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
-        Xicandidate = (AliESDEvent*)fEvt->GetCascade(i);
+        Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(i);
         if(!Xicandidate) continue;
         
         AliESDtrack *pTrackXi   = fEvt->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
