@@ -620,9 +620,9 @@ void AliAnalysisTaskXi1530::FillTracks(){
 
 void AliAnalysisTaskXi1530::Terminate(Option_t *)
 {
-    //if(fDevelopeMode)std::cout<<"Done"<<std::endl;
 }
-Int_t AliAnalysisTaskXi1530::GetCentBin(Double_t cent) const
+
+Int_t AliAnalysisTaskXi1530::GetCentBin(Double_t cent)
 {
     // Get centrality bin.
     Int_t centbin = -1;
