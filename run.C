@@ -40,54 +40,6 @@ void run(
     
     // analysis manager
     AliAnalysisManager* mgr = new AliAnalysisManager(Form("%s%s",taskname,option));
-    
-    // create the alien handler and attach it to the manager
-    AliAnalysisAlien *plugin = new AliAnalysisAlien();
-    plugin->SetRunMode(gridmode);
-    plugin->SetAPIVersion("V1.1x");
-    plugin->SetAliPhysicsVersion("vAN-20180925-1");
-    plugin->SetDropToShell(0);
-    if(!ismc)plugin->SetRunPrefix("000");
-    plugin->SetNrunsPerMaster(1);
-    plugin->SetOutputToRunNo();
-    plugin->SetMergeViaJDL(1);
-    
-    if (foption.Contains("LHC16k")){
-        plugin->SetGridDataDir("/alice/data/2016/LHC16k/");
-        for(auto i=0u;i<LHC16kRuns.size();i++)
-            plugin->AddRunNumber(LHC16kRuns.at(i));
-        plugin->SetDataPattern("/pass2/*/AliESDs.root");
-    }
-    
-    
-    plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
-    plugin->SetGridOutputDir("out");
-    plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
-    plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
-    plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h");
-    plugin->SetDefaultOutputs(kFALSE);
-    //plugin->SetOutputFiles("AnalysisResults.root RecTree.root");
-    plugin->SetOutputFiles("AnalysisResults.root");
-    plugin->SetSplitMaxInputFileNumber(300);
-    plugin->SetMasterResubmitThreshold(90);
-    //plugin->SetFileForTestMode("data.txt");
-    //plugin->SetUseSubmitPolicy();
-    
-    // Optionally set time to live (default 30000 sec)
-    plugin->SetTTL(20000);
-    // Optionally set input format (default xml-single)
-    plugin->SetInputFormat("xml-single");
-    // Optionally modify the name of the generated JDL (default analysis.jdl)
-    plugin->SetJDLName(Form("%s%s.jdl",taskname,option));
-    // Optionally modify the executable name (default analysis.sh)
-    plugin->SetExecutable(Form("%s%s.sh",taskname,option));
-    // Optionally modify job price (default 1)
-    plugin->SetPrice(1);
-    // Optionally modify split mode (default 'se')
-    plugin->SetSplitMode("se");
-    
-    
-    mgr->SetGridHandler(plugin);
     AliInputEventHandler* handler;
     if (foption.Contains("AOD")){
         handler = new AliAODInputHandler();
@@ -105,8 +57,6 @@ void run(
         AliMCEventHandler *mcHandler  = new AliMCEventHandler();
         mgr->SetMCtruthEventHandler(mcHandler);
     }
-    
-    TChain* chain = new TChain("ESDTree");
 #if !defined (__CINT__) || defined (__CLING__)
     // ROOT 6 MODE
     //
@@ -143,20 +93,7 @@ void run(
     
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
     
-    //!! Need to be added in ROOT6 mode!!
-    /*
-    std::stringstream esdChain;
-    esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateESDChain.C(";
-    esdChain << "\"" << "data.txt" << "\", ";
-    esdChain << 1 << ", ";
-    esdChain << 0 << ", ";
-    esdChain << std::boolalpha << kFALSE << ");";
-    chain = reinterpret_cast<TChain *>(gROOT->ProcessLine(esdChain.str().c_str()));
-     */
-    chain->Add("/afs/cern.ch/user/b/blim/sim/AliESDs.root");
-    chain->Lookup();
-    
-    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(%s,%s,%d,%d)",taskname,option,isaa,ismc)));
+    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%d,%d)",taskname,option,isaa,ismc)));
 #else
     // ROOT 5 MODE
     //
@@ -180,51 +117,85 @@ void run(
     
     gROOT->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
     
-    //!! Need to be added in ROOT6 mode!!
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
-    TChain* chain = CreateESDChain("data.txt");
-    chain->Lookup();
-    
     gROOT->LoadMacro("AddTaskXi1530.c");
     AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option,isaa,ismc);
 #endif
-    /*
-    //hybrid track : AOD 086 -> Filter bit 272
-    //hybrid track : AOD 160 -> Filter bit 768
-    //hybrid track : AOD 145 -> Filter bit 768
-    //hybrid track : AOD 115 -> Filter bit 768
-    // TPC AOD086 : 128
-    std::cout << "Task Prepare" << std::endl;
-    AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(taskname, Form("%s_%s",taskname,option));
-    //taskXi1530 -> SetFilterBit(768);
-    taskXi1530 -> SetIsAA(isaa);
-    taskXi1530 -> SetMixing(kFALSE);
-    taskXi1530 -> SetIsMC(ismc);
-    taskXi1530 -> SetParticleType(99999);
-    if(!taskXi1530){
-        std::cout << "NO Task Ready" << std::endl;
-        return 0x0;
-    }
-    std::cout << "After Task Ready" << std::endl;
     
-    // Create containers for input/output
-    AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-    AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("outputXi1530", TDirectory::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-    std::cout << "Container ready" << std::endl;
-    
-    mgr->AddTask(taskXi1530);
-    std::cout << "AddTask" << std::endl;
-    mgr->ConnectInput(taskXi1530, 0, cinput);
-    std::cout << "Add Input" << std::endl;
-    mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
-    std::cout << "Add Output" << std::endl;
-    */
-    // enable debug printouts
     mgr->SetDebugLevel(5);
     if (!mgr->InitAnalysis()) return;
     mgr->PrintStatus();
     
     // start analysis
     Printf("Starting Analysis....");
-    mgr->StartAnalysis(localorgrid,chain);
+    if(strcmp(localorgrid,"local")==0){
+        TChain* chain = new TChain("ESDTree");
+        mgr->StartAnalysis(localorgrid,chain);
+#if !defined (__CINT__) || defined (__CLING__)
+        // ROOT 6 MODE
+        std::stringstream esdChain;
+        esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateESDChain.C(";
+        esdChain << "\"" << "data.txt" << "\", ";
+        esdChain << 1 << ", ";
+        esdChain << 0 << ", ";
+        esdChain << std::boolalpha << kFALSE << ");";
+        chain = reinterpret_cast<TChain *>(gROOT->ProcessLine(esdChain.str().c_str()));
+        
+        chain->Lookup();
+#else
+        // ROOT 5 MODE
+        gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
+        TChain* chain = CreateESDChain("data.txt");
+        chain->Lookup();
+#endif
+    }
+    else{
+        // create the alien handler and attach it to the manager
+        AliAnalysisAlien *plugin = new AliAnalysisAlien();
+        plugin->SetRunMode(gridmode);
+        plugin->SetAPIVersion("V1.1x");
+        plugin->SetAliPhysicsVersion("vAN-20180925-1");
+        plugin->SetDropToShell(0);
+        if(!ismc)plugin->SetRunPrefix("000");
+        plugin->SetNrunsPerMaster(1);
+        plugin->SetOutputToRunNo();
+        plugin->SetMergeViaJDL(1);
+        
+        if (foption.Contains("LHC16k")){
+            plugin->SetGridDataDir("/alice/data/2016/LHC16k/");
+            for(auto i=0u;i<LHC16kRuns.size();i++)
+                plugin->AddRunNumber(LHC16kRuns.at(i));
+            plugin->SetDataPattern("/pass2/*/AliESDs.root");
+        }
+        
+        
+        plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
+        plugin->SetGridOutputDir("out");
+        plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
+        plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
+        plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h");
+        plugin->SetDefaultOutputs(kFALSE);
+        //plugin->SetOutputFiles("AnalysisResults.root RecTree.root");
+        plugin->SetOutputFiles("AnalysisResults.root");
+        plugin->SetSplitMaxInputFileNumber(300);
+        plugin->SetMasterResubmitThreshold(90);
+        //plugin->SetFileForTestMode("data.txt");
+        //plugin->SetUseSubmitPolicy();
+        
+        // Optionally set time to live (default 30000 sec)
+        plugin->SetTTL(20000);
+        // Optionally set input format (default xml-single)
+        plugin->SetInputFormat("xml-single");
+        // Optionally modify the name of the generated JDL (default analysis.jdl)
+        plugin->SetJDLName(Form("%s%s.jdl",taskname,option));
+        // Optionally modify the executable name (default analysis.sh)
+        plugin->SetExecutable(Form("%s%s.sh",taskname,option));
+        // Optionally modify job price (default 1)
+        plugin->SetPrice(1);
+        // Optionally modify split mode (default 'se')
+        plugin->SetSplitMode("se");
+        
+        
+        mgr->SetGridHandler(plugin);
+        mgr->StartAnalysis(localorgrid);
+    }
 }

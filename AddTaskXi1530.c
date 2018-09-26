@@ -31,8 +31,7 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530", const char
     
     mgr->ConnectInput(taskXi1530, 0, cinput);
     mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
-    
-    
-    return task;
+
+    return taskXi1530;
 }
 
