@@ -411,7 +411,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // -----------------------------------------------------------------------
     
     // Vertex Check-----------------------------------------------------------
-    const AliVVertex* pVtx  = fEvt->GetPrimaryVertex() ;
+    //const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
     const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTPC() ;
     const AliVVertex* spdVtx    = fEvt->GetPrimaryVertexSPD() ;
 
@@ -503,6 +503,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
     goodcascadeindices.clear();
     
+    AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
+    
     AliESDcascade *Xicandidate;
     
     fNCascade = 0;
@@ -520,14 +522,14 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
             
             // Standard track QA cuts
-            if (!fTrackCut->AcceptTrack(pTrackXi)) continue;
-            if (!fTrackCut->AcceptTrack(nTrackXi)) continue;
-            if (!fTrackCut->AcceptTrack(bTrackXi)) continue;
+            if (!fTrackCuts->AcceptTrack(pTrackXi)) continue;
+            if (!fTrackCuts->AcceptTrack(nTrackXi)) continue;
+            if (!fTrackCuts->AcceptTrack(bTrackXi)) continue;
             
             // PID cuts for Xi daughters
-            fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
-            fTPCNSigPion1 = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
-            fTPCNSigPion2 = fPIDResponse->NumberOfSigmasTPC(bTrackXi, AliPID::kPion);
+            Double_t fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
+            Double_t fTPCNSigPion1 = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
+            Double_t fTPCNSigPion2 = fPIDResponse->NumberOfSigmasTPC(bTrackXi, AliPID::kPion);
             
             if (abs(fTPCNSigProton) > 3.) continue; // PID for proton
             if (abs(fTPCNSigPion1) > 3.) continue; // PID for 1st pion
@@ -578,7 +580,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     tracklist *trackpool;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
-        if (ep.size()<0 ) return;
+        if (ep.size()<1 ) return;
         for (auto pool: ep){
             std::cout << "check1" << std::endl;
             for (auto track: pool) {

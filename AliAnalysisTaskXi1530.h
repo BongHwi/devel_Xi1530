@@ -130,6 +130,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         AliStack*                       fMCStack=nullptr; //!
         Int_t                           fParticleType;
         Int_t                           fNTracks = 0;
+        Int_t                           fNCascade = 0;
 
     ClassDef(AliAnalysisTaskXi1530, 1);
 };
