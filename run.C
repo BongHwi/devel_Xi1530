@@ -19,6 +19,15 @@ void run(
          , const char *localorgrid = "grid"
          )
 {
+    gSystem->Load("libTree.so");
+    gSystem->Load("libGeom.so");
+    gSystem->Load("libVMC.so");
+    gSystem->Load("libPhysics.so");
+    gSystem->Load("libSTEERBase. so");
+    gSystem->Load("libESD.so");
+    gSystem->Load("libANALYSIS.so");
+    gSystem->Load("libOADB.so");
+    gSystem->Load("libANALYSISalice.so");
 #if !defined (__CINT__) || defined (__CLING__)
     // ROOT 6 MODE
     // add aliroot indlude path
@@ -50,7 +59,7 @@ void run(
         std::cout << "ESD Hanlder!" << std::endl;
     }
     
-    handler->SetNeedField(1);
+    //handler->SetNeedField(1);
     mgr->SetInputEventHandler(handler);
     
     if(ismc) {
@@ -127,6 +136,8 @@ void run(
     
     // start analysis
     Printf("Starting Analysis....");
+    
+    //----LOCAL MODE-------------------------------------------------
     if(strcmp(localorgrid,"local")==0){
         TChain* chain = new TChain("ESDTree");
 #if !defined (__CINT__) || defined (__CLING__)
@@ -148,6 +159,7 @@ void run(
 #endif
         mgr->StartAnalysis(localorgrid,chain);
     }
+    //----GRID  MODE-------------------------------------------------
     else{
         // create the alien handler and attach it to the manager
         AliAnalysisAlien *plugin = new AliAnalysisAlien();
@@ -165,10 +177,7 @@ void run(
             }
             for(auto i=0u;i<LHC16kRuns.size();i++)
                 plugin->AddRunNumber(LHC16kRuns.at(i));
-            
         }
-        
-        
         plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
         plugin->SetGridOutputDir("out");
         plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
@@ -193,7 +202,7 @@ void run(
         plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
         plugin->SetGridOutputDir("out");
         
-        plugin->SetOverwriteMode(kTRUE);
+        plugin->SetOverwriteMode(0);
         plugin->SetUser("blim");
         
         mgr->SetGridHandler(plugin);

@@ -393,11 +393,15 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
 
     Bool_t IsMinimumBias = kFALSE;
     fHistos -> FillTH1("hEventNumbers","All",1);
-    std::cout << "AliAnalysisTaskXi1530:: before1" << std::endl;
+    
     if (IsMinimumBias) fHistos -> FillTH1("hEventNumbers","PS",1);
-    std::cout << "AliAnalysisTaskXi1530:: before" << std::endl;
+    
+    if (fESD->IsIncompleteDAQ()) {
+        std::cout << "Reject: IsIncompleteDAQ" << std::endl;;
+        PostData(1, fHistos->GetListOfHistograms());
+        return;
+    }
     PostData(1, fHistos->GetListOfHistograms());
-    std::cout << "AliAnalysisTaskXi1530:: done" << std::endl;
 }
 //________________________________________________________________________
 
