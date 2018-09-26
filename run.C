@@ -129,7 +129,6 @@ void run(
     Printf("Starting Analysis....");
     if(strcmp(localorgrid,"local")==0){
         TChain* chain = new TChain("ESDTree");
-        mgr->StartAnalysis(localorgrid,chain);
 #if !defined (__CINT__) || defined (__CLING__)
         // ROOT 6 MODE
         std::stringstream esdChain;
@@ -147,6 +146,7 @@ void run(
         TChain* chain = CreateESDChain("data.txt");
         chain->Lookup();
 #endif
+        mgr->StartAnalysis(localorgrid,chain);
     }
     else{
         // create the alien handler and attach it to the manager

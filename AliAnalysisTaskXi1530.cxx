@@ -362,10 +362,12 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         fCent = 300;
     }
     // ----------------------------------------------------------------------
+    std::cout << "AliAnalysisTaskXi1530:: AfterMultSelection" << std::endl;
     
     // Preparation for MC ---------------------------------------------------
     if (IsMC)
     {
+        std::cout << "AliAnalysisTaskXi1530:: MC Check" << std::endl;
         AliMCEvent  *mcEvent        = 0x0;
         AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
         if(eventHandler){
@@ -382,13 +384,12 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
     // -----------------------------------------------------------------------
-    
+    std::cout << "AliAnalysisTaskXi1530:: PIDd" << std::endl;
     fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
     if(!fPIDResponse){
         std::cout << "AliAnalysisTaskXi1530:: No PIDd\n" << std::endl;
     }
-    
-    
+    std::cout << "AliAnalysisTaskXi1530:: Fill" << std::endl;
     Bool_t IsMinimumBias = kFALSE;
     fHistos -> FillTH1("hEventNumbers","All",1);
     
@@ -396,7 +397,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         IsMinimumBias = (inputHandler -> IsEventSelected()) & (AliVEvent::kMB);
     }
     if (IsMinimumBias) fHistos -> FillTH1("hEventNumbers","PS",1);
-    
+    PostData(1, fOutput);
     /*
     //
     AliMCEvent  *mcEvent        = 0x0;
