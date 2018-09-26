@@ -49,7 +49,8 @@
 // Some constants
 const Double_t        pi = TMath::Pi();
 const Double_t  pionmass = AliPID::ParticleMass(AliPID::kPion);
-const Double_t  kaonmass = AliPID::ParticleMass(AliPID::kKaon);
+//const Double_t  Ximass = AliPID::ParticleMass(AliPID::kCascade);
+const Double_t  Ximass = 1.32171;
 enum {  kPN=1, kPP, kNN, kMixing, kAllType}; //P=Positive charge, N=Negative
 
 
@@ -279,6 +280,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
     CreateTHnSparse("hPtInvMResponse","InvMass Res",6
                     ,{binType,binCent,binPt,binPt,binMass,binMass},"s");
+    CreateTHnSparse("hInvMassMCXi1530","InvMass",3,{binCent,binPt,binMass},"s");
     
     vector<TString> ent = {"All","PS","PSpileup","Goodz","Goodzcut"};
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
@@ -369,16 +371,19 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     if (IsMC)
     {
         std::cout << "AliAnalysisTaskXi1530:: MC Check" << std::endl;
-        AliMCEvent  *mcEvent        = 0x0;
-        AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
-        if(eventHandler){
-            AliMCEventHandler* mcEventHandler = dynamic_cast<AliMCEventHandler*>(eventHandler);
-            if(mcEventHandler) mcEvent = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
+        if (fEvt->IsA()==AliESDEvent::Class()){
+            AliMCEvent  *mcEvent        = 0x0;
+            AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
+            if(eventHandler){
+                AliMCEventHandler* mcEventHandler = dynamic_cast<AliMCEventHandler*>(eventHandler);
+                if(mcEventHandler) mcEvent = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
+            }
+            if(!mcEvent) return;
+            fMCStack = (AliStack*) mcEvent->Stack();
         }
-        if(!mcEvent) return;
-        
-        fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
-        fMCStack = (AliStack*) mcEvent->Stack();
+        else{
+            fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
+        }
     }
 
     // Load InputHandler for each event---------------------------------------
@@ -393,18 +398,224 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
 
     Bool_t IsMinimumBias = kFALSE;
     fHistos -> FillTH1("hEventNumbers","All",1);
-    
-    if (IsMinimumBias) fHistos -> FillTH1("hEventNumbers","PS",1);
-    
+    // In Complete DAQ Event Cut----------------------------------------------
     if (fEvt->IsIncompleteDAQ()) {
         std::cout << "Reject: IsIncompleteDAQ" << std::endl;;
         PostData(1, fHistos->GetListOfHistograms());
         return;
     }
+    fHistos -> FillTH1("hEventNumbers","PS",1);
+    // -----------------------------------------------------------------------
+    
+    // Vertex Check-----------------------------------------------------------
+    const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTPC() ;
+    const AliVVertex* spdVtx      = fEvt->GetPrimaryVertexSPD() ;
+    
+    Bool_t IsGoodVertex = kFALSE;
+    Bool_t IsGoodVertexCut = kFALSE;
+    AliVTrack * track1;
+    
+    if (spdVtx) {
+        fZ = spdVtx->GetZ();
+        if (spdVtx->GetNContributors()<1) IsGoodVertex = kFALSE;
+        else {
+            fHistos -> FillTH1("hEventNumbers","Goodz",1);
+            IsGoodVertex = kTRUE;
+            fHistos->FillTH1("hZvtx",fZ);
+        }
+    } else IsGoodVertex = kFALSE;
+    
+    if ( IsGoodVertex && fabs(fZ)<10.) {
+        IsGoodVertexCut = kTRUE;
+        if (IsMinimumBias) {
+            fHistos -> FillTH1("hEventNumbers","Goodzcut",1);
+            FillTHnSparse("hCent",{fCent});
+        }
+    }
+    zbin = binZ.FindBin(fZ) -1;
+    std::cout << "zbin :" << zbin << std::endl;
+    
+    if (IsGoodVertexCut){
+        if (this -> GoodTracksSelection()) this -> FillTracks();
+    }
     
     PostData(1, fHistos->GetListOfHistograms());
 }
 //________________________________________________________________________
+Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
+    
+    const UInt_t ntracks = fEvt ->GetNumberOfTracks();
+    goodtrackindices.clear();
+    
+    AliVTrack * track;
+    
+    tracklist *etl;
+    eventpool *ep;
+    //Event mixing pool
+    if (fsetmixing){
+        ep = &fEMpool[centbin][zbin];
+        ep -> push_back( tracklist() );
+        etl = &(ep->back());
+    }
+    fNTracks = 0;
+    for (UInt_t it = 0; it<ntracks; it++){
+        if (fEvt->IsA()==AliESDEvent::Class()){
+            track = (AliESDtrack*) fEvt ->GetTrack(it);
+            if (!track) continue;
+            if (!fTrackCuts->AcceptTrack((AliESDtrack*) track)) continue;
+            //if (!track->IsOn(AliVTrack::kITSpureSA)) continue;
+            fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
+        }
+        else {
+            track = (AliAODTrack*) fEvt ->GetTrack(it);
+            if (!track) continue;
+            if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue;
+            if (track->Pt()<fptcut) continue;
+            if (abs(track->Eta())>fetacut) continue;
+            fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
+        }
+        //if (GetPID(fPIDResponse, track) != AliPID::kPion) continue;
+        fNTracks++;
+        //if (abs(track->Eta())>0.9) return 0;
+        //if (fParticleType != 99999 && GetPID(fPIDResponse, track) != fParticleType) continue;
+        goodtrackindices.push_back(it);
+        
+        //Event mixing pool
+        if (fsetmixing) etl->push_back( (AliVTrack*) track -> Clone() );
+    }
+    
+    if (fsetmixing){
+        if (!goodtrackindices.size()) ep->pop_back();
+        if ( ep->size() > 5 ){
+            for (auto it: ep->front()) delete it;
+            ep->pop_front();
+        }
+    }
+    return goodtrackindices.size();
+}
+void AliAnalysisTaskXi1530::FillTracks(){
+    
+    AliVTrack *track1;
+    // charged track, pion
+    AliESDcascade *Xicandidate;
+    // Cascade
+    
+    Bool_t mcXiFilled = kFALSE; // So that mctracks are never used uninitialized
+    
+    TLorentzVector temp1,temp2;
+    TLorentzVector vecsum;
+    const UInt_t ntracks = goodtrackindices.size();
+    
+    tracklist *trackpool;
+    if (fsetmixing){
+        eventpool &ep = fEMpool[centbin][zbin];
+        if (ep.size()<5 ) return;
+        for (auto pool: ep){
+            for (auto track: pool) trackpool->push_back((AliVTrack*)track);
+        }
+    }
+    
+    for (Int_t i = 0; i < fESD->GetNumberOfCascades(); i++) {
+        Xicandidate = fESD->GetCascade(i);
+        if(!Xicandidate) continue;
+        
+        AliESDtrack *pTrackXi   = fESD->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
+        AliESDtrack *nTrackXi   = fESD->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
+        AliESDtrack *bTrackXi   = fESD->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
+        
+        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M(););
+        
+        
+        for (UInt_t i = 0; i < ntracks; i++) {
+            track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[i]);
+            if (!track1) continue;
+            temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
+            vecsum = temp1+temp2; // two pion vector sum
+            if (fabs(vecsum.Rapidity())>0.5) continue; //rapidity cut
+            auto sign = kAllType;
+            if (Xicandidate->Charge()*track1->Charge()==-1) sign = kPN;
+            else if (Xicandidate->Charge()==1 && track1->Charge()==1) sign = kPP;
+            else if (Xicandidate->Charge()==-1 && track1->Charge()==-1) sign = kNN;
+            
+            mcXiFilled = kFALSE;
+            if (IsMC) {
+                if (fEvt->IsA()==AliESDEvent::Class()){
+                    TParticle* MCXiD2esd = (TParticle*)mcstack->Particle(abs(bTrackXi->GetLabel()));
+                    TParticle* MCLamD1esd;
+                    TParticle* MCLamD2esd;
+                    TParticle* MCLamesd;
+                    TParticle* MCXiesd;
+                    TParticle* MCXiStaresd;
+                    TParticle* MCXiStarD2esd;
+                    
+                    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
+                        MCLamD1esd = (TParticle*)mcstack->Particle(abs(pTrackXi->GetLabel()));
+                        MCLamD2esd = (TParticle*)mcstack->Particle(abs(nTrackXi->GetLabel()));
+                        if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) {
+                            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) {
+                                MCLamesd = (TParticle*)mcstack->Particle(abs(MCLamD1esd->GetMother(0)));
+                                if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) {
+                                    if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) {
+                                        MCXiesd = (TParticle*)mcstack->Particle(abs(MCLamesd->GetMother(0)));
+                                        if (abs(MCXiesd->GetPdgCode()) == kXiCode) {
+                                            MCXiStarD2esd = (TParticle*)mcstack->Particle(track1->GetLabel());
+                                            if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) {
+                                                MCXiStaresd = (TParticle*)mcstack->Particle(abs(MCXiesd->GetMother(0)));
+                                                if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) {
+                                                    temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
+                                                    temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
+                                                    auto vecsumtrue = temp1 + temp2;
+                                                    FillTHnSparse("hInvMassMCXi",{fCent,vecsumtrue.Pt(),vecsumtrue.M()});
+                                                }//Xi1530 check
+                                            }// Xi+pion mother check
+                                        }// Xi Check
+                                    }// Lambda+pion(D2esd) mother check
+                                }//Lambda check
+                            }//Lamda daugthers check
+                        }//Same mother(lambda)
+                    }//D2esd->pion
+                }// ESD
+                else{
+                    // !! NEED TO UPDATE FOR AOD CASE !!
+                    AliAODMCParticle *par1 =
+                    dynamic_cast<AliAODMCParticle*>(fMCArray->At(track1->GetLabel()));
+                    AliAODMCParticle *par2 =
+                    dynamic_cast<AliAODMCParticle*>(fMCArray->At(track2->GetLabel()));
+                    Bool_t IsTrueOk = false;
+                    if (!par1 || !par2) continue;
+                    Int_t pdg1 = par1 -> PdgCode();
+                    Int_t pdg2 = par2 -> PdgCode();
+                    Int_t pdgtype = AliPID::ParticleCode(fParticleType);
+                    Double_t pdgmass = AliPID::ParticleMass(fParticleType);
+                    if (abs(pdg1) != pdgtype || abs(pdg2) != pdgtype) continue;
+                    temp1.SetXYZM(par1->Px(),par1->Py(), par1->Pz(),pdgmass);
+                    temp2.SetXYZM(par2->Px(),par2->Py(), par2->Pz(),pdgmass);
+                    auto vecsumtrue = temp1 + temp2;
+                    FillTHnSparse("hPtInvMResponse",{(double)sign,fCent
+                        ,vecsum.Pt(),vecsumtrue.Pt(), vecsum.M(),vecsumtrue.M()});
+                }// AOD
+            }// MC
+            FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
+        }
+    }
+    
+    if (fsetmixing){
+        for (Int_t i = 0; i < fESD->GetNumberOfCascades(); i++) {
+            Xicandidate = fESD->GetCascade(i);
+            if(!Xicandidate) continue;
+            temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M(););
+            
+            for (UInt_t jt = 0; jt < ntracks; jt++) {
+                track1 = trackpool->at(jt);
+                temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
+                vecsum = temp1+temp2; // two pion vector sum
+                if (track1->Charge()*track2->Charge() = -1) continue;
+                if (fabs(vecsum.Eta())>0.5) continue; //rapidity cut
+                FillTHnSparse("hInvMass",{kMixing,fCent,vecsum.M(),vecsum.Pt()});
+            }
+        }
+    }
+}
 
 void AliAnalysisTaskXi1530::Terminate(Option_t *)
 {

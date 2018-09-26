@@ -43,7 +43,12 @@ private:
 
 class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     public:
-        enum {kSD=0,kDD,kND,kCD,kAllProc};
+    enum {kSD=0,kDD,kND,kCD,kAllProc,
+        kXiStarCode          = 3324, // Xi(1530)^0 MC code
+        kXiCode              = 3312, // Xi- MC code
+        kLambdaCode          = 3122, // Lambda MC code
+        kProtonCode          = 2212, // Proton+ MC code
+        kPionCode            = 211}; // Pion+ MC code
         //PN = unlike sign, PP and NN are like signs
     
         AliAnalysisTaskXi1530();

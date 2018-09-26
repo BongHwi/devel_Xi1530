@@ -102,7 +102,7 @@ void run(
     
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
     
-    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%d,%d)",taskname,option,isaa,ismc)));
+    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.C(\"%s\",\"%s\",%d,%d)",taskname,option,isaa,ismc)));
 #else
     // ROOT 5 MODE
     //
@@ -126,7 +126,7 @@ void run(
     
     gROOT->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
     
-    gROOT->LoadMacro("AddTaskXi1530.c");
+    gROOT->LoadMacro("AddTaskXi1530.C");
     AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option,isaa,ismc);
 #endif
     
@@ -181,6 +181,7 @@ void run(
         plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
         plugin->SetGridOutputDir("out");
         plugin->AddIncludePath("-I$ALICE_ROOT/include  -I$ALICE_ROOT/lib -I$ALICE_PHYSICS/include -I$ALICE_PHYSICS/lib -I$ALICE_PHYSICS/OADB/macros" );
+        plugin->SetAnalysisSource("AliXiStarpp13TeVDevelEventCollection.cxx AliXiStarpp13TeVDevel.cxx");
         plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
         plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h");
         plugin->SetDefaultOutputs(kFALSE);
