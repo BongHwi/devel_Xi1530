@@ -29,6 +29,7 @@
 
 
 #include "TFile.h"
+#include "TChain.h"
 #include "TSystem.h"
 #include "AliAnalysisTaskXi1530.h"
 #include "AliStack.h"
