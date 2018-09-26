@@ -177,7 +177,7 @@ void run(
         plugin->SetAPIVersion("V1.1x");
         plugin->SetAliPhysicsVersion("vAN-20180925-1");
         if(!ismc)plugin->SetRunPrefix("000");
-        plugin->SetDropToShell(0);
+        //plugin->SetDropToShell(0);
         plugin->SetNrunsPerMaster(0);
         
         if (foption.Contains("LHC16k")){
