@@ -71,6 +71,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530()
     goodtrackindices(),
     fEMpool ()
 {
+    DefineInput (0, TChain::Class());
     DefineOutput (1, TDirectory::Class());
 }
 //___________________________________________________________________
@@ -83,6 +84,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(
     goodtrackindices(),
     fEMpool ()
 {
+    DefineInput (0, TChain::Class());
     DefineOutput (1, TDirectory::Class());
 }
 AliAnalysisTaskXi1530::AliAnalysisTaskXi1530
