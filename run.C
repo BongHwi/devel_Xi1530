@@ -12,7 +12,7 @@ vector<Int_t> LHC16kRuns = {257605}; // for test
 class AliAnalysisGrid;
 void run(
          const char *taskname = "Xi1530"
-         , const char *option = "LHC16kMC" // when scanning AOD, add "AOD"
+         , const char *option = "LHC16k" // when scanning AOD, add "AOD"
          , const char *gridmode = "full" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
@@ -89,10 +89,14 @@ void run(
     
     mgr->SetGridHandler(plugin);
     AliInputEventHandler* handler;
-    if (foption.Contains("AOD"))
+    if (foption.Contains("AOD")){
         handler = new AliAODInputHandler();
-    else
+        std::cout << "AOD Hanlder!" << std::endl;
+    }
+    else{
         handler = new AliESDInputHandler();
+        std::cout << "ESD Hanlder!" << std::endl;
+    }
     
     handler->SetNeedField(1);
     mgr->SetInputEventHandler(handler);
@@ -205,7 +209,6 @@ void run(
     mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
     std::cout << "Add Output" << std::endl;
     
-    std::cout << "After input/output connecting" << std::endl;
     // enable debug printouts
     mgr->SetDebugLevel(5);
     if (!mgr->InitAnalysis()) return;
@@ -215,4 +218,3 @@ void run(
     Printf("Starting Analysis....");
     mgr->StartAnalysis(localorgrid,chain);
 }
-

@@ -43,7 +43,8 @@ private:
 
 class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     public:
-        enum {kPP,kPA,kAA,kUnknownCollType};
+        enum {kSD=0,kDD,kND,kCD,kAllProc};
+        //PN = unlike sign, PP and NN are like signs
     
         AliAnalysisTaskXi1530();
         AliAnalysisTaskXi1530(const char *name, const char *option);
@@ -121,8 +122,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         AliStack*                       fMCStack=nullptr; //!
         Int_t                           fParticleType;
         Int_t                           fNTracks = 0;
-    
-    
 
     ClassDef(AliAnalysisTaskXi1530, 1);
 };
