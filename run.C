@@ -96,10 +96,7 @@ void run(
     
     handler->SetNeedField(1);
     mgr->SetInputEventHandler(handler);
-    if (localorgrid.Contains("local")){
-        TChain *chain = new TChain("ESDTree");
-        chain = CreateChain(data.txt); // for KIAF use
-    }
+    
 #if !defined (__CINT__) || defined (__CLING__)
     // ROOT 6 MODE
     //
@@ -157,6 +154,11 @@ void run(
     AliAnalysisTask *fPIDResponse = AddTaskPIDResponse(ismc); //! PID response object
     
     gROOT->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
+    
+    //!! Need to be added in ROOT6 mode!!
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
+    TChain* chain = CreateESDChain("data.txt");
+    chain->Lookup();
 #endif
     //hybrid track : AOD 086 -> Filter bit 272
     //hybrid track : AOD 160 -> Filter bit 768
