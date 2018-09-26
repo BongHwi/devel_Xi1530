@@ -151,14 +151,8 @@ void run(
     else{
         // create the alien handler and attach it to the manager
         AliAnalysisAlien *plugin = new AliAnalysisAlien();
-        plugin->SetRunMode(gridmode);
         plugin->SetAPIVersion("V1.1x");
         plugin->SetAliPhysicsVersion("vAN-20180925-1");
-        plugin->SetDropToShell(0);
-        if(!ismc)plugin->SetRunPrefix("000");
-        plugin->SetNrunsPerMaster(1);
-        plugin->SetOutputToRunNo();
-        plugin->SetMergeViaJDL(1);
         
         if (foption.Contains("LHC16k")){
             if(!foption.Contains("MC")){
@@ -183,25 +177,32 @@ void run(
         plugin->SetDefaultOutputs(kFALSE);
         //plugin->SetOutputFiles("AnalysisResults.root RecTree.root");
         plugin->SetOutputFiles("AnalysisResults.root");
-        plugin->SetSplitMaxInputFileNumber(300);
-        plugin->SetMasterResubmitThreshold(90);
-        //plugin->SetFileForTestMode("data.txt");
-        //plugin->SetUseSubmitPolicy();
         
-        // Optionally set time to live (default 30000 sec)
-        plugin->SetTTL(20000);
-        // Optionally set input format (default xml-single)
-        plugin->SetInputFormat("xml-single");
-        // Optionally modify the name of the generated JDL (default analysis.jdl)
-        plugin->SetJDLName(Form("%s%s.jdl",taskname,option));
-        // Optionally modify the executable name (default analysis.sh)
-        plugin->SetExecutable(Form("%s%s.sh",taskname,option));
-        // Optionally modify job price (default 1)
-        plugin->SetPrice(1);
-        // Optionally modify split mode (default 'se')
-        plugin->SetSplitMode("se");
+        if(!ismc)plugin->SetRunPrefix("000");
+        plugin->SetSplitMaxInputFileNumber(2000);
+        plugin->SetExecutable("myTask.sh");
+        plugin->SetTTL(10000);
+        plugin->SetJDLName("myTask.jdl");
+        //plugin->SetOutputToRunNo(kTRUE);
+        plugin->SetKeepLogs(kTRUE);
+        plugin->SetMaxMergeStages(3);
+        plugin->SetMaxMergeFiles(100);
+        plugin->SetMergeViaJDL(kTRUE);
+        plugin->SetCheckCopy(kFALSE);
         
+        plugin->SetGridWorkingDir(working_directory);
+        plugin->SetGridOutputDir("output");
         
+        plugin->SetOverwriteMode(kTRUE);
+        plugin->SetUser("blim");
+        
+        mgr->SetGridHandler(plugin);
+        
+        // speficy on how many files you want to run
+        if(strcmp(mode,"test")==0)plugin->SetNtestFiles(1);
+        
+        plugin->SetRunMode(gridmode);
+        mgr->StartAnalysis("grid");
         mgr->SetGridHandler(plugin);
         mgr->StartAnalysis(localorgrid);
     }
