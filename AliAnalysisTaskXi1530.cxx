@@ -273,7 +273,8 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     
     auto binType = AxisStr("Type",{"PN","PP","NN","NP","Mixing"});
     if (IsAA) binCent = AxisFix("Cent",30,0,300);
-    else binCent = AxisFix("Cent",300,0,300);
+    //else binCent = AxisFix("Cent",300,0,300);
+    else binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // 0 ~ -1, overflow, 0 ~ +1, underflow
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",1000,10,20);
     
@@ -351,7 +352,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     //       150-250: Not selected
     //       300: No MultSection
     //
-    fCent = 150; // Multiplicity
+    fCent = -999; // Multiplicity
     AliMultSelection *MultSelection = (AliMultSelection*) fEvt->FindListObject("MultSelection");
     if(MultSelection)
     {
@@ -437,8 +438,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         }
     }
     zbin = binZ.FindBin(fZ) -1;
-    centbin = GetCentBin(fCent);
-    //std::cout << "centbin: " << centbin << std::endl;
+    centbin = binCent.FindBin(fcent) -1;
+    std::cout << "zbin: " << zbin << std::endl;
+    std::cout << "centbin: " << centbin << std::endl;
     
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection() && this -> GoodCascadeSelection()) this -> FillTracks();
@@ -457,7 +459,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     eventpool *ep;
     //Event mixing pool
     if (fsetmixing){
-        //std::cout << "Cent bin: " << centbin << ", zbin: " << zbin << std::endl;
+        std::cout << "Cent bin: " << centbin << ", zbin: " << zbin << std::endl;
         ep = &fEMpool[centbin][zbin];
         ep -> push_back( tracklist() );
         etl = &(ep->back());
@@ -580,7 +582,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     tracklist *trackpool;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
-        if (ep.size()<1 ) return;
+        if (ep.size()<5 ) return;
         for (auto pool: ep){
             std::cout << "check1" << std::endl;
             for (auto track: pool) {
@@ -676,8 +678,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
         }
     }
     if (fsetmixing){
-        for (Int_t i = 0; i < fEvt->GetNumberOfCascades(); i++) {
-            Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(i);
+        for (Int_t i = 0; i < ncascade; i++) {
+            Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
             if(!Xicandidate) continue;
             temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
             
@@ -695,25 +697,6 @@ void AliAnalysisTaskXi1530::FillTracks(){
 
 void AliAnalysisTaskXi1530::Terminate(Option_t *)
 {
-}
-
-Int_t AliAnalysisTaskXi1530::GetCentBin(Double_t cent)
-{
-    // Get centrality bin.
-    Int_t centbin = -1;
-    if (cent>=0 && cent<10)
-        centbin = 0;
-    else if (cent>=10 && cent<20)
-        centbin = 1;
-    else if (cent>=20 && cent<30)
-        centbin = 2;
-    else if (cent>=30 && cent<40)
-        centbin = 3;
-    else if (cent>=40 && cent<50)
-        centbin = 4;
-    else if (cent>=50 && cent<101)
-        centbin = 5;
-    return centbin;
 }
 Int_t AliAnalysisTaskXi1530::GetPID(AliPIDResponse *pid, const AliVTrack *trk){
     if (!pid) return -1; // no pid available
