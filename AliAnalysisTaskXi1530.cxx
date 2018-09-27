@@ -573,24 +573,14 @@ void AliAnalysisTaskXi1530::FillTracks(){
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
     
-    tracklist *trackpool;
-    std::cout << "Mixing pool check?" << std::endl;
+    tracklist trackpool;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
-        if (ep.size()<5 ) {
-            std::cout << "Mixing pool check?: NO" << std::endl;
-            return;
-        }
-        std::cout << "Mixing pool check: YES" << std::endl;
+        if (ep.size()<5 ) return;
         for (auto pool: ep){
-            std::cout << "pool size: " << pool.size() << std::endl;
-            for (auto track: pool){
-                std::cout << "checking now..." << std::endl;
-                trackpool->push_back((AliVTrack*)track);
-            }
+            for (auto track: pool) trackpool.push_back((AliVTrack*)track);
         }
     }
-    std::cout << "checkend" << std::endl;
     
     for (Int_t i = 0; i < ncascade; i++) {
         Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
@@ -683,7 +673,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
             
             for (UInt_t jt = 0; jt < ntracks; jt++) {
-                track1 = trackpool->at(jt);
+                track1 = trackpool.at(jt);
                 temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
                 vecsum = temp1+temp2; // two pion vector sum
                 if (track1->Charge()*Xicandidate->Charge() == -1) continue;
