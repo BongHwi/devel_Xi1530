@@ -9,6 +9,7 @@
 //  (Modification) Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 
 #include "THnSparse.h"
+#include "AliAnalysisTask.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliTriggerAnalysis.h"
 #include "AliESDtrackCuts.h"

@@ -1,10 +1,3 @@
-#if !defined (__CINT__) || defined (__CLING__)
-#include "AliAnalysisManager.h"
-#include "AliAnalysisTaskXi1530.h"
-#include <TString.h>
-#include <TList.h>
-#endif
-
 AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530", const char *option = "LHC16k", bool isaa=kFALSE, bool ismc=kFALSE, bool setmixing=kFALSE)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
