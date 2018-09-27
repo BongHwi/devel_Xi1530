@@ -499,11 +499,9 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
 }
 
 Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
-    const UInt_t ncascade = fEvt->GetNumberOfCascades();
     goodcascadeindices.clear();
-    
+    const UInt_t ncascade = fEvt->GetNumberOfCascades();
     const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
-    
     const AliESDcascade *Xicandidate;
     
     fNCascade = 0;
@@ -576,14 +574,23 @@ void AliAnalysisTaskXi1530::FillTracks(){
     const UInt_t ntracks = goodtrackindices.size();
     
     tracklist *trackpool;
+    std::cout << "Mixing pool check?" << std::endl;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
-        if (ep.size()<5 ) return;
+        if (ep.size()<5 ) {
+            std::cout << "Mixing pool check?: NO" << std::endl;
+            return;
+        }
+        std::cout << "Mixing pool check: YES" << std::endl;
         for (auto pool: ep){
-            for (auto track: pool) trackpool->push_back((AliVTrack*)track);
+            std::cout << "pool size: " << pool.size() << std::endl;
+            for (auto track: pool){
+                std::cout << "checking now..." << std::endl;
+                trackpool->push_back((AliVTrack*)track);
+            }
         }
     }
-    //std::cout << "checkend" << std::endl;
+    std::cout << "checkend" << std::endl;
     
     for (Int_t i = 0; i < ncascade; i++) {
         Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
