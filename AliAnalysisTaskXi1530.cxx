@@ -276,7 +276,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     //else binCent = AxisFix("Cent",300,0,300);
     else binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // 0 ~ -1, overflow, 0 ~ +1, underflow
     auto binPt   = AxisFix("Pt",200,0,20);
-    auto binMass = AxisFix("Mass",3000,0,3);
+    auto binMass = AxisFix("Mass",2000,0.5,2.5);
     
     CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s");
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
