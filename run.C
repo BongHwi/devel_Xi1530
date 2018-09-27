@@ -177,7 +177,7 @@ void run(
         plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
         plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
         plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h");
-        plugin->SetAliPhysicsVersion("vAN-20180925-1");
+        plugin->SetAliPhysicsVersion("vAN-20180918_ROOT6-1");
         plugin->SetAPIVersion("V1.1x");
         if(!ismc)plugin->SetRunPrefix("000");
         //plugin->SetDropToShell(0);
