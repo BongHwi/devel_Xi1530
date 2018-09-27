@@ -438,9 +438,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         }
     }
     zbin = binZ.FindBin(fZ) -1;
-    centbin = binCent.FindBin(fcent) -1;
-    std::cout << "zbin: " << zbin << std::endl;
-    std::cout << "centbin: " << centbin << std::endl;
+    centbin = binCent.FindBin(fCent) -1;
     
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection() && this -> GoodCascadeSelection()) this -> FillTracks();
@@ -459,7 +457,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     eventpool *ep;
     //Event mixing pool
     if (fsetmixing){
-        std::cout << "Cent bin: " << centbin << ", zbin: " << zbin << std::endl;
         ep = &fEMpool[centbin][zbin];
         ep -> push_back( tracklist() );
         etl = &(ep->back());
@@ -578,17 +575,12 @@ void AliAnalysisTaskXi1530::FillTracks(){
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
     
-    //std::cout << "check--" << std::endl;
     tracklist *trackpool;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
         if (ep.size()<5 ) return;
         for (auto pool: ep){
-            std::cout << "check1" << std::endl;
-            for (auto track: pool) {
-                std::cout << "check2" << std::endl;
-                trackpool->push_back(((AliVTrack*)track));
-            }
+            for (auto track: pool) trackpool->push_back((AliVTrack*)track);
         }
     }
     //std::cout << "checkend" << std::endl;
