@@ -119,7 +119,6 @@ AliAnalysisTaskXi1530& AliAnalysisTaskXi1530::operator =
 AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
 {
     delete fOutput;
-    delete fTrigger;
     delete fTrackCuts;
     delete fPIDResponse;
     delete fRunTable;
@@ -256,11 +255,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     // Histograms container
     fOutput = new TList();
     fOutput->SetOwner(kTRUE);
-    
-    // Offline triggers -----------------------------------------------------
-    //fTrigger = new AliTriggerAnalysis; // offline trigger
-    //fTrigger -> SetFMDThreshold(0.3,0.5); // FMD threshold
-    //-----------------------------------------------------------------------
     
     // TrackCuts for Xi1530--------------------------------------------------
     fTrackCuts = new AliESDtrackCuts();

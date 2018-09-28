@@ -19,7 +19,6 @@
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
 #include "THistManager.h"
-#include "AliMultiplicitySelectionCPPWA.h"
 #include <deque>
 
 class AliAnalysisTaskXi1530RunTable {
@@ -39,7 +38,7 @@ public:
         return fCollisionType==kAA;
     }
 private:
-    Int_t  fCollisionType; //! Is proton-proton collisions?
+    Int_t  fCollisionType=kPP; //! Is proton-proton collisions?
 };
 
 class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
@@ -73,7 +72,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         void SetMixing (Bool_t setmixing) {fsetmixing = setmixing;}
         void SetIsAA (Bool_t isaa) {IsAA = isaa;}
         void SetIsMC (Bool_t ismc) {IsMC = ismc;}
-        void SetParticleType(Int_t partype) {fParticleType = partype;}
     
         TAxis AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax);
         TAxis AxisVar( TString name, std::vector<Double_t> bin );
@@ -95,12 +93,10 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         TString                         fOption;
         TList*                          fOutput=nullptr; //!
     
-        AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
         AliVEvent*                      fEvt=nullptr; //!
         UInt_t                          fFilterBit;
-        Bool_t                          IsFirstEvent=kTRUE;
-        AliAnalysisTaskXi1530RunTable*   fRunTable=nullptr; //!
+        AliAnalysisTaskXi1530RunTable*  fRunTable=nullptr; //!
     
         Double_t                        fCent=-1;
         Double_t                        fZ=-30;
@@ -109,10 +105,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     
         AliPIDResponse                 *fPIDResponse=nullptr; //!
         AliPIDCombined                 *fPIDCombined=nullptr; //!
-        AliMultiplicitySelectionCPPWA  *fSelec=nullptr; //!
         //Histograms below are main
-        std::vector< std::vector< TH2D* > > fMass2D; //! signbins, centbins
-        //Histograms for pT_pair amd pT
+    
     
         mixingpool                      fEMpool; //!
         TAxis                           binCent; //!
@@ -122,14 +116,11 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Double_t                        fptcut = 0.15;
         Double_t                        fetacut = 0.9;
         Bool_t                          fsetmixing = kFALSE;
-        Bool_t                          IsDGV0=kFALSE;
-        Bool_t                          IsDGV0FMD=kFALSE;
         Bool_t                          IsAA=kFALSE;
         Bool_t                          IsMC=kFALSE;
         THistManager*                   fHistos=nullptr; //!
         TClonesArray*                   fMCArray=nullptr; //!
         AliStack*                       fMCStack=nullptr; //!
-        Int_t                           fParticleType;
         Int_t                           fNTracks = 0;
         Int_t                           fNCascade = 0;
 
