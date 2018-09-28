@@ -287,33 +287,30 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos->CreateTH1("hMul","",200,0,200,"s");
     fHistos->CreateTH1("hZvtx","",600,-30,30,"s");
     
-    if (IsMC)
-    {
-        // MC true inv mass distribution
-        CreateTHnSparse("hInvMassMCXi1530","InvMass",3,{binCent,binPt,binMass},"s");
-        
-        // To get Trigger efficiency in each trk/V0M Multiplicity region
-        
-        vector<TString> mcent = {"All","IsINELg0","tracklet in |Eta|<1","CINT7 triggered","AliMultiSelection"};
-        vector<Int_t> ntrklet = {0,5,10,15,20,25,30,35,40,50};  // # of Tracklet bin
-        vector<Int_t> nmult = {0,1,5,10,15,20,30,40,50,70,100}; // V0M Multiplicity bin
-        
-        auto hNofEvtMC = fHistos->CreateTH1("htotalEvent_MC","",mcent.size(), 0, mcent.size());
-        auto htrkINELg0 = fHistos->CreateTH1("htriggered_INELg0_tracklet","",ntrklet.size(), 0, ntrklet.size());
-        auto htrkCINT7 = fHistos->CreateTH1("htriggered_CINT7_tracklet","",ntrklet.size(), 0, ntrklet.size());
-        auto hmultCINT7 = fHistos->CreateTH1("htriggered_CINT7_VOM","",nmult.size(), 0, nmult.size());
-        /*
-        for(auto i=0u;i<mcent.size();i++) hNofEvtMC->GetXaxis()->SetBinLabel(i+1,mcent.at(i).Data());
-        htrkINELg0->GetXaxis()->SetBinLabel(1,"0 to Inf (MB)");
-        for(auto i=1u;i<ntrklet.size();i++) htrkINELg0->GetXaxis()->SetBinLabel(i+1,Form("%d to %d",ntrklet.at(i),ntrklet.at(i)+5));
-        htrkCINT7->GetXaxis()->SetBinLabel(1,"0 to Inf (MB)");
-        for(auto i=1u;i<ntrklet.size();i++) htrkCINT7->GetXaxis()->SetBinLabel(i+1,Form("%d to %d",ntrklet.at(i),ntrklet.at(i)+5));
-        hmultCINT7->GetXaxis()->SetBinLabel(1,"0 - 100 % (MB)");
-        for(auto i=1u;i<nmult.size();i++) hmultCINT7->GetXaxis()->SetBinLabel(i+1,Form("%d - %d%%",nmult.at(i),nmult.at(i+1)));
-        */
-        CreateTHnSparse("hMult_MC","Multiplicity",1,{binCent},"s");
-        CreateTHnSparse("hMult_MC_selected","Multiplicity",1,{binCent},"s");
-    }
+    // MC true inv mass distribution
+    CreateTHnSparse("hInvMassMCXi1530","InvMass",3,{binCent,binPt,binMass},"s");
+    
+    // To get Trigger efficiency in each trk/V0M Multiplicity region
+    
+    vector<TString> mcent = {"All","IsINELg0","tracklet in |Eta|<1","CINT7 triggered","AliMultiSelection"};
+    vector<Int_t> ntrklet = {0,5,10,15,20,25,30,35,40,50};  // # of Tracklet bin
+    vector<Int_t> nmult = {0,1,5,10,15,20,30,40,50,70,100}; // V0M Multiplicity bin
+    
+    auto hNofEvtMC = fHistos->CreateTH1("htotalEvent_MC","",mcent.size(), 0, mcent.size());
+    auto htrkINELg0 = fHistos->CreateTH1("htriggered_INELg0_tracklet","",ntrklet.size(), 0, ntrklet.size());
+    auto htrkCINT7 = fHistos->CreateTH1("htriggered_CINT7_tracklet","",ntrklet.size(), 0, ntrklet.size());
+    auto hmultCINT7 = fHistos->CreateTH1("htriggered_CINT7_VOM","",nmult.size(), 0, nmult.size());
+    /*
+    for(auto i=0u;i<mcent.size();i++) hNofEvtMC->GetXaxis()->SetBinLabel(i+1,mcent.at(i).Data());
+    htrkINELg0->GetXaxis()->SetBinLabel(1,"0 to Inf (MB)");
+    for(auto i=1u;i<ntrklet.size();i++) htrkINELg0->GetXaxis()->SetBinLabel(i+1,Form("%d to %d",ntrklet.at(i),ntrklet.at(i)+5));
+    htrkCINT7->GetXaxis()->SetBinLabel(1,"0 to Inf (MB)");
+    for(auto i=1u;i<ntrklet.size();i++) htrkCINT7->GetXaxis()->SetBinLabel(i+1,Form("%d to %d",ntrklet.at(i),ntrklet.at(i)+5));
+    hmultCINT7->GetXaxis()->SetBinLabel(1,"0 - 100 % (MB)");
+    for(auto i=1u;i<nmult.size();i++) hmultCINT7->GetXaxis()->SetBinLabel(i+1,Form("%d - %d%%",nmult.at(i),nmult.at(i+1)));
+    */
+    CreateTHnSparse("hMult_MC","Multiplicity",1,{binCent},"s");
+    CreateTHnSparse("hMult_MC_selected","Multiplicity",1,{binCent},"s");
 
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
@@ -369,12 +366,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     {
         std::cout << "AliAnalysisTaskXi1530:: MC Check" << std::endl;
         if (fEvt->IsA()==AliESDEvent::Class()){
-            AliMCEvent  *mcEvent        = 0x0;
-            AliVEventHandler* eventHandler = AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler();
-            if(eventHandler){
-                AliMCEventHandler* mcEventHandler = dynamic_cast<AliMCEventHandler*>(eventHandler);
-                if(mcEventHandler) mcEvent = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
-            }
+            //AliMCEvent  *mcEvent = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
+            AliMCEvent  *mcEvent = MCEvent();
             if(!mcEvent) return;
             fMCStack = (AliStack*) mcEvent->Stack();
         }
