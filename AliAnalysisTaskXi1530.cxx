@@ -52,7 +52,7 @@ const Double_t        pi = TMath::Pi();
 const Double_t  pionmass = AliPID::ParticleMass(AliPID::kPion);
 //const Double_t  Ximass = AliPID::ParticleMass(AliPID::kCascade);
 const Double_t  Ximass = 1.32171;
-enum {  kPN=1, kPP, kNN, kMixing, kAllType}; //P=Positive charge, N=Negative
+enum { kData=1, kLS, kMixing, kAllType}; //P=Positive charge, N=Negative
 
 
 AliAnalysisTaskXi1530RunTable::AliAnalysisTaskXi1530RunTable() :
@@ -271,18 +271,16 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     
     fHistos = new THistManager("Xi1530hists");
     
-    auto binType = AxisStr("Type",{"PN","PP","NN","NP","Mixing"});
-    if (IsAA) binCent = AxisFix("Cent",30,0,300);
+    auto binType = AxisStr("Type",{"DATA","Mixing"});
+    if (IsAA) binCent = AxisFix("Cent",10,0,100);
     //else binCent = AxisFix("Cent",300,0,300);
     else binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // 0 ~ -1, overflow, 0 ~ +1, underflow
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",2000,0.5,2.5);
     
     CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s");
+    CreateTHnSparse("hInvMass_dXi","InvMass",3,{binCent,binPt,binMass},"s");
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
-    CreateTHnSparse("hPtInvMResponse","InvMass Res",6
-                    ,{binType,binCent,binPt,binPt,binMass,binMass},"s");
-    CreateTHnSparse("hInvMassMCXi1530","InvMass",3,{binCent,binPt,binMass},"s");
     
     vector<TString> ent = {"All","PS","PSpileup","Goodz","Goodzcut"};
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
@@ -294,11 +292,12 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
     fHistos->CreateTH1("hMul","",200,0,200,"s");
     fHistos->CreateTH1("hZvtx","",600,-30,30,"s");
-    fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
-    
     
     if (IsMC)
     {
+        // MC true inv mass distribution
+        CreateTHnSparse("hInvMassMCXi1530","InvMass",3,{binCent,binPt,binMass},"s");
+        
         // To get Trigger efficiency in each trk/V0M Multiplicity region
         
         vector<TString> mcent = {"All","IsINELg0","tracklet in |Eta|<1","CINT7 triggered","AliMultiSelection"};
@@ -322,8 +321,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         CreateTHnSparse("hMult_MC_selected","Multiplicity",1,{binCent},"s");
     }
 
+    fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
+    
     PostData(1, fHistos->GetListOfHistograms());
-    std::cout << "User Create Object:: done" << std::endl;
 }
 
 //________________________________________________________________________
@@ -592,6 +592,9 @@ void AliAnalysisTaskXi1530::FillTracks(){
         
         temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
         
+        // QA Plot for Good Xi
+        FillTHnSparse("hInvMass_dXi",fCent,Xicandidate->Pt(),Xicandidate->M()});
+        
         for (UInt_t i = 0; i < ntracks; i++) {
             track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[i]);
             if (!track1) continue;
@@ -599,9 +602,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
             vecsum = temp1+temp2; // two pion vector sum
             if (fabs(vecsum.Rapidity())>0.5) continue; //rapidity cut
             auto sign = kAllType;
-            if (Xicandidate->Charge()*track1->Charge()==-1) sign = kPN;
-            else if (Xicandidate->Charge()==1 && track1->Charge()==1) sign = kPP;
-            else if (Xicandidate->Charge()==-1 && track1->Charge()==-1) sign = kNN;
+            if (Xicandidate->Charge()*track1->Charge()==-1) sign = kData; //Unlike sign -> Data
+            else sign = kLS; //like sign bg
             
             mcXiFilled = kFALSE;
             if (IsMC) {
