@@ -70,6 +70,7 @@ void run(
     mgr->SetInputEventHandler(handler);
     
     if(ismc) {
+        
         AliMCEventHandler *mcHandler  = new AliMCEventHandler();
         mgr->SetMCtruthEventHandler(mcHandler);
     }

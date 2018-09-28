@@ -124,52 +124,7 @@ AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
     delete fRunTable;
 }
 /*
-void AliAnalysisTaskXi1530::XiStarInit()
-{
-    //
-    //Inits cuts and analysis settings
-    //
-    fEventCounter = 0; // event counter initialization
-    if (fDevelopeMode)std::cout << "AliAnalysisTaskXi1530 XiStarInit() call" << std::endl;
-    if (fDevelopeMode)std::cout << "MC Mode?: " << fMCcase << std::endl;
-    
-    ///////////////////////////////////////////////
-    // Track Cuts for ESD analysis
-    fTrackCut = new AliESDtrackCuts();
-    fTrackCut->SetPtRange(.15, 1000);
-    fTrackCut->SetAcceptKinkDaughters(kFALSE);
-    //fTrackCut->SetMinNClustersTPC(50);
-    fTrackCut->SetRequireTPCRefit(kTRUE);
-    fTrackCut->SetMaxChi2PerClusterTPC(4); //From Enrico
-    
-    ////////////////////////////////////////////////
-    
-    fZvertexBins = 20;
-    fMultBins = 11;// This must also be set in AliAnalysisTaskXi1530.h
-    if (fMCcase) fEventsToMix = 0;
-    else fEventsToMix = 40; // original 40 jisong
-    
-    // multiplicity edges for event mixing bins
-    fMultLimits[0] = 0, fMultLimits[1] = 5, fMultLimits[2] = 10, fMultLimits[3] = 15, fMultLimits[4] = 20, fMultLimits[5] = 25;
-    fMultLimits[6] = 30, fMultLimits[7] = 35, fMultLimits[8] = 40, fMultLimits[9] = 45, fMultLimits[10] = 50, fMultLimits[11] = 150;
-    
-    
-    fEC = new AliAnalysisTaskXi1530EventCollection **[fZvertexBins];
-    for (unsigned short i = 0; i < fZvertexBins; i++) {
-        
-        fEC[i] = new AliAnalysisTaskXi1530EventCollection *[fMultBins];
-        
-        for (unsigned short j = 0; j < fMultBins; j++) {
-            
-            fEC[i][j] = new AliAnalysisTaskXi1530EventCollection(fEventsToMix + 1);
-        }
-    }
-    
-    fTempStruct = new AliAnalysisTaskXi1530TrackStruct[kNbinsM * 8];
-    fEvtTrack4 = new AliESDtrack();
-    fXiTrack = new AliESDtrack();
-    
-    
+
     fMaxDecayLength = 100.;
     fMassWindow = 0.007;
     
@@ -464,10 +419,16 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             if (abs(track->Eta())>fetacut) continue;
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
         }
+        // PID cut for pion
+        Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+        if (abs(fTPCNSigPion) > 3.) continue;
+        
         //if (GetPID(fPIDResponse, track) != AliPID::kPion) continue;
         fNTracks++;
-        //if (abs(track->Eta())>0.9) return 0;
-        //if (fParticleType != 99999 && GetPID(fPIDResponse, track) != fParticleType) continue;
+        
+        // Eta cut
+        if(abs(track->Eta())>0.8) continue;
+        
         goodtrackindices.push_back(it);
         
         //Event mixing pool
@@ -523,6 +484,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             
             if(Xicandidate->GetV0CosineOfPointingAngle(pVtx->GetX(), pVtx->GetY(), pVtx->GetZ()) < 0.97) continue;// CPA Lambda
             if(Xicandidate->GetCascadeCosineOfPointingAngle(pVtx->GetX(), pVtx->GetY(), pVtx->GetZ()) < 0.97) continue;// CPA Xi
+            
+            if (fabs(xiMass - fTrueMassXi) > fMassWindow) continue;
             
             fHistos->FillTH2("hPhiEta_Xi",Xicandidate->Phi(),Xicandidate->Eta());
         }
