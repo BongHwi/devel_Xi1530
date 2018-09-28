@@ -322,7 +322,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     }
 
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
-    
     PostData(1, fHistos->GetListOfHistograms());
 }
 
