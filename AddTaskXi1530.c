@@ -13,7 +13,6 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530", const char
     taskXi1530 -> SetIsAA(isaa);
     taskXi1530 -> SetMixing(setmixing);
     taskXi1530 -> SetIsMC(ismc);
-    taskXi1530 -> SetParticleType(99999);
     
     if(!taskXi1530) return 0x0;
     mgr->AddTask(taskXi1530);
