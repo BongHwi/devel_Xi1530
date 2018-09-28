@@ -175,14 +175,14 @@ void run(
         //plugin->SetDropToShell(0);
         
         if (foption.Contains("LHC16k")){
-            if(!foption.Contains("MC")){
-                plugin->SetGridDataDir("/alice/sim/2018/LHC18c6b4");
-                //plugin->SetGridDataDir("/alice/sim/2017/LHC17d20a1");
-                plugin->SetDataPattern("/pass2/*/AliESDs.root");
+            if(ismc){
+                plugin->SetGridDataDir("/alice/sim/2018/LHC18c6b4"); //resonance injected
+                //plugin->SetGridDataDir("/alice/sim/2017/LHC17d20a1"); //general use
+                plugin->SetDataPattern("*AliESDs.root");
             }
             else {
                 plugin->SetGridDataDir("/alice/data/2016/LHC16k");
-                plugin->SetDataPattern("*AliESDs.root");
+                plugin->SetDataPattern("/pass2/*/AliESDs.root");
             }
 #if !defined (__CINT__) || defined (__CLING__)
             for(auto i=0u;i<LHC16kRuns.size();i++)
