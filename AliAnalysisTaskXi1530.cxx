@@ -266,6 +266,19 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     */
     CreateTHnSparse("hMult_MC","Multiplicity",1,{binCent},"s");
     CreateTHnSparse("hMult_MC_selected","Multiplicity",1,{binCent},"s");
+    
+    // QA Histograms--------------------------------------------------
+    // TPC PID before
+    fHistos -> CreateTH2("hTPCPIDLambdaProton","",1000,0,20,1000,-5,5);
+    fHistos -> CreateTH2("hTPCPIDLambdaPion","",1000,0,20,1000,-5,5);
+    fHistos -> CreateTH2("hTPCPIDBachelorPion","",1000,0,20,1000,-5,5);
+    fHistos -> CreateTH2("hTPCPIDXi1530Pion","",1000,0,20,1000,-5,5);
+    // TPC PID After
+    fHistos -> CreateTH2("hTPCPIDLambdaProton_cut","",1000,0,20,1000,-5,5);
+    fHistos -> CreateTH2("hTPCPIDLambdaPion_cut","",1000,0,20,1000,-5,5);
+    fHistos -> CreateTH2("hTPCPIDBachelorPion_cut","",1000,0,20,1000,-5,5);
+    fHistos -> CreateTH2("hTPCPIDXi1530Pion_cut","",1000,0,20,1000,-5,5);
+    
 
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
@@ -421,9 +434,11 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         }
         // PID cut for pion
         Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-        if (abs(fTPCNSigPion) > 3.) continue;
+        fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),fTPCNSigPion);
         
-        //if (GetPID(fPIDResponse, track) != AliPID::kPion) continue;
+        if (abs(fTPCNSigPion) > 3.) continue;
+        fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),fTPCNSigPion);
+        
         fNTracks++;
         
         // Eta cut
@@ -475,9 +490,17 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             Double_t fTPCNSigPion1 = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
             Double_t fTPCNSigPion2 = fPIDResponse->NumberOfSigmasTPC(bTrackXi, AliPID::kPion);
             
+            fHistos->FillTH2("hTPCPIDLambdaProton",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            fHistos->FillTH2("hTPCPIDLambdaPion",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            fHistos->FillTH2("hTPCPIDBachelorPion",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            
             if (abs(fTPCNSigProton) > 3.) continue; // PID for proton
             if (abs(fTPCNSigPion1) > 3.) continue; // PID for 1st pion
             if (abs(fTPCNSigPion2) > 3.) continue; // PID for 2nd pion
+            
+            fHistos->FillTH2("hTPCPIDLambdaProton_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            fHistos->FillTH2("hTPCPIDLambdaPion_cut",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            fHistos->FillTH2("hTPCPIDBachelorPion_cut",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
             
             if(fabs(Xicandidate->GetDcaV0Daughters()) > 1.6) continue;// DCA proton-pion
             if(fabs(Xicandidate->GetDcaXiDaughters()) > 1.6) continue;// DCA Lambda-pion
