@@ -77,7 +77,7 @@ void run(
     // ROOT 6 MODE
     //
     // Physics Selection
-    AliPhysicsSelectionTask *physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"));
+    AliPhysicsSelectionTask *physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ExecuteMacro(Form("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C(%d)",ismc)));
     if(!physSelTask) {
         Printf("no physSelTask");
         return;
@@ -111,9 +111,9 @@ void run(
 #else
     // ROOT 5 MODE
     //
-    // Physics Selection
+    // Physics Selection   
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection();
+    AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(ismc);
     if(!physSelTask) {
         Printf("no physSelTask");
         return;
