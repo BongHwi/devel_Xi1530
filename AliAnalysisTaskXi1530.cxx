@@ -292,10 +292,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
     fHistos->CreateTH1("hMul","",200,0,200,"s");
     fHistos->CreateTH1("hZvtx","",600,-30,30,"s");
-    std::cout << "User Create Object 01" << std::endl;
+    
     if (IsMC)
     {
-        std::cout << "User Create Object MC" << std::endl;
         // MC true inv mass distribution
         CreateTHnSparse("hInvMassMCXi1530","InvMass",3,{binCent,binPt,binMass},"s");
         
@@ -304,12 +303,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         vector<TString> mcent = {"All","IsINELg0","tracklet in |Eta|<1","CINT7 triggered","AliMultiSelection"};
         vector<Int_t> ntrklet = {0,5,10,15,20,25,30,35,40,50};  // # of Tracklet bin
         vector<Int_t> nmult = {0,1,5,10,15,20,30,40,50,70,100}; // V0M Multiplicity bin
-        std::cout << "User Create Object MC2" << std::endl;
+        
         auto hNofEvtMC = fHistos->CreateTH1("htotalEvent_MC","",mcent.size(), 0, mcent.size());
         auto htrkINELg0 = fHistos->CreateTH1("htriggered_INELg0_tracklet","",ntrklet.size(), 0, ntrklet.size());
         auto htrkCINT7 = fHistos->CreateTH1("htriggered_CINT7_tracklet","",ntrklet.size(), 0, ntrklet.size());
         auto hmultCINT7 = fHistos->CreateTH1("htriggered_CINT7_VOM","",nmult.size(), 0, nmult.size());
-        std::cout << "User Create Object MC3" << std::endl;
         /*
         for(auto i=0u;i<mcent.size();i++) hNofEvtMC->GetXaxis()->SetBinLabel(i+1,mcent.at(i).Data());
         htrkINELg0->GetXaxis()->SetBinLabel(1,"0 to Inf (MB)");
@@ -322,7 +320,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         CreateTHnSparse("hMult_MC","Multiplicity",1,{binCent},"s");
         CreateTHnSparse("hMult_MC_selected","Multiplicity",1,{binCent},"s");
     }
-    std::cout << "User Create Object MC4" << std::endl;
+
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
 }
@@ -609,7 +607,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             mcXiFilled = kFALSE;
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){
-                    TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(((AliESDtrack*)bTrackXi)->GetLabel()));
+                    TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
                     TParticle* MCLamD1esd;
                     TParticle* MCLamD2esd;
                     TParticle* MCLamesd;
@@ -618,8 +616,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     TParticle* MCXiStarD2esd;
                     
                     if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
-                        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(((AliESDtrack*)pTrackXi)->GetLabel()));
-                        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(((AliESDtrack*)nTrackXi)->GetLabel()));
+                        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
+                        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
                         if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) {
                             if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) {
                                 MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
