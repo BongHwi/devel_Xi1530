@@ -123,86 +123,6 @@ AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
     delete fPIDResponse;
     delete fRunTable;
 }
-/*
-
-    fMaxDecayLength = 100.;
-    fMassWindow = 0.007;
-    
-    /////////////////////////////////////////////////////////////////////////////////////
-    ///////////////////////
-    // DecayParameters Key (number represents array index)
-    // NclustersTPC: 0=proton, 1=pion first, 2=pion second, 3=pion third
-    // DCAVtx: 4=proton, 5=pion first, 6=pion second, 7=lambda, 8=pion third
-    // 9 = DCA proton-pion
-    // 10 = DCA Lambda-pion
-    // 11 = Rxy Lambda
-    // 12 = Rxy Xi
-    // 13 = Cos PA Lambda
-    // 14 = Cos PA Xi
-    
-    // Set Standard Reconstruction cut values
-    fCutValues[0][0] = 50;
-    fCutValues[0][1] = 50;
-    fCutValues[0][2] = 50;
-    fCutValues[0][3] = 50; // for 2010 cut (origin: 70)
-    fCutValues[0][4] = 0.04;
-    fCutValues[0][5] = 0.04;
-    fCutValues[0][6] = 0.05;
-    fCutValues[0][7] = 0.07;
-    fCutValues[0][8] = 2.0;
-    fCutValues[0][9] = 1.6;
-    fCutValues[0][10] = 1.6;
-    fCutValues[0][11] = 0.97;
-    fCutValues[0][12] = 0.97;
-    
-    
-    for (int cv = 1; cv < kNCutVariations; cv++) {
-        for (int ct = 0; ct < kNCuts; ct++) {
-            fCutValues[cv][ct] = fCutValues[0][ct];
-        }
-    }
-    
-    //systematic variation// Loose
-    fCutValues[1][0] = 45;
-    fCutValues[1][1] = 45;
-    fCutValues[1][2] = 45;
-    fCutValues[1][3] = 45;// 60 -> 45
-    fCutValues[2][4] = 0.03;
-    fCutValues[3][5] = 0.03;
-    fCutValues[4][6] = 0.04;
-    fCutValues[5][7] = 0.06;
-    fCutValues[6][8] = 2.1;
-    fCutValues[7][9] = 1.7;
-    fCutValues[8][10] = 1.7;
-    fCutValues[9][11] = 0.95;
-    fCutValues[10][12] = 0.965;
-    
-    //systematic variation// tight
-    fCutValues[11][0] = 55;
-    fCutValues[11][1] = 55;
-    fCutValues[11][2] = 55;
-    fCutValues[11][3] = 55;// 70 -> 55
-    fCutValues[12][4] = 0.104;
-    fCutValues[13][5] = 0.104;
-    fCutValues[14][6] = 0.08;
-    fCutValues[15][7] = 0.1;
-    fCutValues[16][8] = 1.0;
-    fCutValues[17][9] = 0.94;
-    fCutValues[18][10] = 1.41;
-    fCutValues[19][11] = 0.99;
-    fCutValues[20][12] = 0.985;
-    
-    
-    // PDG mass values
-    fTrueMassPr = .93827, fTrueMassPi = .13957, fTrueMassK = .493677, fTrueMassLam = 1.11568, fTrueMassXi = 1.32171;
-    
-    // The following CovMatrix is set so that PropogateToDCA() ignores track errors. Only used to propagate Xi to third pion for XiStar reconstruction
-    for (Int_t i = 0; i < 21; i++) fCovMatrix[i] = 0;
-    fCovMatrix[0] = 1, fCovMatrix[2] = 1, fCovMatrix[5] = 1, fCovMatrix[9] = 1, fCovMatrix[14] = 1, fCovMatrix[20] = 1;
-    
-    
-}
- */
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 {
@@ -268,18 +188,54 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     CreateTHnSparse("hMult_MC_selected","Multiplicity",1,{binCent},"s");
     
     // QA Histograms--------------------------------------------------
-    // TPC PID before
+    // T P C   P I D
+    // before
     fHistos -> CreateTH2("hTPCPIDLambdaProton","",1000,0,20,1000,-5,5);
     fHistos -> CreateTH2("hTPCPIDLambdaPion","",1000,0,20,1000,-5,5);
     fHistos -> CreateTH2("hTPCPIDBachelorPion","",1000,0,20,1000,-5,5);
     fHistos -> CreateTH2("hTPCPIDXi1530Pion","",1000,0,20,1000,-5,5);
-    // TPC PID After
+    // after
     fHistos -> CreateTH2("hTPCPIDLambdaProton_cut","",1000,0,20,1000,-5,5);
     fHistos -> CreateTH2("hTPCPIDLambdaPion_cut","",1000,0,20,1000,-5,5);
     fHistos -> CreateTH2("hTPCPIDBachelorPion_cut","",1000,0,20,1000,-5,5);
     fHistos -> CreateTH2("hTPCPIDXi1530Pion_cut","",1000,0,20,1000,-5,5);
     
-
+    // D C A
+    // between daughters
+    // before
+    fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters","",300,0,3,"s");
+    fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters","",300,0,3,"s");
+    // after
+    fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_cut","",300,0,3,"s");
+    fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_cut","",300,0,3,"s");
+    // to PV
+    // before
+    fHistos->CreateTH1("fDCADist_lambda_to_PV","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_Xi_to_PV","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_LambdaProton_to_PV","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_LambdaPion_to_PV","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_BachelorPion_to_PV","",500,0,0.5,"s");
+    // after
+    fHistos->CreateTH1("fDCADist_lambda_to_PV_cut","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_Xi_to_PV_cut","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_LambdaProton_to_PV_cut","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_LambdaPion_to_PV_cut","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_cut","",500,0,0.5,"s");
+    
+    // C P A
+    // before
+    fHistos->CreateTH1("hCosPA_lambda","",150,0.85,1.0,"s");
+    fHistos->CreateTH1("hCosPA_Xi","",150,0.85,1.0,"s");
+    // after
+    fHistos->CreateTH1("hCosPA_lambda_cut","",150,0.85,1.0,"s");
+    fHistos->CreateTH1("hCosPA_Xi_cut","",150,0.85,1.0,"s");
+    
+    // M a s s   W i n d o w
+    // before
+    fHistos->CreateTH1("hMass_Xi","",200,1.2,1.4,"s");
+    // after
+    fHistos->CreateTH1("hMass_Xi_cut","",200,1.2,1.4,"s");
+    
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
 }
@@ -464,6 +420,12 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     goodcascadeindices.clear();
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
     const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
+        Double_t PVx, PVy, PVz;
+        PVx = pVtx->GetX();
+        PVy = pVtx->GetY();
+        PVz = pVtx->GetZ();
+    Double_t bField = fEvt->GetMagneticField();
+    
     const AliESDcascade *Xicandidate;
     
     fNCascade = 0;
@@ -489,26 +451,57 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             Double_t fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
             Double_t fTPCNSigPion1 = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
             Double_t fTPCNSigPion2 = fPIDResponse->NumberOfSigmasTPC(bTrackXi, AliPID::kPion);
-            
-            fHistos->FillTH2("hTPCPIDLambdaProton",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
-            fHistos->FillTH2("hTPCPIDLambdaPion",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
-            fHistos->FillTH2("hTPCPIDBachelorPion",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                fHistos->FillTH2("hTPCPIDLambdaProton",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                fHistos->FillTH2("hTPCPIDLambdaPion",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                fHistos->FillTH2("hTPCPIDBachelorPion",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
             
             if (abs(fTPCNSigProton) > 3.) continue; // PID for proton
             if (abs(fTPCNSigPion1) > 3.) continue; // PID for 1st pion
             if (abs(fTPCNSigPion2) > 3.) continue; // PID for 2nd pion
+                fHistos->FillTH2("hTPCPIDLambdaProton_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                fHistos->FillTH2("hTPCPIDLambdaPion_cut",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                fHistos->FillTH2("hTPCPIDBachelorPion_cut",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
             
-            fHistos->FillTH2("hTPCPIDLambdaProton_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
-            fHistos->FillTH2("hTPCPIDLambdaPion_cut",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
-            fHistos->FillTH2("hTPCPIDBachelorPion_cut",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            // DCA cut
+            // DCA between Dautgher particles
+            Double_t fDCADist_Lambda = fabs(Xicandidate->GetDcaV0Daughters());
+            Double_t fDCADist_Xi = fabs(Xicandidate->GetDcaXiDaughters());
+                fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters",fDCADist_Lambda);
+                fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters",fDCADist_Xi);
             
-            if(fabs(Xicandidate->GetDcaV0Daughters()) > 1.6) continue;// DCA proton-pion
-            if(fabs(Xicandidate->GetDcaXiDaughters()) > 1.6) continue;// DCA Lambda-pion
+            if( fDCADist_Lambda > 1.6) continue;// DCA proton-pion
+            if( fDCADist_Xi > 1.6) continue;// DCA Lambda-pion
+                fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_cut",fDCADist_Lambda);
+                fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_cut",fDCADist_Xi);
+            // DCA to PV
+            //Double_t fDCADist_Lambda_PV       = fabs(Xicandidate->GetD(PVx, PVy, PVz));
+            Double_t fDCADist_Xi_PV           = fabs(Xicandidate->GetD(PVx, PVy, PVz));
+            Double_t fDCADist_Xi_PV2           = fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
+            Double_t fDCADist_LambdaProton_PV = fabs(pTrackXi->GetD(PVx, PVy, bField));
+            Double_t fDCADist_LambdaPion_PV   = fabs(pTrackXi->GetD(PVx, PVy, bField));
+            Double_t fDCADist_BachelorPion_PV = fabs(bTrackXi->GetD(PVx, PVy, bField));
+                fHistos -> FillTH1("fDCADist_lambda_to_PV",fDCADist_Xi_PV);
+                fHistos -> FillTH1("hDCADist_Xi_to_PV",fDCADist_Xi_PV2);
+                fHistos -> FillTH1("hDCADist_LambdaProton_to_PV",fDCADist_LambdaProton_PV);
+                fHistos -> FillTH1("hDCADist_LambdaPion_to_PV",fDCADist_LambdaPion_PV);
+                fHistos -> FillTH1("hDCADist_BachelorPion_to_PV",fDCADist_BachelorPion_PV);
+
+            // CPA cut
+            Double_t fLambdaCPA = Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
+            Double_t fXiCPA = Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
+                fHistos -> FillTH1("hCosPA_lambda",fLambdaCPA);
+                fHistos -> FillTH1("hCosPA_Xi",fXiCPA);
             
-            if(Xicandidate->GetV0CosineOfPointingAngle(pVtx->GetX(), pVtx->GetY(), pVtx->GetZ()) < 0.97) continue;// CPA Lambda
-            if(Xicandidate->GetCascadeCosineOfPointingAngle(pVtx->GetX(), pVtx->GetY(), pVtx->GetZ()) < 0.97) continue;// CPA Xi
+            if(Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz) < 0.97) continue;
+            if(Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz) < 0.97) continue;
+                fHistos -> FillTH1("hCosPA_lambda_cut",fLambdaCPA);
+                fHistos -> FillTH1("hCosPA_Xi_cut",fXiCPA);
             
-            if (fabs(xiMass - fTrueMassXi) > fMassWindow) continue;
+            // Mass window cut
+            Double_t fMass_Xi = Xicandidate->M();
+                fHistos -> FillTH1("hMass_Xi",fMass_Xi);
+            if (fabs(fMass_Xi - Ximass) > 0.007) continue;
+                fHistos -> FillTH1("hMass_Xi_cut",fMass_Xi);
             
             fHistos->FillTH2("hPhiEta_Xi",Xicandidate->Phi(),Xicandidate->Eta());
         }
@@ -572,7 +565,10 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if (!track1) continue;
             temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
             vecsum = temp1+temp2; // two pion vector sum
-            if (fabs(vecsum.Rapidity())>0.5) continue; //rapidity cut
+            
+            // Y cut
+            if (fabs(vecsum.Rapidity())>0.5) continue;
+            
             auto sign = kAllType;
             if (Xicandidate->Charge()*track1->Charge()==-1) sign = kData; //Unlike sign -> Data
             else sign = kLS; //like sign bg
