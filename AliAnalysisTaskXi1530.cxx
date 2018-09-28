@@ -358,6 +358,11 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
+    // Choose Good Tracks from AliESDtracks and save the label of them, and save them for event mixing
+    // it includes several cuts:
+    // - TPC PID cut for pion
+    // - Eta cut
+    //
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
     
@@ -417,6 +422,16 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
 }
 
 Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
+    // Choose Good Cascade from AliESDcascade and save the label of them
+    // it includes several cuts:
+    // - daughter particle standard track cut
+    // - daughter particle PID cut
+    // - DCA cuts between Lambda daughters and Xi daughters
+    // - PV DCA(Impact parameter) cut for Xi/Lambda/all daughters
+    // - Cosine Pointing Angle cut for Xi and Lamnbda
+    // - Mass window cut for Xi
+    // - Eta cut
+    //
     goodcascadeindices.clear();
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
     const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
@@ -474,18 +489,17 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_cut",fDCADist_Lambda);
                 fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_cut",fDCADist_Xi);
             // DCA to PV
-            //Double_t fDCADist_Lambda_PV       = fabs(Xicandidate->GetD(PVx, PVy, PVz));
-            Double_t fDCADist_Xi_PV           = fabs(Xicandidate->GetD(PVx, PVy, PVz));
-            Double_t fDCADist_Xi_PV2           = fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
+            Double_t fDCADist_Lambda_PV       = fabs(Xicandidate->GetD(PVx, PVy, PVz));
+            Double_t fDCADist_Xi_PV           = fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
             Double_t fDCADist_LambdaProton_PV = fabs(pTrackXi->GetD(PVx, PVy, bField));
             Double_t fDCADist_LambdaPion_PV   = fabs(pTrackXi->GetD(PVx, PVy, bField));
             Double_t fDCADist_BachelorPion_PV = fabs(bTrackXi->GetD(PVx, PVy, bField));
-                fHistos -> FillTH1("fDCADist_lambda_to_PV",fDCADist_Xi_PV);
+                fHistos -> FillTH1("fDCADist_lambda_to_PV",fDCADist_Lambda_PV);
                 fHistos -> FillTH1("hDCADist_Xi_to_PV",fDCADist_Xi_PV2);
                 fHistos -> FillTH1("hDCADist_LambdaProton_to_PV",fDCADist_LambdaProton_PV);
                 fHistos -> FillTH1("hDCADist_LambdaPion_to_PV",fDCADist_LambdaPion_PV);
                 fHistos -> FillTH1("hDCADist_BachelorPion_to_PV",fDCADist_BachelorPion_PV);
-
+            
             // CPA cut
             Double_t fLambdaCPA = Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
             Double_t fXiCPA = Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
@@ -502,6 +516,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 fHistos -> FillTH1("hMass_Xi",fMass_Xi);
             if (fabs(fMass_Xi - Ximass) > 0.007) continue;
                 fHistos -> FillTH1("hMass_Xi_cut",fMass_Xi);
+            
+            // Eta cut
+            if(abs(Xicandidate->Eta())>0.8) continue;
             
             fHistos->FillTH2("hPhiEta_Xi",Xicandidate->Phi(),Xicandidate->Eta());
         }
