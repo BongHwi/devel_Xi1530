@@ -322,6 +322,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserExec(Option_t *)
 {
+    std::cout << "AliAnalysisTaskXi1530:: UserExec" << std::endl;
     // Pointer to a event----------------------------------------------------
     AliVEvent *event = InputEvent();
     if (!event)
@@ -342,8 +343,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // Multiplicity(centrality) ---------------------------------------------
     // fCent:
     //       0-100: Selected
-    //       150-250: Not selected
-    //       300: No MultSection
+    //       999: Not selected
+    //       -999: No MultSection
     //
     fCent = -999; // Multiplicity
     AliMultSelection *MultSelection = (AliMultSelection*) fEvt->FindListObject("MultSelection");
@@ -354,13 +355,12 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
             AliInfo("This event is not selected: AliMultSelection");
             fCent += MultSelection->GetMultiplicityPercentile("V0M");
         }
-        fCent = MultSelection->GetMultiplicityPercentile("V0M");
+        fCent = 999;
     }
     else
     {
         //If this happens, re-check if AliMultSelectionTask ran before your task!
         AliInfo("Didn't find MultSelection!");
-        fCent = 300;
     }
     // ----------------------------------------------------------------------
     

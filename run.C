@@ -25,7 +25,7 @@ void run(
          , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
-         , const char *localorgrid = "local"
+         , const char *localorgrid = "grid"
          )
 {
     gSystem->Load("libTree.so");
@@ -180,7 +180,8 @@ void run(
         
         if (foption.Contains("LHC16k")){
             if(!foption.Contains("MC")){
-                plugin->SetGridDataDir("/alice/data/2016/LHC16k");
+                //plugin->SetGridDataDir("/alice/data/2016/LHC16k");
+                plugin->SetGridDataDir("/alice/sim/2017/LHC17d20a1");
                 plugin->SetDataPattern("/pass2/*/AliESDs.root");
             }
             else {
