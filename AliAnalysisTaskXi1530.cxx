@@ -592,7 +592,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
         temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
         
         // QA Plot for Good Xi
-        FillTHnSparse("hInvMass_dXi",fCent,Xicandidate->Pt(),Xicandidate->M()});
+        FillTHnSparse("hInvMass_dXi",{fCent,Xicandidate->Pt(),Xicandidate->M()});
         
         for (UInt_t i = 0; i < ntracks; i++) {
             track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[i]);
@@ -607,7 +607,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             mcXiFilled = kFALSE;
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){
-                    TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
+                    TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(((AliESDtrack*)bTrackXi)->GetLabel()));
                     TParticle* MCLamD1esd;
                     TParticle* MCLamD2esd;
                     TParticle* MCLamesd;
@@ -616,8 +616,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     TParticle* MCXiStarD2esd;
                     
                     if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
-                        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
-                        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
+                        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(((AliESDtrack*)pTrackXi)->GetLabel()));
+                        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(((AliESDtrack*)nTrackXi)->GetLabel()));
                         if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) {
                             if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) {
                                 MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
