@@ -77,12 +77,10 @@ void run(
     // ROOT 6 MODE
     //
     // Physics Selection
-    if (!foption.Contains("AOD")){
-        AliPhysicsSelectionTask *physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ExecuteMacro(Form("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C(%d)",ismc)));
-        if(!physSelTask) {
-            Printf("no physSelTask");
-            return;
-        }
+    AliPhysicsSelectionTask *physSelTask = reinterpret_cast<AliPhysicsSelectionTask*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C"));
+    if(!physSelTask) {
+        Printf("no physSelTask");
+        return;
     }
     // Multiplicity selection
     AliMultSelectionTask *MultSlection = reinterpret_cast<AliMultSelectionTask*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"));
@@ -114,13 +112,11 @@ void run(
     // ROOT 5 MODE
     //
     // Physics Selection
-    if (!foption.Contains("AOD")){
-        gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-        AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(ismc);
-        if(!physSelTask) {
-            Printf("no physSelTask");
-            return;
-        }
+    gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+    AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection();
+    if(!physSelTask) {
+        Printf("no physSelTask");
+        return;
     }
     
     // Multiplicity selection
