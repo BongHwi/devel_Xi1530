@@ -25,7 +25,7 @@ void run(
          , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
-         , const char *localorgrid = "grid"
+         , const char *localorgrid = "local"
          )
 {
     gSystem->Load("libTree.so");
@@ -111,7 +111,7 @@ void run(
 #else
     // ROOT 5 MODE
     //
-    // Physics Selection   
+    // Physics Selection
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
     AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(ismc);
     if(!physSelTask) {
@@ -176,12 +176,12 @@ void run(
         
         if (foption.Contains("LHC16k")){
             if(!foption.Contains("MC")){
-                //plugin->SetGridDataDir("/alice/data/2016/LHC16k");
-                plugin->SetGridDataDir("/alice/sim/2017/LHC17d20a1");
+                plugin->SetGridDataDir("/alice/sim/2018/LHC18c6b4");
+                //plugin->SetGridDataDir("/alice/sim/2017/LHC17d20a1");
                 plugin->SetDataPattern("/pass2/*/AliESDs.root");
             }
             else {
-                plugin->SetGridDataDir("/alice/sim/2018/LHC18c6b4");
+                plugin->SetGridDataDir("/alice/data/2016/LHC16k");
                 plugin->SetDataPattern("*AliESDs.root");
             }
 #if !defined (__CINT__) || defined (__CLING__)
