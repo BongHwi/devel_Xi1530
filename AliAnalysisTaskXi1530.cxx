@@ -377,12 +377,11 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     centbin = binCent.FindBin(fCent) -1;
     
     const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
-    Double_t PVx, PVy, PVz;
     PVx = pVtx->GetX();
     PVy = pVtx->GetY();
     PVz = pVtx->GetZ();
     
-    Double_t bField = fEvt->GetMagneticField();
+    bField = fEvt->GetMagneticField();
     
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection() && this -> GoodCascadeSelection()) this -> FillTracks();
@@ -550,7 +549,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 fHistos->FillTH2("hLambda_Rxy",LambdaX,LambdaY);
             //if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > 100) StandardXi=kFALSE;
             
-            auto cX, cY, cZ;
+            Double_t cX, cY, cZ;
             Xicandidate->GetXYZcascade(cX,cY,cZ);
             fHistos->FillTH2("hXi_Rxy",cX,cY);
             //if(sqrt( pow(cX,2) + pow(cY,2) ) > 100) StandardXi=kFALSE;
@@ -698,9 +697,13 @@ void AliAnalysisTaskXi1530::FillTracks(){
                                                     fHistos -> FillTH1("fDCADist_Xi_to_PV_TrueMC",fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
                                                     
                                                     fHistos->FillTH2("hPhiEta_Xi_TrueMC",Xicandidate->Phi(),Xicandidate->Eta());
-                                                    fHistos->FillTH2("hLambda_Rxy_TrueMC",Xicandidate->GetX(),Xicandidate->GetY());
                                                     
-                                                    auto cX, cY, cZ;
+                                                    Double_t LambdaX, LambdaY, LambdaZ;
+                                                    Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
+                                                    
+                                                    fHistos->FillTH2("hLambda_Rxy_TrueMC",LambdaX,LambdaY);
+                                                    
+                                                    Double_t cX, cY, cZ;
                                                     Xicandidate->GetXYZcascade(cX,cY,cZ);
                                                     fHistos->FillTH2("hXi_Rxy_TrueMC",cX,cY);
                                                     
