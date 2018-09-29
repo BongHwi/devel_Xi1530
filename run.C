@@ -135,7 +135,7 @@ void run(
     AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option,isaa,ismc,setmixing);
 #endif
     
-    mgr->SetDebugLevel(5);
+    mgr->SetDebugLevel(0);
     if (!mgr->InitAnalysis()) return;
     mgr->PrintStatus();
     
