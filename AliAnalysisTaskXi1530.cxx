@@ -153,7 +153,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
     
-    vector<TString> ent = {"All","PS","PSpileup","Goodz","Goodzcut"};
+    vector<TString> ent = {"All","InCompleteDAQ","PSpileup","Goodz","Goodzcut"};
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
@@ -274,8 +274,13 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     ? fEvt = dynamic_cast<AliESDEvent*>(event)
     : fEvt = dynamic_cast<AliAODEvent*>(event);
     if (!fEvt) return;
-    
     // ----------------------------------------------------------------------
+    
+    // Load InputHandler for each event---------------------------------------
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
+    AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
+    // -----------------------------------------------------------------------
+
     
     // Multiplicity(centrality) ---------------------------------------------
     // fCent:
@@ -311,14 +316,10 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
                 if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
                     fMCStack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
             }
-            //AliMCEvent  *mcEvent = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
-            //AliMCEvent  *mcEvent = MCEvent();
-            //if(!mcEvent) return;
-            //fMCStack = (AliStack*) mcEvent->Stack();
-        }
+        }// ESD Case
         else{
             fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
-        }
+        }// AOD Case
         
         // Fill MC input Xi1530 histogram
         for (UInt_t it = 0; it < fMCStack->GetNprimary(); it++) {
@@ -332,17 +333,13 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         
     }
 
-    // Load InputHandler for each event---------------------------------------
-    AliInputEventHandler* inputHandler = (AliInputEventHandler*)
-    AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-    // -----------------------------------------------------------------------
-
+    // PID response ----------------------------------------------------------
     fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
     if(!fPIDResponse){
         std::cout << "AliAnalysisTaskXi1530:: No PIDd\n" << std::endl;
     }
-
-    Bool_t IsMinimumBias = kFALSE;
+    // -----------------------------------------------------------------------
+    
     fHistos -> FillTH1("hEventNumbers","All",1);
     // In Complete DAQ Event Cut----------------------------------------------
     if (fEvt->IsIncompleteDAQ()) {
@@ -350,7 +347,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         PostData(1, fHistos->GetListOfHistograms());
         return;
     }
-    fHistos -> FillTH1("hEventNumbers","PS",1);
+    fHistos -> FillTH1("hEventNumbers","InCompleteDAQ",1);
     // -----------------------------------------------------------------------
     
     // Vertex Check-----------------------------------------------------------
