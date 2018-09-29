@@ -295,9 +295,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         if (!(MultSelection->IsEventSelected()))
         {
             AliInfo("This event is not selected: AliMultSelection");
-            fCent += MultSelection->GetMultiplicityPercentile("V0M");
+            fCent = 999;
         }
-        fCent = 999;
+        fCent = MultSelection->GetMultiplicityPercentile("V0M");
     }
     else
     {
