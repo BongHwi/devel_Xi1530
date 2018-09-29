@@ -146,8 +146,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",2000,0.5,2.5);
     
-    CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s");
-    CreateTHnSparse("hInvMass_dXi","InvMass",3,{binCent,binPt,binMass},"s");
+    CreateTHnSparse("hInvMass_dXi","InvMass",3,{binCent,binPt,binMass},"s"); // inv mass distribution of Xi
+    CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s"); // Normal inv mass distribution of Xi1530
+    CreateTHnSparse("hInvMassMCXi1530_recon","InvMass",3,{binCent,binPt,binMass},"s"); // MC recon inv mass distribution of Xi1530
+    CreateTHnSparse("hInvMassMCXi1530_input","InvMass",3,{binCent,binPt,binMass},"s"); // MC input inv mass distribution of Xi1530
+    
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
     
     vector<TString> ent = {"All","PS","PSpileup","Goodz","Goodzcut"};
@@ -159,9 +162,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
     fHistos->CreateTH1("hMul","",200,0,200,"s");
     fHistos->CreateTH1("hZvtx","",600,-30,30,"s");
-    
-    // MC true inv mass distribution
-    CreateTHnSparse("hInvMassMCXi1530","InvMass",3,{binCent,binPt,binMass},"s");
     
     // To get Trigger efficiency in each trk/V0M Multiplicity region
     
@@ -321,6 +321,17 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         else{
             fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
         }
+        
+        // Fill MC input Xi1530 histogram
+        for (UInt_t it = 0; it < fMCStack->GetNprimary(); it++) {
+            TParticle *mcInputTrack = (TParticle*)fMCStack->Particle(it);
+            if (!mcInputTrack) {
+                Error("UserExec", "Could not receive MC track %d", it);
+                continue;
+            }
+            if(abs(mcInputTrack->GetPdgCode()) == kXiStarCode) FillTHnSparse("hInvMassMCXi1530_input",{fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
+        }
+        
     }
 
     // Load InputHandler for each event---------------------------------------
@@ -679,7 +690,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
                                                     temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
                                                     temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
                                                     TLorentzVector vecsumtrue = temp1 + temp2;
-                                                    FillTHnSparse("hInvMassMCXi1530",{fCent,vecsumtrue.Pt(),vecsumtrue.M()});
+                                                    
+                                                    FillTHnSparse("hInvMassMCXi1530_recon",{fCent,vecsumtrue.Pt(),vecsumtrue.M()});
                                                     
                                                     // True Xi1530 signals for cut study
                                                     
