@@ -114,7 +114,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Int_t                           centbin = -1 ;
         Int_t                           zbin = -1 ;
         Double_t                        fptcut = 0.15;
-        Double_t                        fetacut = 0.9;
+        Double_t                        fetacut = 0.8;
         Bool_t                          fsetmixing = kFALSE;
         Bool_t                          IsAA=kFALSE;
         Bool_t                          IsMC=kFALSE;
@@ -123,7 +123,10 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         AliStack*                       fMCStack=nullptr; //!
         Int_t                           fNTracks = 0;
         Int_t                           fNCascade = 0;
-
+        Double_t                        PVx = 999;
+        Double_t                        PVy = 999;
+        Double_t                        PVz = 999;
+        Double_t                        bField = 999;
     ClassDef(AliAnalysisTaskXi1530, 1);
 };
 
