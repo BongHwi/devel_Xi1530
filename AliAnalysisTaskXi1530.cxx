@@ -183,8 +183,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     hmultCINT7->GetXaxis()->SetBinLabel(1,"0 - 100 % (MB)");
     for(auto i=1u;i<nmult.size();i++) hmultCINT7->GetXaxis()->SetBinLabel(i+1,Form("%d - %d%%",nmult.at(i),nmult.at(i+1)));
     */
-    CreateTHnSparse("hMult_MC","Multiplicity",1,{binCent},"s");
-    CreateTHnSparse("hMult_MC_selected","Multiplicity",1,{binCent},"s");
     
     // QA Histograms--------------------------------------------------
     // T P C   P I D
@@ -240,6 +238,23 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     // Radius X - Y
     fHistos -> CreateTH2("hLambda_Rxy","",400,-200,200,400,-200,200); // before
     fHistos -> CreateTH2("hLambda_Rxy_cut","",400,-200,200,400,-200,200); // after
+    fHistos -> CreateTH2("hXi_Rxy","",400,-200,200,400,-200,200); // before
+    fHistos -> CreateTH2("hXi_Rxy_cut","",400,-200,200,400,-200,200); // after
+    
+    if(IsMC){
+        //For MC True stduy purpose
+        fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_TrueMC","",300,0,3,"s");
+        fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_TrueMC","",300,0,3,"s");
+        fHistos->CreateTH1("hDCADist_LambdaProton_to_PV_TrueMC","",500,0,0.5,"s");
+        fHistos->CreateTH1("hDCADist_LambdaPion_to_PV_TrueMC","",500,0,0.5,"s");
+        fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_TrueMC","",500,0,0.5,"s");
+        fHistos->CreateTH1("fDCADist_lambda_to_PV_TrueMC","",500,0,0.5,"s");
+        fHistos->CreateTH1("hDCADist_Xi_to_PV_TrueMC","",500,0,0.5,"s");
+        fHistos->CreateTH2("hPhiEta_Xi_TrueMC","",180,0,2*pi,40,-2,2);
+        fHistos->CreateTH2("hLambda_Rxy_TrueMC","",400,-200,200,400,-200,200);
+        fHistos->CreateTH2("hXi_Rxy_TrueMC","",400,-200,200,400,-200,200);
+        
+    }
     
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
@@ -361,6 +376,14 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     zbin = binZ.FindBin(fZ) -1;
     centbin = binCent.FindBin(fCent) -1;
     
+    const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
+    Double_t PVx, PVy, PVz;
+    PVx = pVtx->GetX();
+    PVy = pVtx->GetY();
+    PVz = pVtx->GetZ();
+    
+    Double_t bField = fEvt->GetMagneticField();
+    
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection() && this -> GoodCascadeSelection()) this -> FillTracks();
     }
@@ -442,16 +465,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     //
     goodcascadeindices.clear();
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
-    const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
-        Double_t PVx, PVy, PVz;
-        PVx = pVtx->GetX();
-        PVy = pVtx->GetY();
-        PVz = pVtx->GetZ();
-    Double_t bField = fEvt->GetMagneticField();
-    Double_t LambdaX, LambdaY, LambdaZ;
-    
     
     const AliESDcascade *Xicandidate;
+    Double_t LambdaX, LambdaY, LambdaZ;
     
     fNCascade = 0;
     Bool_t StandardXi=kTRUE;
@@ -532,7 +548,12 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             // XY Raidus cut
             Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
                 fHistos->FillTH2("hLambda_Rxy",LambdaX,LambdaY);
-            if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > 100) StandardXi=kFALSE;
+            //if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > 100) StandardXi=kFALSE;
+            
+            auto cX, cY, cZ;
+            Xicandidate->GetXYZcascade(cX,cY,cZ);
+            fHistos->FillTH2("hXi_Rxy",cX,cY);
+            //if(sqrt( pow(cX,2) + pow(cY,2) ) > 100) StandardXi=kFALSE;
             
             // After selection above
             if(StandardXi){ // Save only the Xi is good candidate
@@ -565,6 +586,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 
                 // XY Radius
                 fHistos->FillTH2("hLambda_Rxy_cut",LambdaX,LambdaY);
+                fHistos->FillTH2("hXi_Rxy_cut",cX,cY);
             }// for standard Xi
         } // ESD case
         else {
@@ -663,6 +685,25 @@ void AliAnalysisTaskXi1530::FillTracks(){
                                                     temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
                                                     TLorentzVector vecsumtrue = temp1 + temp2;
                                                     FillTHnSparse("hInvMassMCXi1530",{fCent,vecsumtrue.Pt(),vecsumtrue.M()});
+                                                    
+                                                    // True Xi1530 signals for cut study
+                                                    
+                                                    fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
+                                                    fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaXiDaughters()));
+                                                    fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                                    fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                                    fHistos -> FillTH1("hDCADist_BachelorPion_to_PV_TrueMC",fabs(bTrackXi->GetD(PVx, PVy, bField)));
+                                                    
+                                                    fHistos -> FillTH1("fDCADist_lambda_to_PV_TrueMC",fabs(Xicandidate->GetD(PVx, PVy, PVz)));
+                                                    fHistos -> FillTH1("fDCADist_Xi_to_PV_TrueMC",fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
+                                                    
+                                                    fHistos->FillTH2("hPhiEta_Xi_TrueMC",Xicandidate->Phi(),Xicandidate->Eta());
+                                                    fHistos->FillTH2("hLambda_Rxy_TrueMC",Xicandidate->GetX(),Xicandidate->GetY());
+                                                    
+                                                    auto cX, cY, cZ;
+                                                    Xicandidate->GetXYZcascade(cX,cY,cZ);
+                                                    fHistos->FillTH2("hXi_Rxy_TrueMC",cX,cY);
+                                                    
                                                 }//Xi1530 check
                                             }// Xi+pion mother check
                                         }// Xi Check
