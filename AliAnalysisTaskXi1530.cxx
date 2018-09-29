@@ -288,7 +288,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         //If this happens, re-check if AliMultSelectionTask ran before your task!
         AliInfo("Didn't find MultSelection!");
     }
-    fHistos->FillTH1("hMult",fCent);
+    FillTHnSparse("hMult",{fCent});
     
     // ----------------------------------------------------------------------
     

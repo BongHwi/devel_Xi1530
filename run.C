@@ -37,6 +37,7 @@ void run(
     gSystem->Load("libANALYSIS.so");
     gSystem->Load("libOADB.so");
     gSystem->Load("libANALYSISalice.so");
+    gSystem->Load("libpythia6_4_21.so");
     
     gSystem->Setenv("alien_CLOSE_SE","working_disk_SE");
 #if !defined (__CINT__) || defined (__CLING__)
