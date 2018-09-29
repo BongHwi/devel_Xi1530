@@ -126,7 +126,6 @@ AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 {
-    std::cout << "User Create Object" << std::endl;
     // Histograms container
     fOutput = new TList();
     fOutput->SetOwner(kTRUE);
@@ -207,13 +206,13 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_cut","",300,0,3,"s");
     // to PV
     // before
-    fHistos->CreateTH1("fDCADist_lambda_to_PV","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_lambda_to_PV","",500,0,0.5,"s");
     fHistos->CreateTH1("hDCADist_Xi_to_PV","",500,0,0.5,"s");
     fHistos->CreateTH1("hDCADist_LambdaProton_to_PV","",500,0,0.5,"s");
     fHistos->CreateTH1("hDCADist_LambdaPion_to_PV","",500,0,0.5,"s");
     fHistos->CreateTH1("hDCADist_BachelorPion_to_PV","",500,0,0.5,"s");
     // after
-    fHistos->CreateTH1("fDCADist_lambda_to_PV_cut","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_lambda_to_PV_cut","",500,0,0.5,"s");
     fHistos->CreateTH1("hDCADist_Xi_to_PV_cut","",500,0,0.5,"s");
     fHistos->CreateTH1("hDCADist_LambdaProton_to_PV_cut","",500,0,0.5,"s");
     fHistos->CreateTH1("hDCADist_LambdaPion_to_PV_cut","",500,0,0.5,"s");
@@ -248,7 +247,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         fHistos->CreateTH1("hDCADist_LambdaProton_to_PV_TrueMC","",500,0,0.5,"s");
         fHistos->CreateTH1("hDCADist_LambdaPion_to_PV_TrueMC","",500,0,0.5,"s");
         fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_TrueMC","",500,0,0.5,"s");
-        fHistos->CreateTH1("fDCADist_lambda_to_PV_TrueMC","",500,0,0.5,"s");
+        fHistos->CreateTH1("hDCADist_lambda_to_PV_TrueMC","",500,0,0.5,"s");
         fHistos->CreateTH1("hDCADist_Xi_to_PV_TrueMC","",500,0,0.5,"s");
         fHistos->CreateTH2("hPhiEta_Xi_TrueMC","",180,0,2*pi,40,-2,2);
         fHistos->CreateTH2("hLambda_Rxy_TrueMC","",400,-200,200,400,-200,200);
@@ -263,7 +262,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserExec(Option_t *)
 {
-    std::cout << "AliAnalysisTaskXi1530:: UserExec" << std::endl;
     // Pointer to a event----------------------------------------------------
     AliVEvent *event = InputEvent();
     if (!event)
@@ -310,7 +308,6 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // Preparation for MC ---------------------------------------------------
     if (IsMC)
     {
-        std::cout << "AliAnalysisTaskXi1530:: MC Check" << std::endl;
         if (fEvt->IsA()==AliESDEvent::Class()){
             if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) {
                 if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
@@ -518,7 +515,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             Double_t fDCADist_LambdaProton_PV = fabs(pTrackXi->GetD(PVx, PVy, bField));
             Double_t fDCADist_LambdaPion_PV   = fabs(pTrackXi->GetD(PVx, PVy, bField));
             Double_t fDCADist_BachelorPion_PV = fabs(bTrackXi->GetD(PVx, PVy, bField));
-                fHistos -> FillTH1("fDCADist_lambda_to_PV",fDCADist_Lambda_PV);
+                fHistos -> FillTH1("hDCADist_lambda_to_PV",fDCADist_Lambda_PV);
                 fHistos -> FillTH1("hDCADist_Xi_to_PV",fDCADist_Xi_PV);
                 fHistos -> FillTH1("hDCADist_LambdaProton_to_PV",fDCADist_LambdaProton_PV);
                 fHistos -> FillTH1("hDCADist_LambdaPion_to_PV",fDCADist_LambdaPion_PV);
@@ -567,7 +564,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 // DCA QA
                 fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_cut",fDCADist_Lambda);
                 fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_cut",fDCADist_Xi);
-                fHistos -> FillTH1("fDCADist_lambda_to_PV_cut",fDCADist_Lambda_PV);
+                fHistos -> FillTH1("hDCADist_lambda_to_PV_cut",fDCADist_Lambda_PV);
                 fHistos -> FillTH1("hDCADist_Xi_to_PV_cut",fDCADist_Xi_PV);
                 fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_cut",fDCADist_LambdaProton_PV);
                 fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_cut",fDCADist_LambdaPion_PV);
@@ -657,7 +654,6 @@ void AliAnalysisTaskXi1530::FillTracks(){
             mcXiFilled = kFALSE;
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){
-                    std::cout << "MC 01" << std::endl;
                     TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
                     TParticle* MCLamD1esd;
                     TParticle* MCLamD2esd;
@@ -693,8 +689,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
                                                     fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
                                                     fHistos -> FillTH1("hDCADist_BachelorPion_to_PV_TrueMC",fabs(bTrackXi->GetD(PVx, PVy, bField)));
                                                     
-                                                    fHistos -> FillTH1("fDCADist_lambda_to_PV_TrueMC",fabs(Xicandidate->GetD(PVx, PVy, PVz)));
-                                                    fHistos -> FillTH1("fDCADist_Xi_to_PV_TrueMC",fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
+                                                    fHistos -> FillTH1("hDCADist_lambda_to_PV_TrueMC",fabs(Xicandidate->GetD(PVx, PVy, PVz)));
+                                                    fHistos -> FillTH1("hDCADist_Xi_to_PV_TrueMC",fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
                                                     
                                                     fHistos->FillTH2("hPhiEta_Xi_TrueMC",Xicandidate->Phi(),Xicandidate->Eta());
                                                     
