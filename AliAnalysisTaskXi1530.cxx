@@ -665,7 +665,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                                         MCXiesd = (TParticle*)fMCStack->Particle(abs(MCLamesd->GetMother(0)));
                                         if (abs(MCXiesd->GetPdgCode()) == kXiCode) {
                                             std::cout << "MC 06" << std::endl;
-                                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(track1->GetLabel());
+                                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(Abs(track1->GetLabel()));
                                             if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) {
                                                 std::cout << "MC 07" << std::endl;
                                                 MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
