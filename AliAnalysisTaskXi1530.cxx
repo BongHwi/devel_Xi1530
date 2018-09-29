@@ -651,26 +651,19 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     TParticle* MCXiStarD2esd;
                     
                     if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
-                        std::cout << "MC 02" << std::endl;
                         MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
                         MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
                         if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) {
-                            std::cout << "MC 03" << std::endl;
                             if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) {
-                                std::cout << "MC 04" << std::endl;
                                 MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
                                 if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) {
-                                    std::cout << "MC 05" << std::endl;
                                     if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) {
                                         MCXiesd = (TParticle*)fMCStack->Particle(abs(MCLamesd->GetMother(0)));
                                         if (abs(MCXiesd->GetPdgCode()) == kXiCode) {
-                                            std::cout << "MC 06" << std::endl;
-                                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(Abs(track1->GetLabel()));
+                                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(abs(track1->GetLabel()));
                                             if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) {
-                                                std::cout << "MC 07" << std::endl;
                                                 MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
                                                 if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) {
-                                                    std::cout << "MC 08" << std::endl;
                                                     temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
                                                     temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
                                                     TLorentzVector vecsumtrue = temp1 + temp2;
