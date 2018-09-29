@@ -376,10 +376,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     
     if ( IsGoodVertex && fabs(fZ)<10.) {
         IsGoodVertexCut = kTRUE;
-        if (IsMinimumBias) {
             fHistos -> FillTH1("hEventNumbers","Goodzcut",1);
-            FillTHnSparse("hCent",{fCent});
-        }
     }
     zbin = binZ.FindBin(fZ) -1;
     centbin = binCent.FindBin(fCent) -1;
