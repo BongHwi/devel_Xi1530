@@ -376,7 +376,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     //
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
-    std::cout << "Track01" << std::endl;
     AliVTrack * track;
     
     tracklist *etl;
@@ -387,7 +386,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         ep -> push_back( tracklist() );
         etl = &(ep->back());
     }
-    std::cout << "Track02" << std::endl;
     fNTracks = 0;
     for (UInt_t it = 0; it<ntracks; it++){
         if (fEvt->IsA()==AliESDEvent::Class()){
@@ -396,7 +394,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             if (!fTrackCuts->AcceptTrack((AliESDtrack*) track)) continue;
             //if (!track->IsOn(AliVTrack::kITSpureSA)) continue;
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
-            std::cout << "Track03" << std::endl;
         }
         else {
             track = (AliAODTrack*) fEvt ->GetTrack(it);
@@ -409,7 +406,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         // PID cut for pion
         Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
         fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),fTPCNSigPion);
-        std::cout << "Track04" << std::endl;
         if (abs(fTPCNSigPion) > 3.) continue;
         fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),fTPCNSigPion);
         
@@ -419,7 +415,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         if(abs(track->Eta())>0.8) continue;
         
         goodtrackindices.push_back(it);
-        std::cout << "Track05" << std::endl;
         //Event mixing pool
         if (fsetmixing) etl->push_back( (AliVTrack*)track -> Clone() );
     }
