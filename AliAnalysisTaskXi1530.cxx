@@ -667,7 +667,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                                                     temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
                                                     temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
                                                     TLorentzVector vecsumtrue = temp1 + temp2;
-                                                    FillTHnSparse("hInvMassMCXi",{fCent,vecsumtrue.Pt(),vecsumtrue.M()});
+                                                    FillTHnSparse("hInvMassMCXi1530",{fCent,vecsumtrue.Pt(),vecsumtrue.M()});
                                                 }//Xi1530 check
                                             }// Xi+pion mother check
                                         }// Xi Check
