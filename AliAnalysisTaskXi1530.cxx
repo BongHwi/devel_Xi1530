@@ -236,6 +236,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     // after
     fHistos->CreateTH1("hMass_Xi_cut","",200,1.2,1.4,"s");
     
+    // E t a
+    fHistos -> CreateTH2("hPhiEta_Xi_cut","",180,0,2*pi,40,-2,2);
+    
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
 }
@@ -444,7 +447,10 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     const AliESDcascade *Xicandidate;
     
     fNCascade = 0;
+    Bool_t StandardXi=kTRUE;
+    
     for (UInt_t it = 0; it<ncascade; it++){
+        StandardXi=kTRUE;
         if (fEvt->IsA()==AliESDEvent::Class()){
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(it);
             if (!Xicandidate) continue;
@@ -470,12 +476,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 fHistos->FillTH2("hTPCPIDLambdaPion",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
                 fHistos->FillTH2("hTPCPIDBachelorPion",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
             
-            if (abs(fTPCNSigProton) > 3.) continue; // PID for proton
-            if (abs(fTPCNSigPion1) > 3.) continue; // PID for 1st pion
-            if (abs(fTPCNSigPion2) > 3.) continue; // PID for 2nd pion
-                fHistos->FillTH2("hTPCPIDLambdaProton_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
-                fHistos->FillTH2("hTPCPIDLambdaPion_cut",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
-                fHistos->FillTH2("hTPCPIDBachelorPion_cut",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            if (abs(fTPCNSigProton) > 3.) StandardXi=kFALSE; // PID for proton
+            if (abs(fTPCNSigPion1) > 3.) StandardXi=kFALSE; // PID for 1st pion
+            if (abs(fTPCNSigPion2) > 3.) StandardXi=kFALSE; // PID for 2nd pion
             
             // DCA cut
             // DCA between Dautgher particles
@@ -484,10 +487,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters",fDCADist_Lambda);
                 fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters",fDCADist_Xi);
             
-            if( fDCADist_Lambda > 1.6) continue;// DCA proton-pion
-            if( fDCADist_Xi > 1.6) continue;// DCA Lambda-pion
-                fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_cut",fDCADist_Lambda);
-                fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_cut",fDCADist_Xi);
+            if( fDCADist_Lambda > 1.6) StandardXi=kFALSE;// DCA proton-pion
+            if( fDCADist_Xi > 1.6) StandardXi=kFALSE;// DCA Lambda-pion
+            
             // DCA to PV
             Double_t fDCADist_Lambda_PV       = fabs(Xicandidate->GetD(PVx, PVy, PVz));
             Double_t fDCADist_Xi_PV           = fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
@@ -500,28 +502,26 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 fHistos -> FillTH1("hDCADist_LambdaPion_to_PV",fDCADist_LambdaPion_PV);
                 fHistos -> FillTH1("hDCADist_BachelorPion_to_PV",fDCADist_BachelorPion_PV);
             
+            if( fDCADist_Lambda_PV < 0.07) StandardXi=kFALSE;// DCA proton-pion
+            
             // CPA cut
             Double_t fLambdaCPA = Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
             Double_t fXiCPA = Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
                 fHistos -> FillTH1("hCosPA_lambda",fLambdaCPA);
                 fHistos -> FillTH1("hCosPA_Xi",fXiCPA);
             
-            if(Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz) < 0.97) continue;
-            if(Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz) < 0.97) continue;
-                fHistos -> FillTH1("hCosPA_lambda_cut",fLambdaCPA);
-                fHistos -> FillTH1("hCosPA_Xi_cut",fXiCPA);
+            if(Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz) < 0.97) StandardXi=kFALSE;
+            if(Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz) < 0.97) StandardXi=kFALSE;
             
             // Mass window cut
             Double_t fMass_Xi = Xicandidate->M();
                 fHistos -> FillTH1("hMass_Xi",fMass_Xi);
-            if (fabs(fMass_Xi - Ximass) > 0.007) continue;
-                fHistos -> FillTH1("hMass_Xi_cut",fMass_Xi);
+            if (fabs(fMass_Xi - Ximass) > 0.007) StandardXi=kFALSE;
             
             // Eta cut
-            if(abs(Xicandidate->Eta())>0.8) continue;
-            
-            fHistos->FillTH2("hPhiEta_Xi",Xicandidate->Phi(),Xicandidate->Eta());
-        }
+            if(abs(Xicandidate->Eta())>0.8) StandardXi=kFALSE;
+                fHistos->FillTH2("hPhiEta_Xi",Xicandidate->Phi(),Xicandidate->Eta());
+        } // ESD case
         else {
             // !! NEED TO MODIFY !!
             /*
@@ -532,10 +532,36 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             if (abs(track->Eta())>fetacut) continue;
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
             */
-        }
-        fNCascade++;
-        goodcascadeindices.push_back(it);
-    }
+        } // AOD case
+        if(StandardXi){
+            fNCascade++;
+            goodcascadeindices.push_back(it);
+            
+            // PID QA
+            fHistos->FillTH2("hTPCPIDLambdaProton_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            fHistos->FillTH2("hTPCPIDLambdaPion_cut",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            fHistos->FillTH2("hTPCPIDBachelorPion_cut",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            
+            // DCA QA
+            fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_cut",fDCADist_Lambda);
+            fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_cut",fDCADist_Xi);
+            fHistos -> FillTH1("fDCADist_lambda_to_PV_cut",fDCADist_Lambda_PV);
+            fHistos -> FillTH1("hDCADist_Xi_to_PV_cut",fDCADist_Xi_PV2);
+            fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_cut",fDCADist_LambdaProton_PV);
+            fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_cut",fDCADist_LambdaPion_PV);
+            fHistos -> FillTH1("hDCADist_BachelorPion_to_PV_cut",fDCADist_BachelorPion_PV);
+            
+            // CPA QA
+            fHistos -> FillTH1("hCosPA_lambda_cut",fLambdaCPA);
+            fHistos -> FillTH1("hCosPA_Xi_cut",fXiCPA);
+            
+            // Mass window QA
+            fHistos -> FillTH1("hMass_Xi_cut",fMass_Xi);
+            
+            // Eta
+            fHistos->FillTH2("hPhiEta_Xi_cut",Xicandidate->Phi(),Xicandidate->Eta());
+        }// for standard Xi
+    }// All Xi loop
     
     return goodcascadeindices.size();
 }
