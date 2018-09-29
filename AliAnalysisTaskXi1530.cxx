@@ -376,7 +376,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     //
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
-    
+    std::cout << "Track01" << std::endl;
     AliVTrack * track;
     
     tracklist *etl;
@@ -387,6 +387,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         ep -> push_back( tracklist() );
         etl = &(ep->back());
     }
+    std::cout << "Track02" << std::endl;
     fNTracks = 0;
     for (UInt_t it = 0; it<ntracks; it++){
         if (fEvt->IsA()==AliESDEvent::Class()){
@@ -395,6 +396,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             if (!fTrackCuts->AcceptTrack((AliESDtrack*) track)) continue;
             //if (!track->IsOn(AliVTrack::kITSpureSA)) continue;
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
+            std::cout << "Track03" << std::endl;
         }
         else {
             track = (AliAODTrack*) fEvt ->GetTrack(it);
@@ -407,7 +409,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         // PID cut for pion
         Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
         fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),fTPCNSigPion);
-        
+        std::cout << "Track04" << std::endl;
         if (abs(fTPCNSigPion) > 3.) continue;
         fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),fTPCNSigPion);
         
@@ -417,7 +419,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         if(abs(track->Eta())>0.8) continue;
         
         goodtrackindices.push_back(it);
-        
+        std::cout << "Track05" << std::endl;
         //Event mixing pool
         if (fsetmixing) etl->push_back( (AliVTrack*)track -> Clone() );
     }
@@ -639,6 +641,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             mcXiFilled = kFALSE;
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){
+                    std::cout << "MC 01" << std::endl;
                     TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
                     TParticle* MCLamD1esd;
                     TParticle* MCLamD2esd;
@@ -648,22 +651,29 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     TParticle* MCXiStarD2esd;
                     
                     if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
+                        std::cout << "MC 02" << std::endl;
                         MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
                         MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
                         if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) {
+                            std::cout << "MC 03" << std::endl;
                             if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) {
+                                std::cout << "MC 04" << std::endl;
                                 MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
                                 if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) {
+                                    std::cout << "MC 05" << std::endl;
                                     if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) {
                                         MCXiesd = (TParticle*)fMCStack->Particle(abs(MCLamesd->GetMother(0)));
                                         if (abs(MCXiesd->GetPdgCode()) == kXiCode) {
+                                            std::cout << "MC 06" << std::endl;
                                             MCXiStarD2esd = (TParticle*)fMCStack->Particle(track1->GetLabel());
                                             if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) {
+                                                std::cout << "MC 07" << std::endl;
                                                 MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
                                                 if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) {
+                                                    std::cout << "MC 08" << std::endl;
                                                     temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
                                                     temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
-                                                    auto vecsumtrue = temp1 + temp2;
+                                                    TLorentzVector vecsumtrue = temp1 + temp2;
                                                     FillTHnSparse("hInvMassMCXi",{fCent,vecsumtrue.Pt(),vecsumtrue.M()});
                                                 }//Xi1530 check
                                             }// Xi+pion mother check
