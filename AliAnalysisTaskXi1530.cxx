@@ -156,7 +156,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
     fHistos -> CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
-    fHistos -> CreateTH2("hPhiEta_Xi","",180,0,2*pi,40,-2,2);
     
     binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
     fHistos->CreateTH1("hMul","",200,0,200,"s");
@@ -231,13 +230,16 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos->CreateTH1("hCosPA_Xi_cut","",150,0.85,1.0,"s");
     
     // M a s s   W i n d o w
-    // before
-    fHistos->CreateTH1("hMass_Xi","",200,1.2,1.4,"s");
-    // after
-    fHistos->CreateTH1("hMass_Xi_cut","",200,1.2,1.4,"s");
+    fHistos->CreateTH1("hMass_Xi","",200,1.2,1.4,"s"); // before
+    fHistos->CreateTH1("hMass_Xi_cut","",200,1.2,1.4,"s"); // after
     
     // E t a
-    fHistos -> CreateTH2("hPhiEta_Xi_cut","",180,0,2*pi,40,-2,2);
+    fHistos -> CreateTH2("hPhiEta_Xi","",180,0,2*pi,40,-2,2); // before
+    fHistos -> CreateTH2("hPhiEta_Xi_cut","",180,0,2*pi,40,-2,2); // after
+    
+    // Radius X - Y
+    fHistos -> CreateTH2("hLambda_Rxy","",400,-200,200,400,-200,200); // before
+    fHistos -> CreateTH2("hLambda_Rxy_cut","",400,-200,200,400,-200,200); // after
     
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
@@ -443,6 +445,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
         PVy = pVtx->GetY();
         PVz = pVtx->GetZ();
     Double_t bField = fEvt->GetMagneticField();
+    Double_t LambdaX, LambdaY, LambdaZ;
+    
     
     const AliESDcascade *Xicandidate;
     
@@ -521,6 +525,12 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             // Eta cut
             if(abs(Xicandidate->Eta())>0.8) StandardXi=kFALSE;
                 fHistos->FillTH2("hPhiEta_Xi",Xicandidate->Phi(),Xicandidate->Eta());
+            
+            // XY Raidus cut
+            Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
+                fHistos->FillTH2("hLambda_Rxy",LambdaX,LambdaY);
+            if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > 100) StandardXi=kFALSE;
+            
         } // ESD case
         else {
             // !! NEED TO MODIFY !!
@@ -533,7 +543,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
             */
         } // AOD case
-        if(StandardXi){
+        
+        // After selection above
+        if(StandardXi){ // Save only the Xi is good candidate
             fNCascade++;
             goodcascadeindices.push_back(it);
             
@@ -560,6 +572,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             
             // Eta
             fHistos->FillTH2("hPhiEta_Xi_cut",Xicandidate->Phi(),Xicandidate->Eta());
+            
+            // XY Radius
+            fHistos->FillTH2("hLambda_Rxy_cut",LambdaX,LambdaY);
         }// for standard Xi
     }// All Xi loop
     
