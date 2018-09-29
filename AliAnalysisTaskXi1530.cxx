@@ -288,6 +288,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         //If this happens, re-check if AliMultSelectionTask ran before your task!
         AliInfo("Didn't find MultSelection!");
     }
+    fHistos->FillTH1("hMult",fCent);
+    
     // ----------------------------------------------------------------------
     
     // Preparation for MC ---------------------------------------------------
@@ -295,10 +297,14 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     {
         std::cout << "AliAnalysisTaskXi1530:: MC Check" << std::endl;
         if (fEvt->IsA()==AliESDEvent::Class()){
+            if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) {
+                if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
+                    fMCStack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
+            }
             //AliMCEvent  *mcEvent = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent();
-            AliMCEvent  *mcEvent = MCEvent();
-            if(!mcEvent) return;
-            fMCStack = (AliStack*) mcEvent->Stack();
+            //AliMCEvent  *mcEvent = MCEvent();
+            //if(!mcEvent) return;
+            //fMCStack = (AliStack*) mcEvent->Stack();
         }
         else{
             fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
