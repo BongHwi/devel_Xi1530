@@ -206,17 +206,17 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_cut","",300,0,3,"s");
     // to PV
     // before
-    fHistos->CreateTH1("hDCADist_lambda_to_PV","",500,0,0.5,"s");
-    fHistos->CreateTH1("hDCADist_Xi_to_PV","",500,0,0.5,"s");
-    fHistos->CreateTH1("hDCADist_LambdaProton_to_PV","",500,0,0.5,"s");
-    fHistos->CreateTH1("hDCADist_LambdaPion_to_PV","",500,0,0.5,"s");
-    fHistos->CreateTH1("hDCADist_BachelorPion_to_PV","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_lambda_to_PV","",500,0,5,"s");
+    fHistos->CreateTH1("hDCADist_Xi_to_PV","",500,0,5,"s");
+    fHistos->CreateTH1("hDCADist_LambdaProton_to_PV","",500,0,5,"s");
+    fHistos->CreateTH1("hDCADist_LambdaPion_to_PV","",500,0,5,"s");
+    fHistos->CreateTH1("hDCADist_BachelorPion_to_PV","",500,0,5,"s");
     // after
-    fHistos->CreateTH1("hDCADist_lambda_to_PV_cut","",500,0,0.5,"s");
-    fHistos->CreateTH1("hDCADist_Xi_to_PV_cut","",500,0,0.5,"s");
-    fHistos->CreateTH1("hDCADist_LambdaProton_to_PV_cut","",500,0,0.5,"s");
-    fHistos->CreateTH1("hDCADist_LambdaPion_to_PV_cut","",500,0,0.5,"s");
-    fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_cut","",500,0,0.5,"s");
+    fHistos->CreateTH1("hDCADist_lambda_to_PV_cut","",500,0,5,"s");
+    fHistos->CreateTH1("hDCADist_Xi_to_PV_cut","",500,0,5,"s");
+    fHistos->CreateTH1("hDCADist_LambdaProton_to_PV_cut","",500,0,5,"s");
+    fHistos->CreateTH1("hDCADist_LambdaPion_to_PV_cut","",500,0,5,"s");
+    fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_cut","",500,0,5,"s");
     
     // C P A
     // before
@@ -244,11 +244,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         //For MC True stduy purpose
         fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_TrueMC","",300,0,3,"s");
         fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_TrueMC","",300,0,3,"s");
-        fHistos->CreateTH1("hDCADist_LambdaProton_to_PV_TrueMC","",500,0,0.5,"s");
-        fHistos->CreateTH1("hDCADist_LambdaPion_to_PV_TrueMC","",500,0,0.5,"s");
-        fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_TrueMC","",500,0,0.5,"s");
-        fHistos->CreateTH1("hDCADist_lambda_to_PV_TrueMC","",500,0,0.5,"s");
-        fHistos->CreateTH1("hDCADist_Xi_to_PV_TrueMC","",500,0,0.5,"s");
+        fHistos->CreateTH1("hDCADist_LambdaProton_to_PV_TrueMC","",500,0,5,"s");
+        fHistos->CreateTH1("hDCADist_LambdaPion_to_PV_TrueMC","",500,0,5,"s");
+        fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_TrueMC","",500,0,5,"s");
+        fHistos->CreateTH1("hDCADist_lambda_to_PV_TrueMC","",500,0,5,"s");
+        fHistos->CreateTH1("hDCADist_Xi_to_PV_TrueMC","",500,0,5,"s");
         fHistos->CreateTH2("hPhiEta_Xi_TrueMC","",180,0,2*pi,40,-2,2);
         fHistos->CreateTH2("hLambda_Rxy_TrueMC","",400,-200,200,400,-200,200);
         fHistos->CreateTH2("hXi_Rxy_TrueMC","",400,-200,200,400,-200,200);
