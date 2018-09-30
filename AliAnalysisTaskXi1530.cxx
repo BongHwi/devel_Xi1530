@@ -258,11 +258,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserExec(Option_t *)
 {
+    std::cout << "AliAnalysisTaskXi1530:: UserExec" << std::endl;
     // Pointer to a event----------------------------------------------------
     AliVEvent *event = InputEvent();
-    if (!event)
-    {
-        std::cout << "ERROR: Could not retrieve event" << std::endl;
+    if (!event){
+        AliInfo("Could not retrieve event");
         return;
     }
     // ----------------------------------------------------------------------
@@ -281,67 +281,32 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
 
     
     // Multiplicity(centrality) ---------------------------------------------
-    // fCent:
-    //       0-100: Selected
-    //       999: Not selected
-    //       -999: No MultSection
-    //
-    fCent = -999; // Multiplicity
-    AliMultSelection *MultSelection = (AliMultSelection*) fEvt->FindListObject("MultSelection");
-    if(MultSelection)
-    {
-        if (!(MultSelection->IsEventSelected()))
-        {
-            AliInfo("This event is not selected: AliMultSelection");
-            fCent = 999;
-        }
-        else fCent = MultSelection->GetMultiplicityPercentile("V0M");
-    }
-    else
-    {
-        //If this happens, re-check if AliMultSelectionTask ran before your task!
-        AliInfo("Didn't find MultSelection!");
-    }
+    fCent = GetMultiplicty(fEvt);
+    centbin = binCent.FindBin(fCent) -1; // Event mixing cent bin
     FillTHnSparse("hMult",{fCent});
-    
     // ----------------------------------------------------------------------
     
     // Preparation for MC ---------------------------------------------------
-    if (IsMC)
-    {
+    if (IsMC){
         if (fEvt->IsA()==AliESDEvent::Class()){
-            if(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()) {
-                if(static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent())
-                    fMCStack = static_cast<AliMCEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler())->MCEvent()->Stack();
-            }
+            fMCStack = MCEvent()->Stack();
+            FillMCinput(fMCStack);
         }// ESD Case
         else{
             fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
         }// AOD Case
-        
-        // Fill MC input Xi1530 histogram
-        for (UInt_t it = 0; it < fMCStack->GetNprimary(); it++) {
-            TParticle *mcInputTrack = (TParticle*)fMCStack->Particle(it);
-            if (!mcInputTrack) {
-                Error("UserExec", "Could not receive MC track %d", it);
-                continue;
-            }
-            if(abs(mcInputTrack->GetPdgCode()) == kXiStarCode) FillTHnSparse("hInvMassMCXi1530_input",{fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
-        }
-        
     }
-
+    // ----------------------------------------------------------------------
+    
     // PID response ----------------------------------------------------------
     fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
-    if(!fPIDResponse){
-        std::cout << "AliAnalysisTaskXi1530:: No PIDd\n" << std::endl;
-    }
+    if(!fPIDResponse) AliInfo("AliAnalysisTaskXi1530:: No PIDd\n");
     // -----------------------------------------------------------------------
     
     fHistos -> FillTH1("hEventNumbers","All",1);
     // In Complete DAQ Event Cut----------------------------------------------
     if (fEvt->IsIncompleteDAQ()) {
-        std::cout << "Reject: IsIncompleteDAQ" << std::endl;;
+        AliInfo("Reject: IsIncompleteDAQ");
         PostData(1, fHistos->GetListOfHistograms());
         return;
     }
@@ -349,13 +314,13 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // -----------------------------------------------------------------------
     
     // Vertex Check-----------------------------------------------------------
-    //const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
+    const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
     const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTPC() ;
     const AliVVertex* spdVtx    = fEvt->GetPrimaryVertexSPD() ;
-
+    PVx = pVtx->GetX(); PVy = pVtx->GetY(); PVz = pVtx->GetZ();
+    
     Bool_t IsGoodVertex = kFALSE;
     Bool_t IsGoodVertexCut = kFALSE;
-    AliVTrack * track1;
     
     if (spdVtx) {
         fZ = spdVtx->GetZ();
@@ -364,28 +329,24 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
             fHistos -> FillTH1("hEventNumbers","Goodz",1);
             IsGoodVertex = kTRUE;
             fHistos->FillTH1("hZvtx",fZ);
+            zbin = binZ.FindBin(fZ) -1; // Event mixing z-bin
+            
+            if (fabs(fZ)<10.) {
+                IsGoodVertexCut = kTRUE;
+                fHistos -> FillTH1("hEventNumbers","Goodzcut",1);
+            }
         }
     } else IsGoodVertex = kFALSE;
+    // -----------------------------------------------------------------------
     
-    if ( IsGoodVertex && fabs(fZ)<10.) {
-        IsGoodVertexCut = kTRUE;
-            fHistos -> FillTH1("hEventNumbers","Goodzcut",1);
-    }
-    zbin = binZ.FindBin(fZ) -1;
-    centbin = binCent.FindBin(fCent) -1;
-    
-    const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
-    PVx = pVtx->GetX();
-    PVy = pVtx->GetY();
-    PVz = pVtx->GetZ();
-    
-    bField = fEvt->GetMagneticField();
+    bField = fEvt->GetMagneticField(); // bField for getD
     
     if (IsGoodVertexCut){
         if (this -> GoodTracksSelection() && this -> GoodCascadeSelection()) this -> FillTracks();
     }
     
     PostData(1, fHistos->GetListOfHistograms());
+    std::cout << "AliAnalysisTaskXi1530:: UserExec - done" << std::endl;
 }
 //________________________________________________________________________
 Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
@@ -394,18 +355,23 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     // - TPC PID cut for pion
     // - Eta cut
     //
+    std::cout << "AliAnalysisTaskXi1530:: GoodTracksSelection" << std::endl;
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
     AliVTrack * track;
-    
+    std::cout << "AliAnalysisTaskXi1530:: GoodTracksSelection 01" << std::endl;
     tracklist *etl;
     eventpool *ep;
     //Event mixing pool
     if (fsetmixing){
         ep = &fEMpool[centbin][zbin];
+        std::cout << "AliAnalysisTaskXi1530:: GoodTracksSelection 01-1" << std::endl;
         ep -> push_back( tracklist() );
+        std::cout << "AliAnalysisTaskXi1530:: GoodTracksSelection 01-2" << std::endl;
         etl = &(ep->back());
+        std::cout << "AliAnalysisTaskXi1530:: GoodTracksSelection 01-3" << std::endl;
     }
+    std::cout << "AliAnalysisTaskXi1530:: GoodTracksSelection 02" << std::endl;
     fNTracks = 0;
     for (UInt_t it = 0; it<ntracks; it++){
         if (fEvt->IsA()==AliESDEvent::Class()){
@@ -447,6 +413,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         }
     }
     return goodtrackindices.size();
+    std::cout << "AliAnalysisTaskXi1530:: GoodTracksSelection done" << std::endl;
 }
 
 Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
@@ -460,6 +427,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     // - Mass window cut for Xi
     // - Eta cut
     //
+    std::cout << "AliAnalysisTaskXi1530:: GoodCascadeSelection" << std::endl;
     goodcascadeindices.clear();
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
     
@@ -600,10 +568,11 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     }// All Xi loop
     
     return goodcascadeindices.size();
+    std::cout << "AliAnalysisTaskXi1530:: GoodCascadeSelection - done" << std::endl;
 }
 
 void AliAnalysisTaskXi1530::FillTracks(){
-    
+    std::cout << "AliAnalysisTaskXi1530:: FillTracks" << std::endl;
     AliVTrack *track1;
     // charged track, pion
     AliESDcascade *Xicandidate;
@@ -754,54 +723,48 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 FillTHnSparse("hInvMass",{kMixing,fCent,vecsum.M(),vecsum.Pt()});
             }
         }
-    }
+    }//mix loop
+    std::cout << "AliAnalysisTaskXi1530:: FillTracks done" << std::endl;
 }
 
 void AliAnalysisTaskXi1530::Terminate(Option_t *)
 {
 }
-Int_t AliAnalysisTaskXi1530::GetPID(AliPIDResponse *pid, const AliVTrack *trk){
-    if (!pid) return -1; // no pid available
-    
-    /*Double_t sigmas[] ={-999,-999,-999,-999};
-     
-     Int_t ipid = kUnknown;
-     Double_t lsigma = 3;
-     sigmas[kPion] = pid -> NumberOfSigmasTPC(trk,AliPID::kPion);
-     sigmas[kKaon] = pid -> NumberOfSigmasTPC(trk,AliPID::kKaon);
-     sigmas[kProton] = pid -> NumberOfSigmasTPC(trk,AliPID::kProton);
-     sigmas[kElectron] = pid -> NumberOfSigmasTPC(trk,AliPID::kElectron);
-     for (int i=0; i<kUnknown; i++){
-     if (fabs(sigmas[i]) < lsigma) {
-     lsigma = fabs(sigmas[i]);
-     ipid = i;
-     }
-     }
-     
-     // derive information, whether tof pid is available
-     if (0){
-     const Bool_t ka = !(trk->GetStatus() & AliESDtrack::kTOFmismatch);
-     const Bool_t kb =  (trk->GetStatus() & AliESDtrack::kTOFpid);
-     const Bool_t ktof = ka && kb;
-     }
-     
-     if (lsigma>3 ) return kUnknown;
-     else  return ipid;
-     
-     */
-    Double_t prob[AliPID::kSPECIES];
-    fPIDCombined->ComputeProbabilities(trk,pid,prob);
-    Int_t ipid = AliPID::kUnknown;
-    Double_t iprob = 0;
-    for (int i=0; i<AliPID::kSPECIES; i++){
-        if (prob[i]>0.6 && prob[i]>iprob) {
-            iprob = prob[i];
-            ipid = i;
+Double_t AliAnalysisTaskXi1530::GetMultiplicty(AliVEvent *fEvt){
+    // Set multiplicity value
+    // fCent:
+    //       0-100: Selected, value.
+    //       999: Not selected
+    //       -999: No MultSection
+    //
+    fCent = -999;
+    AliMultSelection *MultSelection = (AliMultSelection*) fEvt->FindListObject("MultSelection");
+    if(MultSelection)
+    {
+        if (!(MultSelection->IsEventSelected()))
+        {
+            AliInfo("This event is not selected: AliMultSelection");
+            fCent = 999;
         }
+        else fCent = MultSelection->GetMultiplicityPercentile("V0M");
     }
-    if (ipid == AliPID::kUnknown) ipid = AliPID::kPion;
-    return ipid;
-    
+    else
+    {
+        //If this happens, re-check if AliMultSelectionTask ran before your task!
+        AliInfo("Didn't find MultSelection!");
+    }
+    return fCent;
+}
+void AliAnalysisTaskXi1530::FillMCinput(AliStack* fMCStack){
+    // Fill MC input Xi1530 histogram
+    for (Int_t it = 0; it < fMCStack->GetNprimary(); it++) {
+        TParticle *mcInputTrack = (TParticle*)fMCStack->Particle(it);
+        if (!mcInputTrack) {
+            Error("UserExec", "Could not receive MC track %d", it);
+            continue;
+        }
+        if(abs(mcInputTrack->GetPdgCode()) == kXiStarCode) FillTHnSparse("hInvMassMCXi1530_input",{fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
+    }
 }
 
 THnSparse* AliAnalysisTaskXi1530::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t * opt){

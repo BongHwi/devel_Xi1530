@@ -63,8 +63,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     
         void SetOption(char * option) {fOption = option;}
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
-        Int_t GetCentBin(Double_t cent);
-        Int_t GetPID(AliPIDResponse *pid, const AliVTrack *trk);
+        Double_t GetMultiplicty(AliVEvent *fEvt);
+        void FillMCinput(AliStack* fMCStack);
         
         Bool_t  GoodTracksSelection();
         Bool_t  GoodCascadeSelection();
