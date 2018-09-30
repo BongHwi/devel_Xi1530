@@ -37,6 +37,7 @@
 #include "AliMCEventHandler.h"
 #include "AliGenEventHeader.h"
 #include "AliAnalysisManager.h"
+#include "AliAnalysisUtils.h"
 #include "AliInputEventHandler.h"
 #include "AliPPVsMultUtils.h"
 #include "AliMultSelection.h"
@@ -309,7 +310,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // Pile up rejection-----------------------------------------------------
     // Enhanced Pileup rejection method for the higher multiplicity region
     // detail: https://alice-notes.web.cern.ch/node/478
-    Bool_t isNotPileUp = AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvt);
+    Bool_t IsNotPileUp = AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvt);
     
     // In Complete DAQ Event Cut----------------------------------------------
     Bool_t IncompleteDAQ = fEvt->IsIncompleteDAQ();
@@ -333,9 +334,9 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     fZ = spdVtx->GetZ();
     zbin = binZ.FindBin(fZ) -1; // Event mixing z-bin
     
-    Bool_t IsGoodVertex = vertex->GetStatus() && selectVertex2015pp( fESD ,kTRUE,kFALSE,kTRUE);
+    Bool_t IsGoodVertex = spdVtx->GetStatus() && SelectVertex2015pp(fEvt,kTRUE,kFALSE,kTRUE);
     Bool_t IsGoodVertexCut = (fabs(fZ)<10.);
-    Bool_t IsTrackletinEta1 = (AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0) >= 1);
+    Bool_t IsTrackletinEta1 = (AliESDtrackCuts::GetReferenceMultiplicity(fEvt, AliESDtrackCuts::kTracklets, 1.0) >= 1);
     
     // Multi Selection--------------------------------------------------------
     // Include:
@@ -353,8 +354,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     Bool_t IsPS = isSelectedkINT7    // CINT7 Trigger selected
                && !IncompleteDAQ     // No IncompleteDAQ
                && !SPDvsClustersBG   // No SPDvsClusters Background
-               && isNotPileUp        // PileUp rejection
-               && fisTracklet        // at least 1 tracklet in eta +_1 region. (INEL>0)
+               && IsNotPileUp        // PileUp rejection
+               && IsTrackletinEta1        // at least 1 tracklet in eta +_1 region. (INEL>0)
                && IsMultSelcted;     // Is MultiSelected
     
     fHistos -> FillTH1("hEventNumbers","All",1);
@@ -752,7 +753,7 @@ void AliAnalysisTaskXi1530::Terminate(Option_t *)
 {
 }
 
-Bool_t AliAnalysisTaskXi1530::selectVertex2015pp(AliESDEvent *esd,
+Bool_t AliAnalysisTaskXi1530::SelectVertex2015pp(AliESDEvent *esd,
                                                 Bool_t checkSPDres, //enable check on vtx resolution
                                                 Bool_t requireSPDandTrk, //ask for both trk and SPD vertex
                                                 Bool_t checkProximity) //apply cut on relative position of spd and trk verteces
@@ -786,7 +787,13 @@ Bool_t AliAnalysisTaskXi1530::selectVertex2015pp(AliESDEvent *esd,
     }
     return kTRUE;
 }
-
+Bool_t AliAnalysisTaskXi1530::IsGoodSPDvertexRes(const AliESDVertex * spdVertex){
+    // From AliPhysics/PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
+    // Original author: Sergio Iga
+    if (!spdVertex) return kFALSE;
+    if (spdVertex->IsFromVertexerZ() && !(spdVertex->GetDispersion()<0.04 && spdVertex->GetZRes()<0.25)) return kFALSE;
+    return kTRUE;
+}
 Double_t AliAnalysisTaskXi1530::GetMultiplicty(AliVEvent *fEvt){
     // Set multiplicity value
     // fCent:

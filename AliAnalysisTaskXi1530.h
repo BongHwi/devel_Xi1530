@@ -64,6 +64,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         void SetOption(char * option) {fOption = option;}
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
         Double_t GetMultiplicty(AliVEvent *fEvt);
+        Bool_t SelectVertex2015pp(AliESDEvent *esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
+        Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex);
         void FillMCinput(AliStack* fMCStack);
         
         Bool_t  GoodTracksSelection();
