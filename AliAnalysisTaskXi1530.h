@@ -67,7 +67,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Bool_t SelectVertex2015pp(AliESDEvent *esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
         Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex);
         Bool_t IsMCEventTrueINEL0();
-        void FillMCMVTrigEff();
         void FillMCinput(AliStack* fMCStack);
         
         Bool_t  GoodTracksSelection();

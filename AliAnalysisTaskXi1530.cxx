@@ -790,26 +790,6 @@ Bool_t AliAnalysisTaskXi1530::IsGoodSPDvertexRes(const AliESDVertex * spdVertex)
     if (spdVertex->IsFromVertexerZ() && !(spdVertex->GetDispersion()<0.04 && spdVertex->GetZRes()<0.25)) return kFALSE;
     return kTRUE;
 }
-
-void AliAnalysisTaskXi1530::FillMCMVTrigEff(){
-    // Fill Histograms for Missing Vertex Correction and Trigger Effiiciency
-    // Missing Vertex: Good Vertex Event(IsPS && IsGoodVertex) / Physics Selected Event(IsPS)
-    // Trigger Efficiecny: Physics Selected Event(IsPS) / True INEL>0 event(IsMCEventTrueINEL0)
-    
-    for ( int iT = 0 ; iT < fMCStack->GetNtrack(); iT++ ){
-        TParticle *mcParticle = fMCStack->Particle(iT);
-        if (!mcParticle){
-            AliInfo("no mcParticle");
-            continue;
-        }
-        if(!fMCStack->IsPhysicalPrimary(iT)) continue;
-        
-        if ( TMath::Abs(mcParticle->Eta()) > fetacut ) continue;
-        if ( mcParticle->Pt() < 0.15 ) continue;
-        
-        
-    }
-}
 Double_t AliAnalysisTaskXi1530::GetMultiplicty(AliVEvent *fEvt){
     // Set multiplicity value
     // fCent:
