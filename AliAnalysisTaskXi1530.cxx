@@ -78,6 +78,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530()
 {
     DefineInput (0, TChain::Class());
     DefineOutput (1, TList::Class());
+    DefineOutput (2, TList::Class());
 }
 //___________________________________________________________________
 AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(
@@ -92,6 +93,7 @@ AliAnalysisTaskXi1530::AliAnalysisTaskXi1530(
 {
     DefineInput (0, TChain::Class());
     DefineOutput (1, TList::Class());
+    DefineOutput (2, TList::Class());
 }
 AliAnalysisTaskXi1530::AliAnalysisTaskXi1530
 (
@@ -119,6 +121,7 @@ AliAnalysisTaskXi1530& AliAnalysisTaskXi1530::operator =
 AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
 {
     delete fOutput;
+    delete fOutputQA;
     delete fTrackCuts;
     delete fPIDResponse;
     delete fRunTable;
@@ -129,6 +132,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     // Histograms container
     fOutput = new TList();
     fOutput->SetOwner(kTRUE);
+    // QA histograms container
+    fOutputQA = new TList();
+    fOutputQA->SetOwner(kTRUE);
     
     // TrackCuts for Xi1530--------------------------------------------------
     fTrackCuts = new AliESDtrackCuts();
@@ -181,7 +187,10 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     //hmultCINT7->GetXaxis()->SetBinLabel(1,"0 - 100 % (MB)");
     //for(auto i=1u;i<nmult.size();i++) hmultCINT7->GetXaxis()->SetBinLabel(i+1,Form("%d - %d%%",nmult.at(i),nmult.at(i+1)));
     
+    
+    
     // QA Histograms--------------------------------------------------
+    fQAHistos = new THistManager("Xi1530QAhists");
     // T P C   P I D
     // before
     fHistos -> CreateTH2("hTPCPIDLambdaProton","",1000,0,20,1000,-5,5);
@@ -253,8 +262,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         
     }
     
+    fQAHistos-> CreateTH2("Check","",400,-200,200,400,-200,200); // check
+    
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
+    PostData(2, fQAHistos->GetListOfHistograms());
 }
 
 //________________________________________________________________________
