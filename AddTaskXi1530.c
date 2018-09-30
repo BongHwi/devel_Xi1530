@@ -20,11 +20,9 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530", const char
     
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutputXi1530 = mgr->CreateContainer("Xi1530", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
-    AliAnalysisDataContainer *coutputXi1530QA = mgr->CreateContainer("Xi1530_QA", TList::Class(), AliAnalysisManager::kOutputContainer,"AnalysisResults.root");
     
     mgr->ConnectInput(taskXi1530, 0, cinput);
     mgr->ConnectOutput(taskXi1530, 1, coutputXi1530);
-    mgr->ConnectOutput(taskXi1530, 2, coutputXi1530QA);
 
     return taskXi1530;
 }

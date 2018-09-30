@@ -120,8 +120,6 @@ AliAnalysisTaskXi1530& AliAnalysisTaskXi1530::operator =
 //___________________________________________________________________
 AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
 {
-    delete fOutput;
-    delete fOutputQA;
     delete fTrackCuts;
     delete fPIDResponse;
     delete fRunTable;
@@ -129,13 +127,6 @@ AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 {
-    // Histograms container
-    fOutput = new TList();
-    fOutput->SetOwner(kTRUE);
-    // QA histograms container
-    fOutputQA = new TList();
-    fOutputQA->SetOwner(kTRUE);
-    
     // TrackCuts for Xi1530--------------------------------------------------
     fTrackCuts = new AliESDtrackCuts();
     fTrackCuts -> GetStandardITSTPCTrackCuts2011(kTRUE,kTRUE);
@@ -190,7 +181,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     
     
     // QA Histograms--------------------------------------------------
-    fQAHistos = new THistManager("Xi1530QAhists");
     // T P C   P I D
     // before
     fHistos -> CreateTH2("hTPCPIDLambdaProton","",1000,0,20,1000,-5,5);
@@ -261,12 +251,8 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         fHistos->CreateTH2("hXi_Rxy_TrueMC","",400,-200,200,400,-200,200);
         
     }
-    
-    fQAHistos-> CreateTH2("Check","",400,-200,200,400,-200,200); // check
-    
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
-    PostData(2, fQAHistos->GetListOfHistograms());
 }
 
 //________________________________________________________________________

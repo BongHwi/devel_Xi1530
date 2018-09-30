@@ -91,8 +91,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         typedef std::vector<vector<eventpool> > mixingpool;
     
         TString                         fOption;
-        TList*                          fOutput=nullptr; //!
-        TList*                          fOutputQA=nullptr; //!
     
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
         AliVEvent*                      fEvt=nullptr; //!
@@ -120,7 +118,6 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Bool_t                          IsAA=kFALSE;
         Bool_t                          IsMC=kFALSE;
         THistManager*                   fHistos=nullptr; //!
-        THistManager*                   fQAHistos=nullptr; //!
         TClonesArray*                   fMCArray=nullptr; //!
         AliStack*                       fMCStack=nullptr; //!
         Int_t                           fNTracks = 0;
