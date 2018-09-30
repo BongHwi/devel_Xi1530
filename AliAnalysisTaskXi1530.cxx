@@ -589,8 +589,6 @@ void AliAnalysisTaskXi1530::FillTracks(){
     AliESDcascade *Xicandidate;
     // Cascade
     
-    Bool_t mcXiFilled = kFALSE; // So that mctracks are never used uninitialized
-    
     TLorentzVector temp1,temp2;
     TLorentzVector vecsum;
     
@@ -632,7 +630,6 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if (Xicandidate->Charge()*track1->Charge()==-1) sign = kData; //Unlike sign -> Data
             else sign = kLS; //like sign bg
             
-            mcXiFilled = kFALSE;
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){
                     TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));

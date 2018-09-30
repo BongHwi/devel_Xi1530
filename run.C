@@ -201,12 +201,14 @@ void run(
         plugin->SetTTL(20000);
         plugin->SetJDLName(Form("%s%s.jdl",taskname,option));
         plugin->SetKeepLogs(kTRUE);
-        plugin->SetMaxMergeStages(3);
+        //plugin->SetMaxMergeStages(3);
         plugin->SetMaxMergeFiles(100);
         plugin->SetMergeViaJDL(kTRUE);
+        plugin->SetOneStageMerging(kFALSE);
         plugin->SetCheckCopy(kFALSE);
         plugin->SetNrunsPerMaster(kFALSE);
         plugin->SetUseSubmitPolicy(kTRUE);
+        plugin->SetMasterResubmitThreshold(90);
         
         plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
         plugin->SetGridOutputDir("out");
