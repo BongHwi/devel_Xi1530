@@ -21,9 +21,9 @@
 //  exer with primary charged pions.
 //
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
-//  Origin of the Code: Beomkyu KIM (kimb@cern.ch)
+//  Base of the Code: Beomkyu KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2018/09/25
+//  Last Modified Date: 2018/09/30
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -63,7 +63,7 @@ fCollisionType(kUnknownCollType)
 
 AliAnalysisTaskXi1530RunTable::AliAnalysisTaskXi1530RunTable(Int_t runnumber)
 {
-    // Need to be fixed
+    // Need to be Modified
     if (runnumber>=256504 && runnumber<=260014) fCollisionType=kPP;//LHC16kl
     else fCollisionType=kUnknownCollType;
 }
@@ -149,8 +149,14 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s"); // Normal inv mass distribution of Xi1530
     CreateTHnSparse("hInvMassMCXi1530_recon","InvMass",3,{binCent,binPt,binMass},"s"); // MC recon inv mass distribution of Xi1530
     CreateTHnSparse("hInvMassMCXi1530_input","InvMass",3,{binCent,binPt,binMass},"s"); // MC input inv mass distribution of Xi1530
-    
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
+    
+    if(IsMC){
+        // To get Trigger efficiency in each trk/V0M Multiplicity region
+        auto MCType = AxisStr("Type",{"Reco","True","GoodVtx"});
+        auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
+        CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
+    }
     
     vector<TString> ent = {"All","CINT7","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection"};
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
@@ -163,15 +169,15 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     // QA Histograms--------------------------------------------------
     // T P C   P I D
     // before
-    fHistos -> CreateTH2("hTPCPIDLambdaProton","",1000,0,20,1000,-5,5);
-    fHistos -> CreateTH2("hTPCPIDLambdaPion","",1000,0,20,1000,-5,5);
-    fHistos -> CreateTH2("hTPCPIDBachelorPion","",1000,0,20,1000,-5,5);
-    fHistos -> CreateTH2("hTPCPIDXi1530Pion","",1000,0,20,1000,-5,5);
+    fHistos -> CreateTH2("hTPCPIDLambdaProton","",200,0,20,2000,0,200);
+    fHistos -> CreateTH2("hTPCPIDLambdaPion","",200,0,20,2000,0,200);
+    fHistos -> CreateTH2("hTPCPIDBachelorPion","",200,0,20,2000,0,200);
+    fHistos -> CreateTH2("hTPCPIDXi1530Pion","",200,0,20,2000,0,200);
     // after
-    fHistos -> CreateTH2("hTPCPIDLambdaProton_cut","",1000,0,20,1000,-5,5);
-    fHistos -> CreateTH2("hTPCPIDLambdaPion_cut","",1000,0,20,1000,-5,5);
-    fHistos -> CreateTH2("hTPCPIDBachelorPion_cut","",1000,0,20,1000,-5,5);
-    fHistos -> CreateTH2("hTPCPIDXi1530Pion_cut","",1000,0,20,1000,-5,5);
+    fHistos -> CreateTH2("hTPCPIDLambdaProton_cut","",200,0,20,2000,0,200);
+    fHistos -> CreateTH2("hTPCPIDLambdaPion_cut","",200,0,20,2000,0,200);
+    fHistos -> CreateTH2("hTPCPIDBachelorPion_cut","",200,0,20,2000,0,200);
+    fHistos -> CreateTH2("hTPCPIDXi1530Pion_cut","",200,0,20,2000,0,200);
     
     // D C A
     // between daughters
@@ -229,12 +235,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         fHistos->CreateTH2("hPhiEta_Xi_TrueMC","",180,0,2*pi,40,-2,2);
         fHistos->CreateTH2("hLambda_Rxy_TrueMC","",400,-200,200,400,-200,200);
         fHistos->CreateTH2("hXi_Rxy_TrueMC","",400,-200,200,400,-200,200);
-        
-        
-        // To get Trigger efficiency in each trk/V0M Multiplicity region
-        auto MCType = AxisStr("Type",{"Reco","True","GoodVtx"});
-        auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
-        CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
     fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
@@ -444,11 +444,12 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     // - daughter particle standard track cut
     // - daughter particle PID cut
     // - DCA cuts between Lambda daughters and Xi daughters
-    // - PV DCA(Impact parameter) cut for Xi/Lambda/all daughters
+    // - PV DCA(Impact parameter) cut for Xi/Lambda/all daughters (partially applied)
     // - Cosine Pointing Angle cut for Xi and Lamnbda
     // - Mass window cut for Xi
     // - Eta cut
-    //
+    // - XY Raidus cut(not applied)
+    
     goodcascadeindices.clear();
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
     
@@ -575,16 +576,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 fHistos->FillTH2("hXi_Rxy_cut",cX,cY);
             }// for standard Xi
         } // ESD case
-        else {
-            // !! NEED TO MODIFY !!
-            /*
-            track = (AliAODTrack*) fEvt ->GetTrack(it);
-            if (!track) continue;
-            if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue;
-            if (track->Pt()<fptcut) continue;
-            if (abs(track->Eta())>fetacut) continue;
-            fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
-            */
+        else { // !! NEED TO MODIFY !!
         } // AOD case
     }// All Xi loop
     
@@ -702,31 +694,14 @@ void AliAnalysisTaskXi1530::FillTracks(){
                         }//Same mother(lambda)
                     }//D2esd->pion
                 }// ESD
-                else{
-                    // !! NEED TO UPDATE FOR AOD CASE !!
-                    /*
-                    AliAODMCParticle *par1 =
-                    dynamic_cast<AliAODMCParticle*>(fMCArray->At(track1->GetLabel()));
-                    AliAODMCParticle *par2 =
-                    dynamic_cast<AliAODMCParticle*>(fMCArray->At(track2->GetLabel()));
-                    Bool_t IsTrueOk = false;
-                    if (!par1 || !par2) continue;
-                    Int_t pdg1 = par1 -> PdgCode();
-                    Int_t pdg2 = par2 -> PdgCode();
-                    Int_t pdgtype = AliPID::ParticleCode(fParticleType);
-                    Double_t pdgmass = AliPID::ParticleMass(fParticleType);
-                    if (abs(pdg1) != pdgtype || abs(pdg2) != pdgtype) continue;
-                    temp1.SetXYZM(par1->Px(),par1->Py(), par1->Pz(),pdgmass);
-                    temp2.SetXYZM(par2->Px(),par2->Py(), par2->Pz(),pdgmass);
-                    auto vecsumtrue = temp1 + temp2;
-                    FillTHnSparse("hPtInvMResponse",{(double)sign,fCent
-                        ,vecsum.Pt(),vecsumtrue.Pt(), vecsum.M(),vecsumtrue.M()});
-                     */
+                else{ // !! NEED TO UPDATE FOR AOD CASE !!
                 }// AOD
             }// MC
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
         }
     }
+    
+    // Event Mixing
     if (fsetmixing){
         for (Int_t i = 0; i < ncascade; i++) {
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
@@ -828,6 +803,8 @@ void AliAnalysisTaskXi1530::FillMCinput(AliStack* fMCStack){
 }
 
 THnSparse* AliAnalysisTaskXi1530::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t * opt){
+    // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
+    // Original author: Beomkyu Kim
     const TAxis * axises[bins.size()];
     for( UInt_t i=0;i<bins.size();i++ ) axises[i]= &bins[i];
     THnSparse * h= fHistos->CreateTHnSparse(name, title, ndim, axises,opt );
@@ -835,6 +812,8 @@ THnSparse* AliAnalysisTaskXi1530::CreateTHnSparse(TString name, TString title, I
 }
 
 Long64_t AliAnalysisTaskXi1530::FillTHnSparse( TString name, std::vector<Double_t> x, Double_t w ){
+    // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
+    // Original author: Beomkyu Kim
     auto hsparse = dynamic_cast<THnSparse*>( fHistos->FindObject(name) );
     if(! hsparse ){
         std::cout<<"ERROR : no "<<name<<std::endl;
@@ -844,6 +823,8 @@ Long64_t AliAnalysisTaskXi1530::FillTHnSparse( TString name, std::vector<Double_
 }
 
 Long64_t AliAnalysisTaskXi1530::FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w ){
+    // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
+    // Original author: Beomkyu Kim
     if( int(x.size()) != h->GetNdimensions() ){
         std::cout<<"ERROR : wrong sized of array while Fill "<<h->GetName()<<std::endl;
         exit(1);
@@ -851,13 +832,16 @@ Long64_t AliAnalysisTaskXi1530::FillTHnSparse( THnSparse *h, std::vector<Double_
     return h->Fill( &x.front(), w );
 }
 
-TAxis AliAnalysisTaskXi1530::AxisFix
-( TString name, int nbin, Double_t xmin, Double_t xmax ){
+TAxis AliAnalysisTaskXi1530::AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax ){
+    // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
+    // Original author: Beomkyu Kim
     TAxis axis(nbin, xmin, xmax);axis.SetName(name);
     return axis;
 }
 
 TAxis AliAnalysisTaskXi1530::AxisStr( TString name, std::vector<TString> bin ){
+    // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
+    // Original author: Beomkyu Kim
     TAxis ax = AxisFix( name, bin.size(), 0.5, bin.size()+0.5);
     UInt_t i=1;
     for( auto blabel : bin )
@@ -866,12 +850,15 @@ TAxis AliAnalysisTaskXi1530::AxisStr( TString name, std::vector<TString> bin ){
 }
 
 TAxis AliAnalysisTaskXi1530::AxisVar( TString name, std::vector<Double_t> bin ){
+    // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
+    // Original author: Beomkyu Kim
     TAxis axis( bin.size()-1, &bin.front() ) ;axis.SetName(name);
     return axis;
 }
 
-TAxis AliAnalysisTaskXi1530::AxisLog
-( TString name, int nbin, Double_t xmin, Double_t xmax, Double_t xmin0){
+TAxis AliAnalysisTaskXi1530::AxisLog( TString name, int nbin, Double_t xmin, Double_t xmax, Double_t xmin0){
+    // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
+    // Original author: Beomkyu Kim
     int binoffset = ( xmin0<0 || (xmin-xmin0)<1e-9) ? 0 : 1;
     std::vector<Double_t> bin(nbin+1+binoffset,0);
     double logBW3 = (log(xmax)-log(xmin))/nbin;
@@ -880,8 +867,11 @@ TAxis AliAnalysisTaskXi1530::AxisLog
     axis.SetName(name);
     return axis;
 }
-Bool_t AliAnalysisTaskXi1530::IsMCEventTrueINEL0()
-{
+
+Bool_t AliAnalysisTaskXi1530::IsMCEventTrueINEL0(){
+    // From AliPhysics/PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
+    // Original author: Sergio Iga
+    
     Bool_t isINEL0 = kFALSE;
     for ( int iT = 0 ; iT < fMCStack->GetNtrack(); iT++ ){
         TParticle *mcParticle = fMCStack->Particle(iT);
