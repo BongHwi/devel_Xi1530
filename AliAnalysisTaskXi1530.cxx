@@ -32,20 +32,20 @@
 #include "TChain.h"
 #include "TSystem.h"
 #include "THistManager.h"
-#include "AliAnalysisTaskXi1530.h"
 #include "AliStack.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliGenEventHeader.h"
 #include "AliAnalysisManager.h"
 #include "AliInputEventHandler.h"
-#include "AliGenDPMjetEventHeader.h"
-#include "AliGenPythiaEventHeader.h"
+#include "AliPPVsMultUtils.h"
 #include "AliMultSelection.h"
 #include "AliESDcascade.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliMultiplicity.h"
+
+#include "AliAnalysisTaskXi1530.h"
 
 // Some constants
 const Double_t        pi = TMath::Pi();
@@ -150,7 +150,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
     
-    vector<TString> ent = {"All","InCompleteDAQ","PSpileup","Goodz","Goodzcut"};
+    vector<TString> ent = {"All","CINT7","InCompleteDAQ","PSpileup","Goodz","Goodzcut"};
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
@@ -258,7 +258,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliAnalysisTaskXi1530::UserExec(Option_t *)
 {
-    std::cout << "AliAnalysisTaskXi1530:: UserExec" << std::endl;
     // Pointer to a event----------------------------------------------------
     AliVEvent *event = InputEvent();
     if (!event){
@@ -274,23 +273,16 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     if (!fEvt) return;
     // ----------------------------------------------------------------------
     
-    // Load InputHandler for each event---------------------------------------
+    // Load InputHandler for each event--------------------------------------
     AliInputEventHandler* inputHandler = (AliInputEventHandler*)
     AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-    // -----------------------------------------------------------------------
-
-    
-    // Multiplicity(centrality) ---------------------------------------------
-    fCent = GetMultiplicty(fEvt);
-    centbin = binCent.FindBin(fCent) -1; // Event mixing cent bin
-    FillTHnSparse("hMult",{fCent});
     // ----------------------------------------------------------------------
     
     // Preparation for MC ---------------------------------------------------
     if (IsMC){
         if (fEvt->IsA()==AliESDEvent::Class()){
             fMCStack = MCEvent()->Stack();
-            FillMCinput(fMCStack);
+            FillMCinput(fMCStack); // Note that MC input Event is filled at this moment.
         }// ESD Case
         else{
             fMCArray = (TClonesArray*) fEvt->FindListObject("mcparticles");
@@ -298,50 +290,79 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     }
     // ----------------------------------------------------------------------
     
-    // PID response ----------------------------------------------------------
-    fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
-    if(!fPIDResponse) AliInfo("AliAnalysisTaskXi1530:: No PIDd\n");
-    // -----------------------------------------------------------------------
+    // Event Selection START ************************************************
     
-    fHistos -> FillTH1("hEventNumbers","All",1);
-    // In Complete DAQ Event Cut----------------------------------------------
-    if (fEvt->IsIncompleteDAQ()) {
-        AliInfo("Reject: IsIncompleteDAQ");
-        PostData(1, fHistos->GetListOfHistograms());
+    // Trigger Check---------------------------------------------------------
+    Bool_t isSelectedkINT7 = (inputHandler->IsEventSelected() & AliVEvent::kINT7);
+    Bool_t isSelectedkHighMultV0 = (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0);
+    
+    // SPD vs Cluster BG cut-------------------------------------------------
+    Bool_t SPDvsClustersBG = kFALSE;
+    AliAnalysisUtils *AnalysisUtils = new AliAnalysisUtils();
+    if (!AnalysisUtils)
+    {
+        AliInfo("No AnalysisUtils Object Found");
         return;
     }
-    fHistos -> FillTH1("hEventNumbers","InCompleteDAQ",1);
+    else SPDvsClustersBG = AnalysisUtils->IsSPDClusterVsTrackletBG(fEvt);
+    
+    // Pile up rejection-----------------------------------------------------
+    // Enhanced Pileup rejection method for the higher multiplicity region
+    // detail: https://alice-notes.web.cern.ch/node/478
+    Bool_t isNotPileUp = AliPPVsMultUtils::IsNotPileupSPDInMultBins(fEvt);
+    
+    // In Complete DAQ Event Cut----------------------------------------------
+    Bool_t IncompleteDAQ = fEvt->IsIncompleteDAQ();
+    
+    // Multiplicity(centrality) ---------------------------------------------
+    ftrackmult = AliESDtrackCuts::GetReferenceMultiplicity(fEvt, AliESDtrackCuts::kTracklets, 0.8); // Get tracklet in +_0.8 eta region
+    fCent = GetMultiplicty(fEvt); // Centrality(AA), Multiplicity(pp)
+    centbin = binCent.FindBin(fCent) -1; // Event mixing cent bin
+    FillTHnSparse("hMult",{fCent});
+    
+    // PID response ----------------------------------------------------------
+    fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
+    if(!fPIDResponse) AliInfo("No PIDd");
     // -----------------------------------------------------------------------
     
     // Vertex Check-----------------------------------------------------------
     const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
-    const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTPC() ;
+    const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTracks() ;
     const AliVVertex* spdVtx    = fEvt->GetPrimaryVertexSPD() ;
     PVx = pVtx->GetX(); PVy = pVtx->GetY(); PVz = pVtx->GetZ();
+    fZ = spdVtx->GetZ();
+    zbin = binZ.FindBin(fZ) -1; // Event mixing z-bin
     
-    Bool_t IsGoodVertex = kFALSE;
-    Bool_t IsGoodVertexCut = kFALSE;
+    Bool_t IsGoodVertex = vertex->GetStatus() && selectVertex2015pp( fESD ,kTRUE,kFALSE,kTRUE);
+    Bool_t IsGoodVertexCut = (fabs(fZ)<10.);
+    Bool_t IsTrackletinEta1 = (AliESDtrackCuts::GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1.0) >= 1);
     
-    if (spdVtx) {
-        fZ = spdVtx->GetZ();
-        if (spdVtx->GetNContributors()<1) IsGoodVertex = kFALSE;
-        else {
-            fHistos -> FillTH1("hEventNumbers","Goodz",1);
-            IsGoodVertex = kTRUE;
-            fHistos->FillTH1("hZvtx",fZ);
-            zbin = binZ.FindBin(fZ) -1; // Event mixing z-bin
-            
-            if (fabs(fZ)<10.) {
-                IsGoodVertexCut = kTRUE;
-                fHistos -> FillTH1("hEventNumbers","Goodzcut",1);
-            }
-        }
-    } else IsGoodVertex = kFALSE;
+    // Multi Selection--------------------------------------------------------
+    // Include:
+    //    – INEL>0 selection: At least one SPD tracklet is required within |η| < 1
+    //    – Pileup rejection using AliAnalysisUtils::IsPileUpSPD()
+    //    – SPD vertex z resolution < 0.02 cm
+    //    – z-position difference between trackand SPD vertex < 0.5 cm
+    //    – vertex z position: |vz| < 10 cm
+    // Most of them is already choosed in above.
+    
+    AliMultSelection *MultSelection = (AliMultSelection*) fEvt->FindListObject("MultSelection");
+    Bool_t IsMultSelcted = MultSelection->IsEventSelected();
+    
+    // Physics Selection------------------------------------------------------
+    Bool_t IsPS = isSelectedkINT7    // CINT7 Trigger selected
+               && !IncompleteDAQ     // No IncompleteDAQ
+               && !SPDvsClustersBG   // No SPDvsClusters Background
+               && isNotPileUp        // PileUp rejection
+               && fisTracklet        // at least 1 tracklet in eta +_1 region. (INEL>0)
+               && IsMultSelcted;     // Is MultiSelected
+    
+    fHistos -> FillTH1("hEventNumbers","All",1);
     // -----------------------------------------------------------------------
     
     bField = fEvt->GetMagneticField(); // bField for getD
     
-    if (IsGoodVertexCut){
+    if (IsPS){
         if (this -> GoodTracksSelection() && this -> GoodCascadeSelection()) this -> FillTracks();
     }
     
@@ -730,6 +751,42 @@ void AliAnalysisTaskXi1530::FillTracks(){
 void AliAnalysisTaskXi1530::Terminate(Option_t *)
 {
 }
+
+Bool_t AliAnalysisTaskXi1530::selectVertex2015pp(AliESDEvent *esd,
+                                                Bool_t checkSPDres, //enable check on vtx resolution
+                                                Bool_t requireSPDandTrk, //ask for both trk and SPD vertex
+                                                Bool_t checkProximity) //apply cut on relative position of spd and trk verteces
+{
+    // From AliPhysics/PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
+    // Original author: Sergio Iga
+    if (!esd) return kFALSE;
+    
+    const AliESDVertex * trkVertex = esd->GetPrimaryVertexTracks();
+    const AliESDVertex * spdVertex = esd->GetPrimaryVertexSPD();
+    Bool_t hasSPD = spdVertex->GetStatus();
+    Bool_t hasTrk = trkVertex->GetStatus();
+    
+    //Note that AliVertex::GetStatus checks that N_contributors is > 0
+    //reject events if both are explicitly requested and none is available
+    if (requireSPDandTrk && !(hasSPD && hasTrk)) return kFALSE;
+    
+    //reject events if none between the SPD or track verteces are available
+    //if no trk vertex, try to fall back to SPD vertex;
+    if (!hasTrk) {
+        if (!hasSPD) return kFALSE;
+        //on demand check the spd vertex resolution and reject if not satisfied
+        if (checkSPDres && !IsGoodSPDvertexRes(spdVertex)) return kFALSE;
+    } else {
+        if (hasSPD) {
+            //if enabled check the spd vertex resolution and reject if not satisfied
+            //if enabled, check the proximity between the spd vertex and trak vertex, and reject if not satisfied
+            if (checkSPDres && !IsGoodSPDvertexRes(spdVertex)) return kFALSE;
+            if ((checkProximity && TMath::Abs(spdVertex->GetZ() - trkVertex->GetZ())>0.5)) return kFALSE;
+        }
+    }
+    return kTRUE;
+}
+
 Double_t AliAnalysisTaskXi1530::GetMultiplicty(AliVEvent *fEvt){
     // Set multiplicity value
     // fCent:

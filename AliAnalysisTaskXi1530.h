@@ -98,6 +98,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         AliAnalysisTaskXi1530RunTable*  fRunTable=nullptr; //!
     
         Double_t                        fCent=-1;
+        Double_t                        ftrackmult=-1;
         Double_t                        fZ=-30;
         std::vector < UInt_t >          goodtrackindices; //!
         std::vector < UInt_t >          goodcascadeindices; //!
