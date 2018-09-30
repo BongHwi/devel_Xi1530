@@ -66,6 +66,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Double_t GetMultiplicty(AliVEvent *fEvt);
         Bool_t SelectVertex2015pp(AliESDEvent *esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
         Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex);
+        Bool_t IsMCEventTrueINEL0();
+        void FillMCMVTrigEff();
         void FillMCinput(AliStack* fMCStack);
         
         Bool_t  GoodTracksSelection();
@@ -120,6 +122,9 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Bool_t                          fsetmixing = kFALSE;
         Bool_t                          IsAA=kFALSE;
         Bool_t                          IsMC=kFALSE;
+        Bool_t                          IsPS = kFALSE;
+        Bool_t                          IsINEL0Rec = kFALSE;
+        Bool_t                          IsINEL0True = kFALSE;
         THistManager*                   fHistos=nullptr; //!
         TClonesArray*                   fMCArray=nullptr; //!
         AliStack*                       fMCStack=nullptr; //!

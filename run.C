@@ -149,7 +149,8 @@ void run(
         // ROOT 6 MODE
         std::stringstream esdChain;
         esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS") <<  "/PWG/EMCAL/macros/CreateESDChain.C(";
-        esdChain << "\"" << "data.txt" << "\", ";
+        if(!ismc) esdChain << "\"" << "data.txt" << "\", ";
+        else esdChain << "\"" << "data_MC.txt" << "\", ";
         esdChain << 1 << ", ";
         esdChain << 0 << ", ";
         esdChain << std::boolalpha << kFALSE << ");";
@@ -159,7 +160,8 @@ void run(
 #else
         // ROOT 5 MODE
         gROOT->LoadMacro("$ALICE_PHYSICS/PWG0/CreateESDChain.C");
-        TChain* chain = CreateESDChain("data.txt");
+        if(!ismc) TChain* chain = CreateESDChain("data.txt");
+        else TChain* chain = CreateESDChain("data_MC.txt");
         chain->Lookup();
 #endif
         mgr->StartAnalysis(localorgrid,chain);
