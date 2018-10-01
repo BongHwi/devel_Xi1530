@@ -144,6 +144,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     else binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // 0 ~ -1, overflow, 0 ~ +1, underflow
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",2000,0.5,2.5);
+    binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
     
     CreateTHnSparse("hInvMass_dXi","InvMass",3,{binCent,binPt,binMass},"s"); // inv mass distribution of Xi
     CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s"); // Normal inv mass distribution of Xi1530
@@ -163,8 +164,6 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
     fHistos -> CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
-    
-    binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
     
     // QA Histograms--------------------------------------------------
     // T P C   P I D
@@ -222,6 +221,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos -> CreateTH2("hLambda_Rxy_cut","",400,-200,200,400,-200,200); // after
     fHistos -> CreateTH2("hXi_Rxy","",400,-200,200,400,-200,200); // before
     fHistos -> CreateTH2("hXi_Rxy_cut","",400,-200,200,400,-200,200); // after
+    
+    // Invmass Check
+    fHistos->CreateTH1("hTotalInvMass_data","",2000,0.5,2.5,"s");
+    fHistos->CreateTH1("hTotalInvMass_LS","",2000,0.5,2.5,"s");
+    fHistos->CreateTH1("hTotalInvMass_Mix","",2000,0.5,2.5,"s");
     
     if(IsMC){
         //For MC True stduy purpose
@@ -614,14 +618,13 @@ void AliAnalysisTaskXi1530::FillTracks(){
         
         temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
         
-        // QA Plot for Good Xi
         FillTHnSparse("hInvMass_dXi",{fCent,Xicandidate->Pt(),Xicandidate->M()});
         
-        for (UInt_t i = 0; i < ntracks; i++) {
-            track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[i]);
+        for (UInt_t j = 0; j < ntracks; j++) {
+            track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[j]);
             if (!track1) continue;
-            temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
-            vecsum = temp1+temp2; // two pion vector sum
+            temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionmass);
+            vecsum = temp1+temp2; // temp1 = cascade, temp2=pion
             
             // Y cut
             if (fabs(vecsum.Rapidity())>0.5) continue;
@@ -695,6 +698,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 }// AOD
             }// MC
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
+            if(sign == kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
+            if(sign == kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
         }
     }
     
@@ -712,6 +717,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 if (track1->Charge()*Xicandidate->Charge() == -1) continue;
                 if (fabs(vecsum.Eta())>0.5) continue; //rapidity cut
                 FillTHnSparse("hInvMass",{kMixing,fCent,vecsum.M(),vecsum.Pt()});
+                fHistos->FillTH1("hTotalInvMass_Mix",vecsum.M());
             }
         }
     }//mix loop
