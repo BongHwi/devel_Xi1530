@@ -62,9 +62,9 @@ hadd -f  AnalysisResults_${taskname}${periods}.root AnalysisResults_${taskname}$
 echo "#------------------------------"
 echo "#      Merged Files "
 cd - > /dev/null
-rm -r  /Users/blim/Desktop/${taskname}${periods}
-mkdir -p /Users/blim/Desktop/${taskname}${periods}
-mv $DATA_DIR/AnalysisResults*.root  /Users/blim/Desktop/${taskname}${periods}/
+rm -r  $DOWN_DIR/${taskname}${periods}
+mkdir -p $DOWN_DIR/${taskname}${periods}
+mv $DATA_DIR/AnalysisResults*.root  $DOWN_DIR/${taskname}${periods}/
 echo "#   ./${taskname}${periods}/AnalysisResults_${taskname}${periods}.root"
 echo "#------------------------------"
 }

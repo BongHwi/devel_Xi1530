@@ -204,7 +204,6 @@ void run(
         plugin->SetCheckCopy(kFALSE);
         plugin->SetNrunsPerMaster(kFALSE);
         plugin->SetUseSubmitPolicy(kTRUE);
-        plugin->SetMasterResubmitThreshold(90);
         
         plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
         plugin->SetGridOutputDir("out");

@@ -409,29 +409,32 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             if (!fTrackCuts->AcceptTrack((AliESDtrack*) track)) continue;
             //if (!track->IsOn(AliVTrack::kITSpureSA)) continue;
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
+            
+            // PID cut for pion
+            Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+            fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),fTPCNSigPion);
+            if (abs(fTPCNSigPion) > 3.) continue;
+            fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),fTPCNSigPion);
+
+            // Eta cut
+            if(abs(track->Eta())>0.8) continue;
+            
+            goodtrackindices.push_back(it);
+            fNTracks++;
+            
+            //Event mixing pool
+            if (fsetmixing) etl->push_back( (AliVTrack*)track -> Clone() );
         }
         else {
+            /*
             track = (AliAODTrack*) fEvt ->GetTrack(it);
             if (!track) continue;
             if( ! ((AliAODTrack*) track)->TestFilterBit(fFilterBit)) continue;
             if (track->Pt()<fptcut) continue;
             if (abs(track->Eta())>fetacut) continue;
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
+             */
         }
-        // PID cut for pion
-        Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-        fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),fTPCNSigPion);
-        if (abs(fTPCNSigPion) > 3.) continue;
-        fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),fTPCNSigPion);
-        
-        fNTracks++;
-        
-        // Eta cut
-        if(abs(track->Eta())>0.8) continue;
-        
-        goodtrackindices.push_back(it);
-        //Event mixing pool
-        if (fsetmixing) etl->push_back( (AliVTrack*)track -> Clone() );
     }
     
     if (fsetmixing){
@@ -461,6 +464,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     
     const AliESDcascade *Xicandidate;
     Double_t LambdaX, LambdaY, LambdaZ;
+    Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
     
     fNCascade = 0;
     Bool_t StandardXi=kTRUE;
@@ -485,11 +489,19 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             if (!fTrackCuts->AcceptTrack(bTrackXi)) continue;
             
             // PID cuts for Xi daughters
-            Double_t fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
-            Double_t fTPCNSigPion1 = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
-            Double_t fTPCNSigPion2 = fPIDResponse->NumberOfSigmasTPC(bTrackXi, AliPID::kPion);
-                fHistos->FillTH2("hTPCPIDLambdaProton",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
-                fHistos->FillTH2("hTPCPIDLambdaPion",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
+                fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
+                    fHistos->FillTH2("hTPCPIDLambdaProton",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                    fHistos->FillTH2("hTPCPIDLambdaPion",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                
+            } else { // Xi+ has -proton, +pion
+                fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kPion);
+                    fHistos->FillTH2("hTPCPIDLambdaProton",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                    fHistos->FillTH2("hTPCPIDLambdaPion",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+            }
+            fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(bTrackXi, AliPID::kPion); // bachelor is always pion
                 fHistos->FillTH2("hTPCPIDBachelorPion",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
             
             if (abs(fTPCNSigProton) > 3.) StandardXi=kFALSE; // PID for proton
@@ -509,8 +521,14 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             // DCA to PV
             Double_t fDCADist_Lambda_PV       = fabs(Xicandidate->GetD(PVx, PVy, PVz));
             Double_t fDCADist_Xi_PV           = fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
-            Double_t fDCADist_LambdaProton_PV = fabs(pTrackXi->GetD(PVx, PVy, bField));
-            Double_t fDCADist_LambdaPion_PV   = fabs(pTrackXi->GetD(PVx, PVy, bField));
+            if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
+                Double_t fDCADist_LambdaProton_PV = fabs(pTrackXi->GetD(PVx, PVy, bField));
+                Double_t fDCADist_LambdaPion_PV   = fabs(nTrackXi->GetD(PVx, PVy, bField));
+            }
+            else{
+                Double_t fDCADist_LambdaProton_PV = fabs(nTrackXi->GetD(PVx, PVy, bField));
+                Double_t fDCADist_LambdaPion_PV   = fabs(pTrackXi->GetD(PVx, PVy, bField));
+            }
             Double_t fDCADist_BachelorPion_PV = fabs(bTrackXi->GetD(PVx, PVy, bField));
                 fHistos -> FillTH1("hDCADist_lambda_to_PV",fDCADist_Lambda_PV);
                 fHistos -> FillTH1("hDCADist_Xi_to_PV",fDCADist_Xi_PV);
@@ -554,8 +572,14 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 goodcascadeindices.push_back(it);
                 
                 // PID QA
-                fHistos->FillTH2("hTPCPIDLambdaProton_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
-                fHistos->FillTH2("hTPCPIDLambdaPion_cut",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
+                    fHistos->FillTH2("hTPCPIDLambdaProton_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                    fHistos->FillTH2("hTPCPIDLambdaPion_cut",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                }
+                else{ // Xi+ has -proton, +pion
+                    fHistos->FillTH2("hTPCPIDLambdaProton_cut",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                    fHistos->FillTH2("hTPCPIDLambdaPion_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                }
                 fHistos->FillTH2("hTPCPIDBachelorPion_cut",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
                 
                 // DCA QA
@@ -669,8 +693,14 @@ void AliAnalysisTaskXi1530::FillTracks(){
                                                     
                                                     fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
                                                     fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaXiDaughters()));
-                                                    fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
-                                                    fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                                    if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
+                                                        fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                                        fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                                    }
+                                                    else{
+                                                        fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                                        fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                                    }
                                                     fHistos -> FillTH1("hDCADist_BachelorPion_to_PV_TrueMC",fabs(bTrackXi->GetD(PVx, PVy, bField)));
                                                     
                                                     fHistos -> FillTH1("hDCADist_lambda_to_PV_TrueMC",fabs(Xicandidate->GetD(PVx, PVy, PVz)));
