@@ -163,6 +163,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
+    fHistos -> CreateTH1("hMult_QA","",100,0,100,"s");
     fHistos -> CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
     
     // QA Histograms--------------------------------------------------
@@ -309,6 +310,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     fCent = GetMultiplicty(fEvt); // Centrality(AA), Multiplicity(pp)
     centbin = binCent.FindBin(fCent) -1; // Event mixing cent bin
     FillTHnSparse("hMult",{fCent});
+    fHistos->FillTH1("hMult_QA",fCent);
     
     // PID response ----------------------------------------------------------
     fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
