@@ -743,7 +743,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if(!Xicandidate) continue;
             temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
             
-            for (UInt_t jt = 0; jt < ntracks; jt++) {
+            for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
                 track1 = trackpool.at(jt);
                 temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
                 vecsum = temp1+temp2; // two pion vector sum
