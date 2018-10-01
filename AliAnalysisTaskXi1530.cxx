@@ -471,7 +471,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     
     for (UInt_t it = 0; it<ncascade; it++){
         StandardXi=kTRUE;
-        if (fEvt->IsA()==AliESDEvent::Class()){
+        if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(it);
             if (!Xicandidate) continue;
             
@@ -505,8 +505,8 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 fHistos->FillTH2("hTPCPIDBachelorPion",bTrackXi->GetTPCmomentum(),fTPCNSigProton);
             
             if (abs(fTPCNSigProton) > 3.) StandardXi=kFALSE; // PID for proton
-            if (abs(fTPCNSigPion1) > 3.) StandardXi=kFALSE; // PID for 1st pion
-            if (abs(fTPCNSigPion2) > 3.) StandardXi=kFALSE; // PID for 2nd pion
+            if (abs(fTPCNSigLambdaPion) > 3.) StandardXi=kFALSE; // PID for 1st pion
+            if (abs(fTPCNSigBachelorPion) > 3.) StandardXi=kFALSE; // PID for 2nd pion
             
             // DCA cut
             // DCA between Dautgher particles
