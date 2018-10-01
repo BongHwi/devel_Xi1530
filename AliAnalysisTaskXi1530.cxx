@@ -465,6 +465,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     const AliESDcascade *Xicandidate;
     Double_t LambdaX, LambdaY, LambdaZ;
     Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
+    Double_t fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV;
     
     fNCascade = 0;
     Bool_t StandardXi=kTRUE;
@@ -522,12 +523,12 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             Double_t fDCADist_Lambda_PV       = fabs(Xicandidate->GetD(PVx, PVy, PVz));
             Double_t fDCADist_Xi_PV           = fabs(Xicandidate->GetDcascade(PVx, PVy, PVz));
             if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
-                Double_t fDCADist_LambdaProton_PV = fabs(pTrackXi->GetD(PVx, PVy, bField));
-                Double_t fDCADist_LambdaPion_PV   = fabs(nTrackXi->GetD(PVx, PVy, bField));
+                fDCADist_LambdaProton_PV = fabs(pTrackXi->GetD(PVx, PVy, bField));
+                fDCADist_LambdaPion_PV   = fabs(nTrackXi->GetD(PVx, PVy, bField));
             }
             else{
-                Double_t fDCADist_LambdaProton_PV = fabs(nTrackXi->GetD(PVx, PVy, bField));
-                Double_t fDCADist_LambdaPion_PV   = fabs(pTrackXi->GetD(PVx, PVy, bField));
+                fDCADist_LambdaProton_PV = fabs(nTrackXi->GetD(PVx, PVy, bField));
+                fDCADist_LambdaPion_PV   = fabs(pTrackXi->GetD(PVx, PVy, bField));
             }
             Double_t fDCADist_BachelorPion_PV = fabs(bTrackXi->GetD(PVx, PVy, bField));
                 fHistos -> FillTH1("hDCADist_lambda_to_PV",fDCADist_Lambda_PV);
