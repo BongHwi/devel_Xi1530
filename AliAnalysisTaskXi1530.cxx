@@ -439,7 +439,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     
     if (fsetmixing){
         if (!goodtrackindices.size()) ep->pop_back();
-        if ( ep->size() > 5 ){
+        if ( ep->size() > fnMix ){
             for (auto it: ep->front()) delete it;
             ep->pop_front();
         }
@@ -629,7 +629,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     tracklist trackpool;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
-        if (ep.size()<5 ) return;
+        if (ep.size()<fnMix ) return;
         for (auto pool: ep){
             for (auto track: pool) trackpool.push_back((AliVTrack*)track);
         }

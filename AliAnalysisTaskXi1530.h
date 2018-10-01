@@ -75,6 +75,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         void SetMixing (Bool_t setmixing) {fsetmixing = setmixing;}
         void SetIsAA (Bool_t isaa) {IsAA = isaa;}
         void SetIsMC (Bool_t ismc) {IsMC = ismc;}
+        void SetnMix (Int_t nMix) {fnMix = nMix;}
     
         TAxis AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax);
         TAxis AxisVar( TString name, std::vector<Double_t> bin );
@@ -114,6 +115,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         mixingpool                      fEMpool; //!
         TAxis                           binCent; //!
         TAxis                           binZ; //!
+        Int_t                           fnMix = 10;
         Int_t                           centbin = -1 ;
         Int_t                           zbin = -1 ;
         Double_t                        fptcut = 0.15;
