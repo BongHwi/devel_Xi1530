@@ -673,6 +673,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     // Origin: AliPhysics/PWGLF/RESONANCES/extra/AliXiStar.cxx (Dhevan Gangadharan)
     Double_t fCovMatrix[21];
     Double_t xiVtx[3];
+    Double_t xiP[3];
     for(Int_t i=0; i<21; i++) fCovMatrix[i]=0;
     fCovMatrix[0]=1, fCovMatrix[2]=1, fCovMatrix[5]=1, fCovMatrix[9]=1, fCovMatrix[14]=1, fCovMatrix[20]=1;
     AliESDtrack* fXiTrack = new AliESDtrack(); // As a ESD Track
@@ -705,7 +706,11 @@ void AliAnalysisTaskXi1530::FillTracks(){
         xiVtx[0] = Xicandidate->Xv();
         xiVtx[1] = Xicandidate->Yv();
         xiVtx[2] = Xicandidate->Zv();
-        fXiTrack->Set(xiVtx, Xicandidate->Pt(), fCovMatrix, Short_t(Xicandidate->Charge()));
+        
+        xiP[0] = Xicandidate->Px();
+        xiP[1] = Xicandidate->Py();
+        xiP[2] = Xicandidate->Pz();
+        fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(Xicandidate->Charge()));
         
         for (UInt_t j = 0; j < ntracks; j++) {
             track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[j]);
