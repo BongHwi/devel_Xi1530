@@ -24,7 +24,7 @@ method=$2
 
 basepath=/alice/cern.ch/user/b/blim
 DOWN_DIR=~/Desktop
-DATA_DIR=$DOWN_DIR/${basepath}/${taskname}${periods};
+DATA_DIR=$DOWN_DIR${basepath}/${taskname}${periods};
 currentdir=$PWD
 
 

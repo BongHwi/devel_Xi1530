@@ -685,7 +685,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if (fabs(vecsum.Rapidity())>0.5) continue;
             
             auto sign = kAllType;
-            if (Xicandidate->Charge()*track1->Charge()==-1) sign = kData; //Unlike sign -> Data
+            if ((Xicandidate->Charge() ==-1 && track1->Charge()==+1)
+                || (Xicandidate->Charge() ==+1 && track1->Charge()==-1)) sign = kData; //Unlike sign -> Data
             else sign = kLS; //like sign bg
             
             if (IsMC) {
