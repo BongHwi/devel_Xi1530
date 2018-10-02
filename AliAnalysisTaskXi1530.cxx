@@ -675,7 +675,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     Double_t xiVtx[3];
     for(Int_t i=0; i<21; i++) fCovMatrix[i]=0;
     fCovMatrix[0]=1, fCovMatrix[2]=1, fCovMatrix[5]=1, fCovMatrix[9]=1, fCovMatrix[14]=1, fCovMatrix[20]=1;
-    fXiTrack = new AliESDtrack(); // As a ESD Track
+    AliESDtrack* fXiTrack = new AliESDtrack(); // As a ESD Track
     
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
