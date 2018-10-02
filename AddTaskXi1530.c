@@ -4,7 +4,7 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
                                      , bool hightmult=kFALSE
                                      , bool isaa=kFALSE
                                      , bool ismc=kFALSE
-                                     , bool setmixing=kFALSE)
+                                     , bool setmixing=kTRUE)
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
