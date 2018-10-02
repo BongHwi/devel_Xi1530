@@ -693,11 +693,11 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
                     if ( IsTrueXi1530(Xicandidate,track1) ){
-                        temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
-                        temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
-                        TLorentzVector vecsumtrue = temp1 + temp2;
+                        //temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
+                        //temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
+                        //TLorentzVector vecsumtrue = temp1 + temp2;
                         
-                        FillTHnSparse("hInvMass",{kMCReco,fCent,vecsumtrue.Pt(),vecsumtrue.M()});
+                        FillTHnSparse("hInvMass",{kMCReco,fCent,vecsum.Pt(),vecsum.M()});
                         
                         // True Xi1530 signals for cut study
                         
@@ -925,7 +925,7 @@ Bool_t AliAnalysisTaskXi1530::IsMCEventTrueINEL0(){
         }
     return isINEL0;
 }
-Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliESDtrack* pion){
+Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
     // Check if associated Xi1530 is true Xi1530 in MC set
     if (!Xi) return kFALSE;
     if (!pion) return kFALSE;

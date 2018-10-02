@@ -77,7 +77,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Bool_t SelectVertex2015pp(AliESDEvent *esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
         Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex);
         Bool_t IsMCEventTrueINEL0();
-        Bool_t IsTrueXi1530(AliESDcascade* Xi, AliESDtrack* pion);
+        Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
         void FillMCinput(AliStack* fMCStack);
     
         TAxis AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax);
