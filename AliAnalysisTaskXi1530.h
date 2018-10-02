@@ -61,31 +61,30 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         virtual void    UserExec(Option_t *);
         virtual void    Terminate(Option_t *);
     
-        void SetOption(char * option) {fOption = option;}
+        void SetOption   (char * option)    {fOption = option;}
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
+        void SetMixing   (Bool_t setmixing) {fsetmixing = setmixing;}
+        void SetIsAA     (Bool_t isaa)      {IsAA = isaa;}
+        void SetIsMC     (Bool_t ismc)      {IsMC = ismc;}
+        void SetnMix     (Int_t nMix)       {fnMix = nMix;}
+        void SetHighMult (Bool_t highmult)  {IsHighMult = highmult;}
+
+        Bool_t  GoodTracksSelection();
+        Bool_t  GoodCascadeSelection();
+        void FillTracks();
+    
         Double_t GetMultiplicty(AliVEvent *fEvt);
         Bool_t SelectVertex2015pp(AliESDEvent *esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
         Bool_t IsGoodSPDvertexRes(const AliESDVertex * spdVertex);
         Bool_t IsMCEventTrueINEL0();
         void FillMCinput(AliStack* fMCStack);
         
-        Bool_t  GoodTracksSelection();
-        Bool_t  GoodCascadeSelection();
-        void FillTracks();
-        void SetMixing (Bool_t setmixing) {fsetmixing = setmixing;}
-        void SetIsAA (Bool_t isaa) {IsAA = isaa;}
-        void SetIsMC (Bool_t ismc) {IsMC = ismc;}
-        void SetnMix (Int_t nMix) {fnMix = nMix;}
-    
         TAxis AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax);
         TAxis AxisVar( TString name, std::vector<Double_t> bin );
-        TAxis AxisLog( TString name, int nbin, Double_t xmin, Double_t xmax
-                      , Double_t xmin0);
+        TAxis AxisLog( TString name, int nbin, Double_t xmin, Double_t xmax, Double_t xmin0);
         TAxis AxisStr( TString name, std::vector<TString> bin );
-        THnSparse * CreateTHnSparse(TString name, TString title
-                                    , Int_t ndim, std::vector<TAxis> bins, Option_t * opt="");
-        THnSparse * CreateTHnSparse(TString name, TString title
-                                    , TString templ, Option_t * opt="");
+        THnSparse * CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t * opt="");
+        THnSparse * CreateTHnSparse(TString name, TString title, TString templ, Option_t * opt="");
         Long64_t FillTHnSparse( TString name, std::vector<Double_t> x, Double_t w=1.);
         Long64_t FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w=1.);
     
@@ -126,6 +125,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Bool_t                          IsPS = kFALSE;
         Bool_t                          IsINEL0Rec = kFALSE;
         Bool_t                          IsINEL0True = kFALSE;
+        Bool_t                          IsHighMult = kFALSE;
         THistManager*                   fHistos=nullptr; //!
         TClonesArray*                   fMCArray=nullptr; //!
         AliStack*                       fMCStack=nullptr; //!

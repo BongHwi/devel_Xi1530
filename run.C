@@ -64,9 +64,12 @@ void run(
     bool isaa = kFALSE;
     bool ismc = kFALSE;
     bool setmixing = kFALSE;
+    int nmix = 10;
+    bool highmult = kFALSE;
     TString foption = option;
     if(foption.Contains("MC")) ismc = true;
     if(foption.Contains("Mix")) setmixing = true;
+    if(foption.Contains("HM")) highmult = true;
     
     // analysis manager
     AliAnalysisManager* mgr = new AliAnalysisManager(Form("%s%s",taskname,option));
@@ -116,7 +119,7 @@ void run(
     
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
     
-    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%d,%d,%d)",taskname,option,isaa,ismc,setmixing)));
+    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
 #else
     // ROOT 5 MODE
     //
@@ -139,7 +142,7 @@ void run(
     gROOT->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
     
     gROOT->LoadMacro("AddTaskXi1530.c");
-    AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option,isaa,ismc,setmixing);
+    AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option,nmix,highmult,isaa,ismc,setmixing);
 #endif
     
     mgr->SetDebugLevel(0);
