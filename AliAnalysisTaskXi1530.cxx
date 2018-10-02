@@ -31,8 +31,7 @@
 #include "TFile.h"
 #include "TChain.h"
 #include "TSystem.h"
-#include "THistManager.h"
-#include "AliStack.h"
+#include "AliVertex.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliGenEventHeader.h"
@@ -45,6 +44,19 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliMultiplicity.h"
+
+// from header
+#include "THnSparse.h"
+#include "AliStack.h"
+#include "AliAnalysisTask.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliESDtrackCuts.h"
+#include "AliESDEvent.h"
+#include "AliAODEvent.h"
+#include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
+#include "THistManager.h"
+//
 
 #include "AliAnalysisTaskXi1530.h"
 

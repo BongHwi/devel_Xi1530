@@ -8,18 +8,17 @@
 //  (Original Code) Beomkyu KIM (kimb@cern.ch)
 //  (Modification) Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 
-#include "THnSparse.h"
-#include "AliAnalysisTask.h"
-#include "AliAnalysisTaskSE.h"
-#include "AliTriggerAnalysis.h"
-#include "AliESDtrackCuts.h"
-#include "AliESDEvent.h"
-#include "AliAODEvent.h"
-#include "AliStack.h"
-#include "AliPIDResponse.h"
-#include "AliPIDCombined.h"
-#include "THistManager.h"
 #include <deque>
+class THnSparse;
+class AliAnalysisTask;
+class AliAnalysisTaskSE;
+class AliESDtrackCuts;
+class AliESDEvent;
+class AliAODEvent;
+class AliStack;
+class AliPIDResponse;
+class AliPIDCombined;
+class THistManager;
 
 class AliAnalysisTaskXi1530RunTable {
 public:
