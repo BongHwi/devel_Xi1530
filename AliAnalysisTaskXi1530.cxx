@@ -944,20 +944,20 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliESDtrack* pion)
     TParticle* MCXiStaresd;
     TParticle* MCXiStarD2esd;
     
-    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
+    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) { //D2esd->pion
         MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
         MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
-        if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) {
-            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) {
+        if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) { //Same mother(lambda)
+            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) { //Lamda daugthers check
                 MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
-                if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) {
-                    if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) {
+                if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) { //Lambda check
+                    if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) { // Lambda+pion(D2esd) mother check
                         MCXiesd = (TParticle*)fMCStack->Particle(abs(MCLamesd->GetMother(0)));
-                        if (abs(MCXiesd->GetPdgCode()) == kXiCode) {
+                        if (abs(MCXiesd->GetPdgCode()) == kXiCode) { // Xi Check
                             MCXiStarD2esd = (TParticle*)fMCStack->Particle(abs(track1->GetLabel()));
-                            if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) {
+                            if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) { // Xi+pion mother check
                                 MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
-                                if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) {
+                                if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) { //Xi1530 check
                                     TrueXi1530 = kTRUE;
                                 }//Xi1530 check
                             }// Xi+pion mother check
