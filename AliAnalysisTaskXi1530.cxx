@@ -53,7 +53,8 @@ const Double_t        pi = TMath::Pi();
 const Double_t  pionmass = AliPID::ParticleMass(AliPID::kPion);
 //const Double_t  Ximass = AliPID::ParticleMass(AliPID::kCascade);
 const Double_t  Ximass = 1.32171;
-enum { kData=1, kLS, kMixing, kReco, kTrue, kAllType}; //
+enum { kData=1, kLS, kMixing, kMCReco, kMCTrue, kAllType}; //
+enum { kTrueINELg0=1, kReco, kGoodVtx}; //
 
 AliAnalysisTaskXi1530RunTable::AliAnalysisTaskXi1530RunTable() :
 fCollisionType(kUnknownCollType)
@@ -150,7 +151,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     
     if(IsMC){
         // To get Trigger efficiency in each trk/V0M Multiplicity region
-        auto MCType = AxisStr("Type",{"Reco","True","GoodVtx"});
+        auto MCType = AxisStr("Type",{"TrueINELg0","Reco","GoodVtx"});
         auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
@@ -382,7 +383,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     //  Missing Vetex and Trriger Efficiency ---------------------------------
     if(IsMC){
         if(IsINEL0True)
-            FillTHnSparse("htriggered_CINT7",{kTrue,fCent,ftrackmult});
+            FillTHnSparse("htriggered_CINT7",{kTrueINELg0,fCent,ftrackmult});
         if(IsPS)
             FillTHnSparse("htriggered_CINT7",{kReco,fCent,ftrackmult});
         if(IsPS && IsGoodVertex)
@@ -690,71 +691,43 @@ void AliAnalysisTaskXi1530::FillTracks(){
             else sign = kLS; //like sign bg
             
             if (IsMC) {
-                if (fEvt->IsA()==AliESDEvent::Class()){
-                    TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
-                    TParticle* MCLamD1esd;
-                    TParticle* MCLamD2esd;
-                    TParticle* MCLamesd;
-                    TParticle* MCXiesd;
-                    TParticle* MCXiStaresd;
-                    TParticle* MCXiStarD2esd;
-                    
-                    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
-                        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
-                        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
-                        if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) {
-                            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) {
-                                MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
-                                if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) {
-                                    if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) {
-                                        MCXiesd = (TParticle*)fMCStack->Particle(abs(MCLamesd->GetMother(0)));
-                                        if (abs(MCXiesd->GetPdgCode()) == kXiCode) {
-                                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(abs(track1->GetLabel()));
-                                            if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) {
-                                                MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
-                                                if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) {
-                                                    temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
-                                                    temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
-                                                    TLorentzVector vecsumtrue = temp1 + temp2;
-                                                    
-                                                    FillTHnSparse("hInvMass",{kReco,fCent,vecsumtrue.Pt(),vecsumtrue.M()});
-                                                    
-                                                    // True Xi1530 signals for cut study
-                                                    
-                                                    fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
-                                                    fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaXiDaughters()));
-                                                    if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
-                                                        fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
-                                                        fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
-                                                    }
-                                                    else{
-                                                        fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
-                                                        fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
-                                                    }
-                                                    fHistos -> FillTH1("hDCADist_BachelorPion_to_PV_TrueMC",fabs(bTrackXi->GetD(PVx, PVy, bField)));
-                                                    
-                                                    fHistos -> FillTH1("hDCADist_lambda_to_PV_TrueMC",fabs(Xicandidate->GetD(PVx, PVy, PVz)));
-                                                    fHistos -> FillTH1("hDCADist_Xi_to_PV_TrueMC",fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
-                                                    
-                                                    fHistos->FillTH2("hPhiEta_Xi_TrueMC",Xicandidate->Phi(),Xicandidate->Eta());
-                                                    
-                                                    Double_t LambdaX, LambdaY, LambdaZ;
-                                                    Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
-                                                    
-                                                    fHistos->FillTH2("hLambda_Rxy_TrueMC",LambdaX,LambdaY);
-                                                    
-                                                    Double_t cX, cY, cZ;
-                                                    Xicandidate->GetXYZcascade(cX,cY,cZ);
-                                                    fHistos->FillTH2("hXi_Rxy_TrueMC",cX,cY);
-                                                    
-                                                }//Xi1530 check
-                                            }// Xi+pion mother check
-                                        }// Xi Check
-                                    }// Lambda+pion(D2esd) mother check
-                                }//Lambda check
-                            }//Lamda daugthers check
-                        }//Same mother(lambda)
-                    }//D2esd->pion
+                if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
+                    if ( IsTrueXi1530(Xicandidate,track1) ){
+                        temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
+                        temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
+                        TLorentzVector vecsumtrue = temp1 + temp2;
+                        
+                        FillTHnSparse("hInvMass",{kMCReco,fCent,vecsumtrue.Pt(),vecsumtrue.M()});
+                        
+                        // True Xi1530 signals for cut study
+                        
+                        fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
+                        fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaXiDaughters()));
+                        if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
+                            fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                            fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                        }
+                        else{
+                            fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                            fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                        }
+                        fHistos -> FillTH1("hDCADist_BachelorPion_to_PV_TrueMC",fabs(bTrackXi->GetD(PVx, PVy, bField)));
+                        
+                        fHistos -> FillTH1("hDCADist_lambda_to_PV_TrueMC",fabs(Xicandidate->GetD(PVx, PVy, PVz)));
+                        fHistos -> FillTH1("hDCADist_Xi_to_PV_TrueMC",fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
+                        
+                        fHistos->FillTH2("hPhiEta_Xi_TrueMC",Xicandidate->Phi(),Xicandidate->Eta());
+                        
+                        Double_t LambdaX, LambdaY, LambdaZ;
+                        Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
+                        
+                        fHistos->FillTH2("hLambda_Rxy_TrueMC",LambdaX,LambdaY);
+                        
+                        Double_t cX, cY, cZ;
+                        Xicandidate->GetXYZcascade(cX,cY,cZ);
+                        fHistos->FillTH2("hXi_Rxy_TrueMC",cX,cY);
+                        
+                    }//Xi1530 check
                 }// ESD
                 else{ // !! NEED TO UPDATE FOR AOD CASE !!
                 }// AOD
@@ -952,3 +925,48 @@ Bool_t AliAnalysisTaskXi1530::IsMCEventTrueINEL0(){
         }
     return isINEL0;
 }
+Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliESDtrack* pion){
+    // Check if associated Xi1530 is true Xi1530 in MC set
+    if (!Xi) return kFALSE;
+    if (!pion) return kFALSE;
+    
+    Bool_t TrueXi1530 = kFALSE;
+    
+    AliESDtrack *pTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xi->GetPindex()));
+    AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xi->GetNindex()));
+    AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xi->GetBindex()));
+    
+    TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
+    TParticle* MCLamD1esd;
+    TParticle* MCLamD2esd;
+    TParticle* MCLamesd;
+    TParticle* MCXiesd;
+    TParticle* MCXiStaresd;
+    TParticle* MCXiStarD2esd;
+    
+    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
+        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
+        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
+        if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) {
+            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) {
+                MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
+                if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) {
+                    if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) {
+                        MCXiesd = (TParticle*)fMCStack->Particle(abs(MCLamesd->GetMother(0)));
+                        if (abs(MCXiesd->GetPdgCode()) == kXiCode) {
+                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(abs(track1->GetLabel()));
+                            if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) {
+                                MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
+                                if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) {
+                                    TrueXi1530 = kTRUE;
+                                }//Xi1530 check
+                            }// Xi+pion mother check
+                        }// Xi Check
+                    }// Lambda+pion(D2esd) mother check
+                }//Lambda check
+            }//Lamda daugthers check
+        }//Same mother(lambda)
+    }//D2esd->pion
+    return TrueXi1530;
+}
+
