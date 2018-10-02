@@ -28,8 +28,8 @@ const int LHC16l[] = {259888, 259868, 259867, 259866, 259860, 259842, 259841, 25
 class AliAnalysisGrid;
 void run(
          const char *taskname = "Xi1530"
-         , const char *option = "LHC16k_Mix" // when scanning AOD, add "AOD"
-         , const char *gridmode = "full" // or "terminate" to merge
+         , const char *option = "LHC16k_pass2_MC_test" // when scanning AOD, add "AOD"
+         , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
          , const char *localorgrid = "grid"
@@ -119,7 +119,7 @@ void run(
     
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
     
-    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
+    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
 #else
     // ROOT 5 MODE
     //

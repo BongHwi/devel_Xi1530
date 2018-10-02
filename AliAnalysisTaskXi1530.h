@@ -120,7 +120,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Int_t                           zbin = -1 ;
         Double_t                        fptcut = 0.15;
         Double_t                        fetacut = 0.8;
-        Bool_t                          fsetmixing = kFALSE;
+        Bool_t                          fsetmixing = kTRUE;
         Bool_t                          IsAA=kFALSE;
         Bool_t                          IsMC=kFALSE;
         Bool_t                          IsPS = kFALSE;

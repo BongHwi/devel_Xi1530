@@ -414,6 +414,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     // it includes several cuts:
     // - TPC PID cut for pion
     // - Eta cut
+    // - Z-vertex cut
     //
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
@@ -445,6 +446,9 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
 
             // Eta cut
             if(abs(track->Eta())>0.8) continue;
+            
+            // Z vertex cut
+            if(abs(track->GetZ() - fZ) > 2) continue;
             
             goodtrackindices.push_back(it);
             fNTracks++;
@@ -652,6 +656,15 @@ void AliAnalysisTaskXi1530::FillTracks(){
     TLorentzVector temp1,temp2;
     TLorentzVector vecsum;
     
+    // The following CovMatrix is set so that PropogateToDCA() ignores track errors.
+    // Only used to propagate Xi to third pion for XiStar reconstruction
+    // Origin: AliPhysics/PWGLF/RESONANCES/extra/AliXiStar.cxx (Dhevan Gangadharan)
+    Double_t fCovMatrix[21];
+    Double_t xiVtx[3];
+    for(Int_t i=0; i<21; i++) fCovMatrix[i]=0;
+    fCovMatrix[0]=1, fCovMatrix[2]=1, fCovMatrix[5]=1, fCovMatrix[9]=1, fCovMatrix[14]=1, fCovMatrix[20]=1;
+    fXiTrack = new AliESDtrack(); // As a ESD Track
+    
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
     
@@ -676,6 +689,12 @@ void AliAnalysisTaskXi1530::FillTracks(){
         
         FillTHnSparse("hInvMass_dXi",{fCent,Xicandidate->Pt(),Xicandidate->M()});
         
+        // for PropogateToDCA
+        xiVtx[0] = Xicandidate->Xv();
+        xiVtx[1] = Xicandidate->Yv();
+        xiVtx[2] = Xicandidate->Zv();
+        fXiTrack->Set(xiVtx, Xicandidate->Pt(), fCovMatrix, Short_t(Xicandidate->Charge()));
+        
         for (UInt_t j = 0; j < ntracks; j++) {
             track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[j]);
             if (!track1) continue;
@@ -684,6 +703,10 @@ void AliAnalysisTaskXi1530::FillTracks(){
             
             // Y cut
             if (fabs(vecsum.Rapidity())>0.5) continue;
+            
+            // PropagateToDCA cut
+            AliVertex *XiStarVtx = new AliVertex(track1->GetX(),0,0);
+            if(!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))) continue;
             
             auto sign = kAllType;
             if ((Xicandidate->Charge() ==-1 && track1->Charge()==+1)
