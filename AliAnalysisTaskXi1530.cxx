@@ -671,10 +671,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     // The following CovMatrix is set so that PropogateToDCA() ignores track errors.
     // Only used to propagate Xi to third pion for XiStar reconstruction
     // Origin: AliPhysics/PWGLF/RESONANCES/extra/AliXiStar.cxx (Dhevan Gangadharan)
-    Double_t fCovMatrix[21];
-    Double_t xiVtx[3];
-    Double_t xiP[3];
-    Double_t PiX[3];
+    Double_t fCovMatrix[21],xiVtx[3],xiP[3],PiX[3];
     for(Int_t i=0; i<21; i++) fCovMatrix[i]=0;
     fCovMatrix[0]=1, fCovMatrix[2]=1, fCovMatrix[5]=1, fCovMatrix[9]=1, fCovMatrix[14]=1, fCovMatrix[20]=1;
     AliESDtrack* fXiTrack = new AliESDtrack(); // As a ESD Track
@@ -704,13 +701,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
         FillTHnSparse("hInvMass_dXi",{fCent,Xicandidate->Pt(),Xicandidate->M()});
         
         // for PropogateToDCA
-        xiVtx[0] = Xicandidate->Xv();
-        xiVtx[1] = Xicandidate->Yv();
-        xiVtx[2] = Xicandidate->Zv();
-        
-        xiP[0] = Xicandidate->Px();
-        xiP[1] = Xicandidate->Py();
-        xiP[2] = Xicandidate->Pz();
+        xiVtx[0] = Xicandidate->Xv(); xiVtx[1] = Xicandidate->Yv(); xiVtx[2] = Xicandidate->Zv();
+        xiP[0] = Xicandidate->Px(); xiP[1] = Xicandidate->Py(); xiP[2] = Xicandidate->Pz();
         fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(Xicandidate->Charge()));
         
         for (UInt_t j = 0; j < ntracks; j++) {
@@ -723,8 +715,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if (fabs(vecsum.Rapidity())>0.5) continue;
             
             // PropagateToDCA cut
-            track1->GetXYZ(PiX);
-            AliVertex *XiStarVtx = new AliVertex(PiX,0,0);
+            track1->GetXYZ(PiX); AliVertex *XiStarVtx = new AliVertex(PiX,0,0);
             if(!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))) continue;
             
             auto sign = kAllType;
