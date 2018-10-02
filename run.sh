@@ -5,7 +5,7 @@
 ## email  : kimb@cern.ch ##
 ###########################
 
-if [[ "$#" != 3 ]]
+if [[ "$#" != 2 ]]
 then
 echo "Wrong usage"
 ##echo "usage : $0 <taskname> <Period> <full|terminate|download|merge>"
@@ -14,13 +14,13 @@ exit 0;
 fi
 
 ##taskname : task name
-#taskname=Xi153-=0
-taskname=$1
+taskname=Xi1530
+#taskname=$1
 ##periods : remove some periods if you don't want to run all of them
 #periods=LHC10d
 #periods=LHC16k
-periods=$2
-method=$3
+periods=$1
+method=$2
 
 basepath=/alice/cern.ch/user/b/blim
 DOWN_DIR=~/Desktop

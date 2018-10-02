@@ -326,7 +326,7 @@ void run(
             for(auto i=0u;i<end;i++)
                 plugin->AddRunNumber(LHC17r.at(i));
         }
-        plugin->SetSplitMaxInputFileNumber(4000);
+        plugin->SetSplitMaxInputFileNumber(2000);
         plugin->SetExecutable(Form("%s%s.sh",taskname,option));
         plugin->SetTTL(20000);
         plugin->SetJDLName(Form("%s%s.jdl",taskname,option));
@@ -336,8 +336,8 @@ void run(
         plugin->SetMergeViaJDL(kTRUE);
         plugin->SetOneStageMerging(kFALSE);
         plugin->SetCheckCopy(kFALSE);
-        plugin->SetNrunsPerMaster(kFALSE);
-        plugin->SetUseSubmitPolicy(kTRUE);
+        //plugin->SetNrunsPerMaster(kFALSE);
+        //plugin->SetUseSubmitPolicy(kTRUE);
         
         plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
         plugin->SetGridOutputDir("out");
