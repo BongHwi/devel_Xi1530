@@ -674,6 +674,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     Double_t fCovMatrix[21];
     Double_t xiVtx[3];
     Double_t xiP[3];
+    Double_t PiX[3];
     for(Int_t i=0; i<21; i++) fCovMatrix[i]=0;
     fCovMatrix[0]=1, fCovMatrix[2]=1, fCovMatrix[5]=1, fCovMatrix[9]=1, fCovMatrix[14]=1, fCovMatrix[20]=1;
     AliESDtrack* fXiTrack = new AliESDtrack(); // As a ESD Track
@@ -722,7 +723,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if (fabs(vecsum.Rapidity())>0.5) continue;
             
             // PropagateToDCA cut
-            AliVertex *XiStarVtx = new AliVertex(track1->GetX(),0,0);
+            track1->GetXYZ(PiX);
+            AliVertex *XiStarVtx = new AliVertex(PiX,0,0);
             if(!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))) continue;
             
             auto sign = kAllType;
