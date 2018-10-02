@@ -954,7 +954,7 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
                     if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) { // Lambda+pion(D2esd) mother check
                         MCXiesd = (TParticle*)fMCStack->Particle(abs(MCLamesd->GetMother(0)));
                         if (abs(MCXiesd->GetPdgCode()) == kXiCode) { // Xi Check
-                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(abs(track1->GetLabel()));
+                            MCXiStarD2esd = (TParticle*)fMCStack->Particle(abs(pion->GetLabel()));
                             if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) { // Xi+pion mother check
                                 MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
                                 if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) { //Xi1530 check
