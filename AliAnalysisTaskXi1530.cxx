@@ -696,7 +696,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
         AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
         AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
         
-        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
+        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Ximass);
         
         FillTHnSparse("hInvMass_dXi",{fCent,Xicandidate->Pt(),Xicandidate->M()});
         
@@ -725,15 +725,12 @@ void AliAnalysisTaskXi1530::FillTracks(){
             
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
-                    if ( IsTrueXi1530(Xicandidate,track1) ){
-                        //temp1.SetXYZM(MCXiesd->Px(),MCXiesd->Py(), MCXiesd->Pz(),Ximass);
-                        //temp2.SetXYZM(MCXiStarD2esd->Px(),MCXiStarD2esd->Py(), MCXiStarD2esd->Pz(),pionmass);
-                        //TLorentzVector vecsumtrue = temp1 + temp2;
+                    if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
                         
+                        // True Xi1530 signals
                         FillTHnSparse("hInvMass",{kMCReco,fCent,vecsum.Pt(),vecsum.M()});
                         
-                        // True Xi1530 signals for cut study
-                        
+                        // For cut study
                         fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
                         fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaXiDaughters()));
                         if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
@@ -761,9 +758,10 @@ void AliAnalysisTaskXi1530::FillTracks(){
                         fHistos->FillTH2("hXi_Rxy_TrueMC",cX,cY);
                         
                     }//Xi1530 check
-                }// ESD
+                }// MC ESD
                 else{ // !! NEED TO UPDATE FOR AOD CASE !!
-                }// AOD
+                    //
+                }// MC AOD
             }// MC
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
             if(sign == kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
