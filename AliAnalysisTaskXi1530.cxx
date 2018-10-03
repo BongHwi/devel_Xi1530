@@ -240,7 +240,9 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     //temporal check
     fHistos->CreateTH1("hTotalInvMass_data_check","",2000,0.5,2.5,"s");
     fHistos->CreateTH1("hTotalInvMass_LS_check","",2000,0.5,2.5,"s");
+    fHistos->CreateTH1("hTotalpT","",200,0,20,"s");
     fHistos->CreateTH1("hTotalpT_check","",200,0,20,"s");
+
     
     if(IsMC){
         //For MC True stduy purpose
@@ -700,6 +702,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     }
     
     for (Int_t i = 0; i < ncascade; i++) {
+        
         Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
         if(!Xicandidate) continue;
         
@@ -804,7 +807,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     //
                 }// MC AOD
             }// MC
-            fHistos->FillTH1("hTotalpT_check",vecsum.Pt());
+            fHistos->FillTH1("hTotalpT",vecsum.Pt())
+            fHistos->FillTH1("hTotalpT_check",xiStarPt);
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
             if(sign == kData){
                 fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
