@@ -65,13 +65,7 @@ const Double_t        pi = TMath::Pi();
 const Double_t  pionmass = AliPID::ParticleMass(AliPID::kPion);
 //const Double_t  Ximass = AliPID::ParticleMass(AliPID::kCascade);
 const Double_t  Ximass = 1.32171;
-//enum { kData=1, kLS, kMixing, kMCReco, kMCTrue, kAllType}; //
-const Double_t kData    = 1.;
-const Double_t kLS      = 2.;
-const Double_t kMixing  = 3.;
-const Double_t kMCReco  = 4.;
-const Double_t kMCTrue  = 5.;
-const Double_t kAllType = 6.;
+enum { kData=1, kLS, kMixing, kMCReco, kMCTrue, kAllType}; //
 enum { kTrueINELg0=1, kReco, kGoodVtx}; //
 
 AliAnalysisTaskXi1530RunTable::AliAnalysisTaskXi1530RunTable() :
@@ -770,7 +764,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 }// MC AOD
             }// MC
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
-            if((int)sign == (int)kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
+            if((int)sign == (int)kData){
+                fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
             if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
         }
     }
