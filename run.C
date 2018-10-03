@@ -28,7 +28,7 @@ const int LHC16l[] = {259888, 259868, 259867, 259866, 259860, 259842, 259841, 25
 class AliAnalysisGrid;
 void run(
          const char *taskname = "Xi1530"
-         , const char *option = "LHC16k_pass2_MC_test" // when scanning AOD, add "AOD"
+         , const char *option = "LHC16k_pass2_test" // when scanning AOD, add "AOD"
          , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
@@ -340,7 +340,7 @@ void run(
         plugin->SetOneStageMerging(kFALSE);
         plugin->SetCheckCopy(kFALSE);
         //plugin->SetNrunsPerMaster(kFALSE);
-        //plugin->SetUseSubmitPolicy(kTRUE);
+        plugin->SetUseSubmitPolicy(kTRUE);
         
         plugin->SetGridWorkingDir(Form("%s%s",taskname,option));
         plugin->SetGridOutputDir("out");

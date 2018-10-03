@@ -237,6 +237,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos->CreateTH1("hTotalInvMass_LS","",2000,0.5,2.5,"s");
     fHistos->CreateTH1("hTotalInvMass_Mix","",2000,0.5,2.5,"s");
     
+    //temporal check
+    fHistos->CreateTH1("hTotalInvMass_data_check","",2000,0.5,2.5,"s");
+    fHistos->CreateTH1("hTotalInvMass_LS_check","",2000,0.5,2.5,"s");
+    fHistos->CreateTH1("hTotalpT_check","",200,0,20,"s");
+    
     if(IsMC){
         //For MC True stduy purpose
         fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_TrueMC","",300,0,3,"s");
@@ -668,6 +673,12 @@ void AliAnalysisTaskXi1530::FillTracks(){
     TLorentzVector temp1,temp2;
     TLorentzVector vecsum;
     
+    //temporal check
+    Double_t px1,py1,pz1, px2,py2,pz2;
+    Double_t p1sq,p2sq,e1,e2,angle;
+    Double_t xiStarMom, xiStarMass, xiStarPt, xiStarY;
+    Double_t xiStarP[3];
+    
     // The following CovMatrix is set so that PropogateToDCA() ignores track errors.
     // Only used to propagate Xi to third pion for XiStar reconstruction
     // Origin: AliPhysics/PWGLF/RESONANCES/extra/AliXiStar.cxx (Dhevan Gangadharan)
@@ -723,6 +734,36 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 || (Xicandidate->Charge() ==+1 && track1->Charge()==-1)) sign = kData; //Unlike sign -> Data
             else sign = kLS; //like sign bg
             
+            px1=xiP[0];
+            py1=xiP[1];
+            pz1=xiP[2];
+            px2=track1->Px();
+            py2=track1->Py();
+            pz2=track1->Pz();
+            
+            p1sq=px1*px1+py1*py1+pz1*pz1;
+            p2sq=px2*px2+py2*py2+pz2*pz2;
+            if(p1sq <=0 || p2sq <=0) continue;
+            
+            e1=sqrt(p1sq+Ximass*Ximass);
+            e2=sqrt(p2sq+pionmass*pionmass);
+            angle=px1*px2+py1*py2+pz1*pz2;
+            xiStarMass=Ximass*Ximass+pionmass*pionmass+2.*e1*e2-2.*angle;
+            if(xiStarMass<0.) xiStarMass=1.e-8;
+            xiStarMass=sqrt(xiStarMass);
+            
+            
+            xiStarP[0] = px1+px2;
+            xiStarP[1] = py1+py2;
+            xiStarP[2] = pz1+pz2;
+            xiStarMom = sqrt(pow(xiStarP[0],2)+pow(xiStarP[1],2)+pow(xiStarP[2],2));
+            if(xiStarMom==0) continue; // So one of the following lines doesnt break
+            xiStarPt = sqrt(xiStarP[0]*xiStarP[0] + xiStarP[1]*xiStarP[1]);
+            
+            
+            xiStarY = .5*log( ((e1+e2) + xiStarP[2])/((e1+e2) - xiStarP[2]));
+            if(xiStarY<-0.5 ||xiStarY>0.5) continue; // here selection of rapidity for pPb analysis
+            
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
                     if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
@@ -763,9 +804,16 @@ void AliAnalysisTaskXi1530::FillTracks(){
                     //
                 }// MC AOD
             }// MC
+            fHistos->FillTH1("hTotalpT_check",vecsum.Pt());
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
-            if(sign == kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
-            if(sign == kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
+            if(sign == kData){
+                fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
+                if(vecsum.Pt() < 0.8) fHistos->FillTH1("hTotalInvMass_data_check",xiStarMass);
+            }
+            if(sign == kLS){
+                fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
+                fHistos->FillTH1("hTotalInvMass_LS_check",xiStarMass);
+            }
         }
     }
     
