@@ -260,7 +260,7 @@ void run(
                 plugin->SetDataPattern("*AliESDs.root");
             }
             else {
-                plugin->SetGridDataDir("/alice/data/2016/LHC17k");
+                plugin->SetGridDataDir("/alice/data/2017/LHC17k");
                 plugin->SetDataPattern("pass1/*/AliESDs.root");
             }
             Int_t end = LHC17k.size();
@@ -276,7 +276,7 @@ void run(
                 plugin->SetDataPattern("*AliESDs.root");
             }
             else {
-                plugin->SetGridDataDir("/alice/data/2016/LHC17l");
+                plugin->SetGridDataDir("/alice/data/2017/LHC17l");
                 plugin->SetDataPattern("pass1/*/AliESDs.root");
             }
             Int_t end = LHC17l.size();
@@ -291,7 +291,7 @@ void run(
                 plugin->SetDataPattern("*AliESDs.root");
             }
             else {
-                plugin->SetGridDataDir("/alice/data/2016/LHC17m");
+                plugin->SetGridDataDir("/alice/data/2017/LHC17m");
                 plugin->SetDataPattern("pass1/*/AliESDs.root");
             }
             Int_t end = LHC17m.size();
@@ -306,7 +306,7 @@ void run(
                 plugin->SetDataPattern("*AliESDs.root");
             }
             else {
-                plugin->SetGridDataDir("/alice/data/2016/LHC17o");
+                plugin->SetGridDataDir("/alice/data/2017/LHC17o");
                 plugin->SetDataPattern("pass1/*/AliESDs.root");
             }
             Int_t end = LHC17o.size();
@@ -321,7 +321,7 @@ void run(
                 plugin->SetDataPattern("*AliESDs.root");
             }
             else {
-                plugin->SetGridDataDir("/alice/data/2016/LHC17r");
+                plugin->SetGridDataDir("/alice/data/2017/LHC17r");
                 plugin->SetDataPattern("pass1/*/AliESDs.root");
             }
             Int_t end = LHC17r.size();
