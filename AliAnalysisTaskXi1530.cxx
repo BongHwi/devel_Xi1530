@@ -442,9 +442,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     //Event mixing pool
     if (fsetmixing){
         ep = &fEMpool[centbin][zbin];
-        std::cout << "AliAnalysisTaskXi1530:: GoodTracksSelection 01-1" << std::endl;
         ep -> push_back( tracklist() );
-        std::cout << "AliAnalysisTaskXi1530:: GoodTracksSelection 01-2" << std::endl;
         etl = &(ep->back());
     }
     fNTracks = 0;
