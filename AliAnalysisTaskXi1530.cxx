@@ -427,6 +427,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     // - TPC PID cut for pion
     // - Eta cut
     // - Z-vertex cut
+    // - pion mass window cut
     //
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
@@ -459,6 +460,9 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             
             // Z vertex cut
             if(abs(track->GetZ() - fZ) > 2) continue;
+            
+            // Pion mass window
+            if (fabs(track->M() - pionmass) > 0.007) continue;
             
             goodtrackindices.push_back(it);
             fNTracks++;
