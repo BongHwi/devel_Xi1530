@@ -465,9 +465,11 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             
             // PID cut for pion
             Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
-            fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),fTPCNSigPion);
+            fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),track->GetTPCsignal());
+            fHistos->FillTH1("hTPCPIDsignalXi1530Pion",fTPCNSigPion);
             if (abs(fTPCNSigPion) > 3.) continue;
-            fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),fTPCNSigPion);
+            fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),track->GetTPCsignal());
+            fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",fTPCNSigPion);
 
             // Eta cut
             if(abs(track->Eta())>0.8) continue;
