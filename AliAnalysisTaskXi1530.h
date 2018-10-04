@@ -4,9 +4,9 @@
 // Class AliAnalysisTaskXi1530
 //
 // AliAnalysisTaskXi1530
-// author:
-//  (Original Code) Beomkyu KIM (kimb@cern.ch)
-//  (Modification) Bong-Hwi Lim (bong-hwi.lim@cern.ch)
+//  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
+//        , Beomkyu  KIM (kimb@cern.ch)
+//
 
 #include <deque>
 class THnSparse;

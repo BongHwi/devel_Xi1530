@@ -20,7 +20,8 @@
 //  This class essentially combines charged Xi candidates from the Xi Vert-
 //  exer with primary charged pions.
 //
-//  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch), Beomkyu KIM (kimb@cern.ch)
+//  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
+//        , Beomkyu  KIM (kimb@cern.ch)
 //
 //  Last Modified Date: 2018/10/04
 //
@@ -445,8 +446,8 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
     AliVTrack * track;
-    tracklist *etl;
-    eventpool *ep;
+    tracklist *etl = nullptr;
+    eventpool *ep = nullptr;
     //Event mixing pool
     if (fsetmixing){
         ep = &fEMpool[centbin][zbin];
@@ -497,7 +498,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     
     if (fsetmixing){
         if (!goodtrackindices.size()) ep->pop_back();
-        if ( ep->size() > fnMix ){
+        if ( (int)ep->size() > (int)fnMix ){
             for (auto it: ep->front()) delete it;
             ep->pop_front();
         }
@@ -530,7 +531,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     fNCascade = 0;
     Bool_t StandardXi=kTRUE;
     
-    for (UInt_t it = 0; it<ncascade; it++){
+    for (UInt_t it = 0; it < ncascade; it++){
         StandardXi=kTRUE;
         if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(it);
@@ -706,13 +707,13 @@ void AliAnalysisTaskXi1530::FillTracks(){
     tracklist trackpool;
     if (fsetmixing){
         eventpool &ep = fEMpool[centbin][zbin];
-        if (ep.size()<fnMix ) return;
+        if ((int)ep.size() < (int)fnMix ) return;
         for (auto pool: ep){
             for (auto track: pool) trackpool.push_back((AliVTrack*)track);
         }
     }
     
-    for (Int_t i = 0; i < ncascade; i++) {
+    for (UInt_t i = 0; i < ncascade; i++) {
         
         Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
         if(!Xicandidate) continue;
@@ -800,7 +801,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     
     // Event Mixing
     if (fsetmixing){
-        for (Int_t i = 0; i < ncascade; i++) {
+        for (UInt_t i = 0; i < ncascade; i++) {
             Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
             if(!Xicandidate) continue;
             temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
