@@ -176,17 +176,31 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fHistos -> CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
     
     // QA Histograms--------------------------------------------------
+    //
     // T P C   P I D
-    // before
+    //// before
+    // dEdX
     fHistos -> CreateTH2("hTPCPIDLambdaProton","",200,0,20,2000,0,200);
     fHistos -> CreateTH2("hTPCPIDLambdaPion","",200,0,20,2000,0,200);
     fHistos -> CreateTH2("hTPCPIDBachelorPion","",200,0,20,2000,0,200);
     fHistos -> CreateTH2("hTPCPIDXi1530Pion","",200,0,20,2000,0,200);
-    // after
+    // Signal
+    fHistos -> CreateTH1("hTPCPIDsignalLambdaProton","",100,-5,5,"s");
+    fHistos -> CreateTH1("hTPCPIDsignalLambdaPion","",100,-5,5,"s");
+    fHistos -> CreateTH1("hTPCPIDsignalBachelorPion","",100,-5,5,"s");
+    fHistos -> CreateTH1("hTPCPIDsignalXi1530Pion","",100,-5,5,"s");
+    //
+    //// after
+    // dEdX
     fHistos -> CreateTH2("hTPCPIDLambdaProton_cut","",200,0,20,2000,0,200);
     fHistos -> CreateTH2("hTPCPIDLambdaPion_cut","",200,0,20,2000,0,200);
     fHistos -> CreateTH2("hTPCPIDBachelorPion_cut","",200,0,20,2000,0,200);
     fHistos -> CreateTH2("hTPCPIDXi1530Pion_cut","",200,0,20,2000,0,200);
+    // Signal
+    fHistos -> CreateTH1("hTPCPIDsignalLambdaProton_cut","",100,-5,5,"s");
+    fHistos -> CreateTH1("hTPCPIDsignalLambdaPion_cut","",100,-5,5,"s");
+    fHistos -> CreateTH1("hTPCPIDsignalBachelorPion_cut","",100,-5,5,"s");
+    fHistos -> CreateTH1("hTPCPIDsignalXi1530Pion_cut","",100,-5,5,"s");
     
     // D C A
     // between daughters
@@ -540,17 +554,21 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
                 fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kPion);
-                    fHistos->FillTH2("hTPCPIDLambdaProton",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
-                    fHistos->FillTH2("hTPCPIDLambdaPion",nTrackXi->GetTPCmomentum(),fTPCNSigLambdaPion);
+                    fHistos->FillTH2("hTPCPIDLambdaProton",pTrackXi->GetTPCmomentum(),pTrackXi->GetTPCmomentum());
+                    fHistos->FillTH2("hTPCPIDLambdaPion",nTrackXi->GetTPCmomentum(),nTrackXi->GetTPCmomentum());
                 
             } else { // Xi+ has -proton, +pion
                 fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
                 fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
-                    fHistos->FillTH2("hTPCPIDLambdaProton",nTrackXi->GetTPCmomentum(),fTPCNSigProton);
-                    fHistos->FillTH2("hTPCPIDLambdaPion",pTrackXi->GetTPCmomentum(),fTPCNSigLambdaPion);
+                    fHistos->FillTH2("hTPCPIDLambdaProton",nTrackXi->GetTPCmomentum(),nTrackXi->GetTPCmomentum());
+                    fHistos->FillTH2("hTPCPIDLambdaPion",pTrackXi->GetTPCmomentum(),pTrackXi->GetTPCmomentum());
             }
             fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(bTrackXi, AliPID::kPion); // bachelor is always pion
-                fHistos->FillTH2("hTPCPIDBachelorPion",bTrackXi->GetTPCmomentum(),fTPCNSigBachelorPion);
+                fHistos->FillTH2("hTPCPIDBachelorPion",bTrackXi->GetTPCmomentum(),bTrackXi->GetTPCmomentum());
+            
+            fHistos->FillTH1("hTPCPIDsignalLambdaProton",fTPCNSigProton);
+            fHistos->FillTH1("hTPCPIDsignalLambdaPion",fTPCNSigLambdaPion);
+            fHistos->FillTH1("hTPCPIDsignalBachelorPion",fTPCNSigBachelorPion);
             
             if (abs(fTPCNSigProton) > 3.) StandardXi=kFALSE; // PID for proton
             if (abs(fTPCNSigLambdaPion) > 3.) StandardXi=kFALSE; // PID for 1st pion
@@ -621,14 +639,19 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
                 
                 // PID QA
                 if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
-                    fHistos->FillTH2("hTPCPIDLambdaProton_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
-                    fHistos->FillTH2("hTPCPIDLambdaPion_cut",nTrackXi->GetTPCmomentum(),fTPCNSigLambdaPion);
+                    fHistos->FillTH2("hTPCPIDLambdaProton_cut",pTrackXi->GetTPCmomentum(),pTrackXi->GetTPCmomentum());
+                    fHistos->FillTH2("hTPCPIDLambdaPion_cut",nTrackXi->GetTPCmomentum(),nTrackXi->GetTPCmomentum());
                 }
                 else{ // Xi+ has -proton, +pion
-                    fHistos->FillTH2("hTPCPIDLambdaProton_cut",nTrackXi->GetTPCmomentum(),fTPCNSigLambdaPion);
-                    fHistos->FillTH2("hTPCPIDLambdaPion_cut",pTrackXi->GetTPCmomentum(),fTPCNSigProton);
+                    fHistos->FillTH2("hTPCPIDLambdaProton_cut",nTrackXi->GetTPCmomentum(),nTrackXi->GetTPCmomentum());
+                    fHistos->FillTH2("hTPCPIDLambdaPion_cut",pTrackXi->GetTPCmomentum(),pTrackXi->GetTPCmomentum());
                 }
-                fHistos->FillTH2("hTPCPIDBachelorPion_cut",bTrackXi->GetTPCmomentum(),fTPCNSigBachelorPion);
+                fHistos->FillTH2("hTPCPIDBachelorPion_cut",bTrackXi->GetTPCmomentum(),bTrackXi->GetTPCmomentum());
+                
+                // TPC PID Signal
+                fHistos->FillTH1("hTPCPIDsignalLambdaProton_cut",fTPCNSigProton);
+                fHistos->FillTH1("hTPCPIDsignalLambdaPion_cut",fTPCNSigLambdaPion);
+                fHistos->FillTH1("hTPCPIDsignalBachelorPion_cut",fTPCNSigBachelorPion);
                 
                 // DCA QA
                 fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_cut",fDCADist_Lambda);
