@@ -707,6 +707,9 @@ void AliAnalysisTaskXi1530::FillTracks(){
         for (UInt_t j = 0; j < ntracks; j++) {
             track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[j]);
             if (!track1) continue;
+            
+            if(track1->GetID() == pTrackXi->GetID() || track1->GetID() == nTrackXi->GetID() || track1->GetID() == bTrackXi->GetID()) continue;
+            
             temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionmass);
             vecsum = temp1+temp2; // temp1 = cascade, temp2=pion
             std::cout << "Check pion mass: " << track1->M() << std::endl;
@@ -764,8 +767,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 }// MC AOD
             }// MC
             FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
-            if((int)sign == (int)kData){
-                fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
+            if((int)sign == (int)kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
             if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
         }
     }
@@ -777,8 +779,14 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if(!Xicandidate) continue;
             temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Xicandidate->M());
             
+            AliESDtrack *pTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
+            AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
+            AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
+            
             for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
+                std::cout << "cascade: " << i << ", track: " << jt << std::endl;
                 track1 = trackpool.at(jt);
+                if(track1->GetID() == pTrackXi->GetID() || track1->GetID() == nTrackXi->GetID() || track1->GetID() == bTrackXi->GetID()) continue;
                 temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
                 vecsum = temp1+temp2; // two pion vector sum
                 if (track1->Charge()*Xicandidate->Charge() == -1) continue;
@@ -790,8 +798,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
     }//mix loop
 }
 
-void AliAnalysisTaskXi1530::Terminate(Option_t *)
-{
+void AliAnalysisTaskXi1530::Terminate(Option_t *){
 }
 
 Bool_t AliAnalysisTaskXi1530::SelectVertex2015pp(AliESDEvent *esd,
