@@ -20,10 +20,9 @@
 //  This class essentially combines charged Xi candidates from the Xi Vert-
 //  exer with primary charged pions.
 //
-//  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
-//  Base of the Code: Beomkyu KIM (kimb@cern.ch)
+//  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch), Beomkyu KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2018/09/30
+//  Last Modified Date: 2018/10/04
 //
 ////////////////////////////////////////////////////////////////////////////
 
