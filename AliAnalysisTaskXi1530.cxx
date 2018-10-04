@@ -622,15 +622,15 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             if(abs(Xicandidate->Eta())>0.8) StandardXi=kFALSE;
                 fHistos->FillTH2("hPhiEta_Xi",Xicandidate->Phi(),Xicandidate->Eta());
             
-            // XY Raidus cut
+            // XY Raidus cut(experiemntal)
             Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
                 fHistos->FillTH2("hLambda_Rxy",LambdaX,LambdaY);
-            //if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > 100) StandardXi=kFALSE;
+            //if(sqrt( pow(LambdaX,2) + pow(LambdaY,2) ) > 100) StandardXi=kFALSE; // NOT USING
             
             Double_t cX, cY, cZ;
             Xicandidate->GetXYZcascade(cX,cY,cZ);
             fHistos->FillTH2("hXi_Rxy",cX,cY);
-            //if(sqrt( pow(cX,2) + pow(cY,2) ) > 100) StandardXi=kFALSE;
+            //if(sqrt( pow(cX,2) + pow(cY,2) ) > 100) StandardXi=kFALSE; // NOT USING
             
             // After selection above
             if(StandardXi){ // Save only the Xi is good candidate
