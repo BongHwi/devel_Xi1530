@@ -168,7 +168,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
     
-    vector<TString> ent = {"All","CINT7","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection"};
+    std::vector<TString> ent = {"All","CINT7","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection"};
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
@@ -264,7 +264,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         fHistos->CreateTH2("hLambda_Rxy_TrueMC","",400,-200,200,400,-200,200);
         fHistos->CreateTH2("hXi_Rxy_TrueMC","",400,-200,200,400,-200,200);
     }
-    fEMpool.resize(binCent.GetNbins(),vector<eventpool> (binZ.GetNbins()));
+    fEMpool.resize(binCent.GetNbins(),std::vector<eventpool> (binZ.GetNbins()));
     PostData(1, fHistos->GetListOfHistograms());
 }
 
@@ -347,7 +347,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     
     // Vertex Check-----------------------------------------------------------
     const AliVVertex* pVtx      = fEvt->GetPrimaryVertex() ;
-    const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTracks() ;
+    //const AliVVertex* trackVtx  = fEvt->GetPrimaryVertexTracks() ;
     const AliVVertex* spdVtx    = fEvt->GetPrimaryVertexSPD() ;
     PVx = pVtx->GetX(); PVy = pVtx->GetY(); PVz = pVtx->GetZ();
     fZ = spdVtx->GetZ();

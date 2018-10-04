@@ -89,9 +89,9 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Long64_t FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w=1.);
     
     private:
-        typedef std::vector<AliVTrack*> tracklist;
-        typedef std::deque<tracklist>  eventpool;
-        typedef std::vector<vector<eventpool> > mixingpool;
+        typedef std::vector< AliVTrack* > tracklist;
+        typedef std::deque< tracklist >  eventpool;
+        typedef std::vector< std::vector<eventpool> > mixingpool;
     
         TString                         fOption;
     
