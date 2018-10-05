@@ -295,7 +295,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     if (IsMC){
         if (fEvt->IsA()==AliESDEvent::Class()){
             fMCStack = MCEvent()->Stack();
-            FillMCinput(fMCStack); // Note that MC input Event is filled at this moment.
+            // FillMCinput(fMCStack); // If I check this here, efficiency will include event cut as well.
             IsINEL0True = IsMCEventTrueINEL0();
         }// ESD Case
         else{
@@ -424,6 +424,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     
     // Check tracks and casade, Fill histo************************************
     if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition,
+        if(IsMC) FillMCinput(fMCStack); // Note that MC input Event is filled at this moment.
         if (this -> GoodTracksSelection()      // If Good track
             && this -> GoodCascadeSelection()) // and Good cascade is in this event,
             this -> FillTracks();              // Fill the histogram
@@ -1017,7 +1018,7 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
         MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
         MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
         if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) { //Same mother(lambda)
-            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) { //Lamda daugthers check
+            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) { //Lamda daugthers check #1
                 MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
                 if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) { //Lambda check
                     if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) { // Lambda+pion(D2esd) mother check
