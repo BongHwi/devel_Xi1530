@@ -134,6 +134,7 @@ AliAnalysisTaskXi1530& AliAnalysisTaskXi1530::operator =
 AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
 {
     delete fTrackCuts;
+    delete fTrackCuts2;
     delete fPIDResponse;
     delete fRunTable;
 }
@@ -141,10 +142,16 @@ AliAnalysisTaskXi1530::~AliAnalysisTaskXi1530()
 void AliAnalysisTaskXi1530::UserCreateOutputObjects()
 {
     // TrackCuts for Xi1530--------------------------------------------------
+    // Primary pion cut(Xi1530pion)
     fTrackCuts = new AliESDtrackCuts();
     fTrackCuts -> GetStandardITSTPCTrackCuts2011(kTRUE,kTRUE);
     fTrackCuts -> SetEtaRange(-0.8,0.8);
     fTrackCuts -> SetPtRange(0.15, 1e20);
+    // secondary particle cut(Xi daugthers)
+    fTrackCuts2 = new AliESDtrackCuts();
+    fTrackCuts2 -> GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE); // not primary
+    fTrackCuts2 -> SetEtaRange(-0.8,0.8);
+    fTrackCuts2 -> SetPtRange(0.15, 1e20);
     // ----------------------------------------------------------------------
     
     fHistos = new THistManager("Xi1530hists");
@@ -551,9 +558,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
             
             // Standard track QA cuts
-            if (!fTrackCuts->AcceptTrack(pTrackXi)) continue;
-            if (!fTrackCuts->AcceptTrack(nTrackXi)) continue;
-            if (!fTrackCuts->AcceptTrack(bTrackXi)) continue;
+            if (!fTrackCuts2->AcceptTrack(pTrackXi)) continue;
+            if (!fTrackCuts2->AcceptTrack(nTrackXi)) continue;
+            if (!fTrackCuts2->AcceptTrack(bTrackXi)) continue;
             
             // PID cuts for Xi daughters
             if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
