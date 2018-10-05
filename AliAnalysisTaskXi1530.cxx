@@ -168,7 +168,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
     
-    std::vector<TString> ent = {"All","CINT7","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection"};
+    std::vector<TString> ent = {"All","CINT7","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"};
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
@@ -402,6 +402,8 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         fHistos -> FillTH1("hEventNumbers","|Zvtx|<10cm",1);
     if(IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted)
         fHistos -> FillTH1("hEventNumbers","AliMultSelection",1);
+    
+    if(IsMC && IsINEL0True) fHistos -> FillTH1("hEventNumbers","INELg0True",1); // For trigger efficiency
     // -----------------------------------------------------------------------
 
     // *********************************************************************** // Event Selection done
