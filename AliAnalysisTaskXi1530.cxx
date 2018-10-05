@@ -149,8 +149,12 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fTrackCuts -> SetPtRange(0.15, 1e20);
     // secondary particle cut(Xi daugthers)
     fTrackCuts2 = new AliESDtrackCuts();
-    fTrackCuts2 -> GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE); // not primary
-    fTrackCuts2 -> SetEtaRange(-0.8,0.8);
+    //fTrackCuts2 -> GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE); // not primary
+    fTrackCuts2 -> SetAcceptKinkDaughters(kFALSE);
+    fTrackCuts2 -> SetMinNClustersTPC(50);
+    fTrackCuts2 -> SetRequireTPCRefit(kTRUE);
+    fTrackCuts2 -> SetMaxChi2PerClusterTPC(4); //From Enrico
+    //fTrackCuts2 -> SetEtaRange(-0.8,0.8);
     fTrackCuts2 -> SetPtRange(0.15, 1e20);
     // ----------------------------------------------------------------------
     
