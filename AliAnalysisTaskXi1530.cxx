@@ -381,7 +381,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     //    – SPD vertex z resolution < 0.02 cm                                      (IsGoodVertex) -> GetZRes()<0.25 (rough)
     //    – z-position difference between trackand SPD vertex < 0.5 cm             (IsGoodVertex)
     //    – vertex z position: |vz| < 10 cm                                        (IsVtxInZCut)
-    // Most of them is already choosed in above.
+    // Most of them are already choosed in above sections.
     
     AliMultSelection *MultSelection = (AliMultSelection*) fEvt->FindListObject("MultSelection");
     Bool_t IsMultSelcted = MultSelection->IsEventSelected();
@@ -443,6 +443,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
             this -> FillTracks();              // Fill the histogram
     }
     // ***********************************************************************
+    if (fsetmixing) FillTrackToEventPool();
     PostData(1, fHistos->GetListOfHistograms());
 }
 //________________________________________________________________________
@@ -463,14 +464,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     AliVTrack * track;
     Double_t DCAVtx;
     
-    tracklist *etl = nullptr;
-    eventpool *ep = nullptr;
-    //Event mixing pool
-    if (fsetmixing){
-        ep = &fEMpool[centbin][zbin];
-        ep -> push_back( tracklist() );
-        etl = &(ep->back());
-    }
     fNTracks = 0;
     for (UInt_t it = 0; it<ntracks; it++){
         if (fEvt->IsA()==AliESDEvent::Class()){
@@ -503,9 +496,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             
             goodtrackindices.push_back(it);
             fNTracks++;
-            
-            //Event mixing pool
-            if (fsetmixing) etl->push_back( (AliVTrack*)track -> Clone() );
         }
         else {
             /*
@@ -516,14 +506,6 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             if (abs(track->Eta())>fetacut) continue;
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
              */
-        }
-    }
-    
-    if (fsetmixing){
-        if (!goodtrackindices.size()) ep->pop_back();
-        if ( (int)ep->size() > (int)fnMix ){
-            for (auto it: ep->front()) delete it;
-            ep->pop_front();
         }
     }
     return goodtrackindices.size();
@@ -745,9 +727,8 @@ void AliAnalysisTaskXi1530::FillTracks(){
         AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
         AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
         
-        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Ximass);
-        
         FillTHnSparse("hInvMass_dXi",{fCent,Xicandidate->Pt(),Xicandidate->M()});
+        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Ximass);
         
         // for PropogateToDCA
         xiVtx[0] = Xicandidate->Xv(); xiVtx[1] = Xicandidate->Yv(); xiVtx[2] = Xicandidate->Zv();
@@ -761,6 +742,7 @@ void AliAnalysisTaskXi1530::FillTracks(){
             if(track1->GetID() == pTrackXi->GetID() || track1->GetID() == nTrackXi->GetID() || track1->GetID() == bTrackXi->GetID()) continue;
             
             temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionmass);
+            
             vecsum = temp1+temp2; // temp1 = cascade, temp2=pion
             std::cout << "Check pion mass: " << track1->M() << std::endl;
             
@@ -1058,5 +1040,31 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
         }//Same mother(lambda)
     }//D2esd->pion
     return TrueXi1530;
+}
+void AliAnalysisTaskXi1530::FillTrackToEventPool(){
+    // Fill Selected tracks to event mixing pool
+    
+    tracklist *etl = nullptr;
+    eventpool *ep = nullptr;
+    AliVTrack *goodtrack;
+    
+    //Event mixing pool
+    ep = &fEMpool[centbin][zbin];
+    ep -> push_back( tracklist() );
+    etl = &(ep->back());
+    
+    // Fill selected tracks
+    for (UInt_t i = 0; i < goodtrackindices.size(); i++) {
+        goodtrack = (AliVTrack*)  fEvt -> GetTrack(goodtrackindices[i]);
+        if(!goodtrack) continue;
+        
+        etl->push_back( (AliVTrack*)goodtrack -> Clone() );
+    }
+    
+    if (!goodtrackindices.size()) ep->pop_back();
+    if ( (int)ep->size() > (int)fnMix ){
+        for (auto it: ep->front()) delete it;
+        ep->pop_front();
+    }
 }
 

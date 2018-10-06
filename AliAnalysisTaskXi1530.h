@@ -78,6 +78,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Bool_t IsMCEventTrueINEL0();
         Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
         void FillMCinput(AliStack* fMCStack);
+        void FillTrackToEventPool();
     
         TAxis AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax);
         TAxis AxisVar( TString name, std::vector<Double_t> bin );
