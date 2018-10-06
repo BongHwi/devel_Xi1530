@@ -452,14 +452,17 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     //    and Save them for event mixing
     //
     // it includes several cuts:
-    // - TPC PID cut for pion
+    // - TPC PID cut for pion (disabled)
     // - Eta cut
     // - Z-vertex cut
+    // - DCA cut for primary particle
     // - pion mass window cut
     //
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
     AliVTrack * track;
+    Double_t DCAVtx;
+    
     tracklist *etl = nullptr;
     eventpool *ep = nullptr;
     //Event mixing pool
@@ -490,6 +493,10 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             
             // Z vertex cut
             if(abs(track->GetZ() - fZ) > 2) continue;
+            
+            //DCA cut for primary particle
+            DCAVtx = sqrt( pow(track->GetX() - PVx,2) + pow(track->GetY() - PVy,2));
+            if(DCAVtx > (0.0105 + 0.035/pow(track->Pt(),1.1))) continue;
             
             // Pion mass window
             //if (fabs(track->M() - pionmass) > 0.007) continue;
@@ -534,7 +541,7 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
     // - Cosine Pointing Angle cut for Xi and Lamnbda
     // - Mass window cut for Xi
     // - Eta cut
-    // - XY Raidus cut(not applied)
+    // - XY Raidus cut(not applied), just for check
     
     goodcascadeindices.clear();
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
@@ -586,9 +593,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             fHistos->FillTH1("hTPCPIDsignalLambdaPion",fTPCNSigLambdaPion);
             fHistos->FillTH1("hTPCPIDsignalBachelorPion",fTPCNSigBachelorPion);
             
-            if (abs(fTPCNSigProton) > 3.) StandardXi=kFALSE; // PID for proton
-            if (abs(fTPCNSigLambdaPion) > 3.) StandardXi=kFALSE; // PID for 1st pion
-            if (abs(fTPCNSigBachelorPion) > 3.) StandardXi=kFALSE; // PID for 2nd pion
+            //if (abs(fTPCNSigProton) > 3.) StandardXi=kFALSE; // PID for proton
+            //if (abs(fTPCNSigLambdaPion) > 3.) StandardXi=kFALSE; // PID for 1st pion
+            //if (abs(fTPCNSigBachelorPion) > 3.) StandardXi=kFALSE; // PID for 2nd pion
             
             // DCA cut
             // DCA between Dautgher particles
