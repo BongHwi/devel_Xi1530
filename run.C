@@ -64,7 +64,7 @@ void run(
     bool isaa = kFALSE;
     bool ismc = kFALSE;
     bool setmixing = kFALSE;
-    int nmix = 10;
+    int nmix = 20;
     bool highmult = kFALSE;
     TString foption = option;
     if(foption.Contains("MC")) ismc = true;

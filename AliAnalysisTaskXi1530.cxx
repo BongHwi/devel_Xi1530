@@ -473,7 +473,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
         if (fEvt->IsA()==AliESDEvent::Class()){
             track = (AliESDtrack*) fEvt ->GetTrack(it);
             if (!track) continue;
-            if (!fTrackCuts->AcceptTrack((AliESDtrack*) track)) continue;
+            if (!fTrackCuts2->AcceptTrack((AliESDtrack*) track)) continue;
             //if (!track->IsOn(AliVTrack::kITSpureSA)) continue;
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
             
@@ -481,7 +481,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
             fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),track->GetTPCsignal());
             fHistos->FillTH1("hTPCPIDsignalXi1530Pion",fTPCNSigPion);
-            if (abs(fTPCNSigPion) > 3.) continue;
+            //if (abs(fTPCNSigPion) > 3.) continue;
             fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),track->GetTPCsignal());
             fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",fTPCNSigPion);
 
@@ -492,7 +492,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             if(abs(track->GetZ() - fZ) > 2) continue;
             
             // Pion mass window
-            if (fabs(track->M() - pionmass) > 0.007) continue;
+            //if (fabs(track->M() - pionmass) > 0.007) continue;
             
             goodtrackindices.push_back(it);
             fNTracks++;

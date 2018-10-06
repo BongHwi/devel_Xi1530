@@ -1,6 +1,6 @@
 AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
                                      , const char *option = "LHC16k"
-                                     , int nmix=10
+                                     , int nmix=20
                                      , bool hightmult=kFALSE
                                      , bool isaa=kFALSE
                                      , bool ismc=kFALSE
