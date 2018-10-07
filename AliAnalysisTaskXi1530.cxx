@@ -1040,12 +1040,6 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
 }
 void AliAnalysisTaskXi1530::FillTrackToEventPool(){
     // Fill Selected tracks to event mixing pool
-    std::cout<<"01"<<std::endl;
-    
-    std::cout << "goodtrackindices.size(): " << goodtrackindices.size() << std::endl;
-    std::cout << "centbin: " << centbin << ", zbin: " << zbin << std::endl;
-    
-    
     AliVTrack *goodtrack;
     
     tracklist *etl;
@@ -1053,11 +1047,8 @@ void AliAnalysisTaskXi1530::FillTrackToEventPool(){
     //Event mixing pool
 
     ep = &fEMpool[centbin][zbin];
-    std::cout<<"01"<<std::endl;
     ep -> push_back( tracklist() );
-    std::cout<<"02"<<std::endl;
     etl = &(ep->back());
-    std::cout<<"03"<<std::endl;
     // Fill selected tracks
     for (UInt_t i = 0; i < goodtrackindices.size(); i++) {
         goodtrack = (AliESDtrack*) fEvt ->GetTrack(goodtrackindices[i]);
@@ -1065,13 +1056,9 @@ void AliAnalysisTaskXi1530::FillTrackToEventPool(){
         std::cout<<"04"<<std::endl;
         etl->push_back( (AliVTrack*)goodtrack -> Clone() );
     }
-    std::cout<<"05"<<std::endl;
     if (!goodtrackindices.size()) ep->pop_back();
-    std::cout<<"ep->size(): " << ep->size() << "fnMix: " << fnMix <<std::endl;
     if ( (int)ep->size() > (int)fnMix ){
-        std::cout<<"07"<<std::endl;
         for (auto it: ep->front()) delete it;
-        std::cout<<"08"<<std::endl;
         ep->pop_front();
     }
 }
