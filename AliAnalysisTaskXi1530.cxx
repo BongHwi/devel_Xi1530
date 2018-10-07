@@ -441,9 +441,10 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
         if (this -> GoodTracksSelection()      // If Good track
             && this -> GoodCascadeSelection()) // and Good cascade is in this event,
             this -> FillTracks();              // Fill the histogram
+        if (fsetmixing && goodtrackindices.size()) FillTrackToEventPool();
     }
     // ***********************************************************************
-    if (fsetmixing) FillTrackToEventPool();
+    
     PostData(1, fHistos->GetListOfHistograms());
 }
 //________________________________________________________________________
@@ -453,7 +454,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     //    and Save them for event mixing
     //
     // it includes several cuts:
-    // - TPC PID cut for pion (disabled)
+    // - TPC PID cut for pion
     // - Eta cut
     // - Z-vertex cut
     // - DCA cut for primary particle
@@ -462,14 +463,12 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
     AliVTrack * track;
-    Double_t DCAVtx;
-    
-    fNTracks = 0;
+   
     for (UInt_t it = 0; it<ntracks; it++){
         if (fEvt->IsA()==AliESDEvent::Class()){
             track = (AliESDtrack*) fEvt ->GetTrack(it);
             if (!track) continue;
-            if (!fTrackCuts2->AcceptTrack((AliESDtrack*) track)) continue;
+            if (!fTrackCuts->AcceptTrack((AliESDtrack*) track)) continue;
             //if (!track->IsOn(AliVTrack::kITSpureSA)) continue;
             fHistos->FillTH2("hPhiEta",track->Phi(),track->Eta());
             
@@ -477,7 +476,7 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
             fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),track->GetTPCsignal());
             fHistos->FillTH1("hTPCPIDsignalXi1530Pion",fTPCNSigPion);
-            //if (abs(fTPCNSigPion) > 3.) continue;
+            if (abs(fTPCNSigPion) > 3.) continue;
             fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),track->GetTPCsignal());
             fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",fTPCNSigPion);
 
@@ -487,15 +486,10 @@ Bool_t AliAnalysisTaskXi1530::GoodTracksSelection(){
             // Z vertex cut
             if(abs(track->GetZ() - fZ) > 2) continue;
             
-            //DCA cut for primary particle
-            DCAVtx = sqrt( pow(track->GetX() - PVx,2) + pow(track->GetY() - PVy,2));
-            if(DCAVtx > (0.0105 + 0.035/pow(track->Pt(),1.1))) continue;
-            
             // Pion mass window
             //if (fabs(track->M() - pionmass) > 0.007) continue;
             
             goodtrackindices.push_back(it);
-            fNTracks++;
         }
         else {
             /*
@@ -575,9 +569,9 @@ Bool_t AliAnalysisTaskXi1530::GoodCascadeSelection(){
             fHistos->FillTH1("hTPCPIDsignalLambdaPion",fTPCNSigLambdaPion);
             fHistos->FillTH1("hTPCPIDsignalBachelorPion",fTPCNSigBachelorPion);
             
-            //if (abs(fTPCNSigProton) > 3.) StandardXi=kFALSE; // PID for proton
-            //if (abs(fTPCNSigLambdaPion) > 3.) StandardXi=kFALSE; // PID for 1st pion
-            //if (abs(fTPCNSigBachelorPion) > 3.) StandardXi=kFALSE; // PID for 2nd pion
+            if (abs(fTPCNSigProton) > 3.) StandardXi=kFALSE; // PID for proton
+            if (abs(fTPCNSigLambdaPion) > 3.) StandardXi=kFALSE; // PID for 1st pion
+            if (abs(fTPCNSigBachelorPion) > 3.) StandardXi=kFALSE; // PID for 2nd pion
             
             // DCA cut
             // DCA between Dautgher particles
@@ -1043,27 +1037,38 @@ Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
 }
 void AliAnalysisTaskXi1530::FillTrackToEventPool(){
     // Fill Selected tracks to event mixing pool
+    std::cout<<"01"<<std::endl;
     
-    tracklist *etl = nullptr;
-    eventpool *ep = nullptr;
+    std::cout << "goodtrackindices.size(): " << goodtrackindices.size() << std::endl;
+    std::cout << "centbin: " << centbin << ", zbin: " << zbin << std::endl;
+    
+    
     AliVTrack *goodtrack;
     
+    tracklist *etl;
+    eventpool *ep;
     //Event mixing pool
+
     ep = &fEMpool[centbin][zbin];
+    std::cout<<"01"<<std::endl;
     ep -> push_back( tracklist() );
+    std::cout<<"02"<<std::endl;
     etl = &(ep->back());
-    
+    std::cout<<"03"<<std::endl;
     // Fill selected tracks
     for (UInt_t i = 0; i < goodtrackindices.size(); i++) {
-        goodtrack = (AliVTrack*)  fEvt -> GetTrack(goodtrackindices[i]);
+        goodtrack = (AliESDtrack*) fEvt ->GetTrack(goodtrackindices[i]);
         if(!goodtrack) continue;
-        
+        std::cout<<"04"<<std::endl;
         etl->push_back( (AliVTrack*)goodtrack -> Clone() );
     }
-    
+    std::cout<<"05"<<std::endl;
     if (!goodtrackindices.size()) ep->pop_back();
+    std::cout<<"ep->size(): " << ep->size() << "fnMix: " << fnMix <<std::endl;
     if ( (int)ep->size() > (int)fnMix ){
+        std::cout<<"07"<<std::endl;
         for (auto it: ep->front()) delete it;
+        std::cout<<"08"<<std::endl;
         ep->pop_front();
     }
 }
