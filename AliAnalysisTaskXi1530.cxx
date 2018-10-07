@@ -815,9 +815,12 @@ void AliAnalysisTaskXi1530::FillTracks(){
                 if(track1->GetID() == pTrackXi->GetID() || track1->GetID() == nTrackXi->GetID() || track1->GetID() == bTrackXi->GetID()) continue;
                 temp2.SetXYZM(track1->Px(),track1->Py(), track1->Pz(),pionmass);
                 vecsum = temp1+temp2; // two pion vector sum
+                
                 if ((Xicandidate->Charge() ==-1 && track1->Charge()==-1)
-                    || (Xicandidate->Charge() ==+1 && track1->Charge()==+1)) continue;
-                if (fabs(vecsum.Eta())>0.5) continue; //rapidity cut
+                    || (Xicandidate->Charge() ==+1 && track1->Charge()==+1)) continue; // check only unlike-sign
+                
+                if (fabs(vecsum.Rapidity())>0.5) continue; // rapidity cut
+                
                 FillTHnSparse("hInvMass",{kMixing,fCent,vecsum.Pt(),vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix",vecsum.M());
             }
