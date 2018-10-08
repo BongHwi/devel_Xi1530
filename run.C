@@ -109,11 +109,14 @@ void run(
     // V0, Xi Super verexter by David
     //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C");
     //AliAnalysisTaskWeakDecayVertexer *taskWDV = AddTaskWeakDecayVertexer();
+    
+    //AliAnalysisTaskWeakDecayVertexer *taskWDV = reinterpret_cast<AliAnalysisTaskWeakDecayVertexer*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C"));
     //taskWDV->SetRunV0Vertexer(kTRUE);
-    //taskWDV->SetRunCascadeVertexer(kFALSE);
-    //taskWDV -> SetDoImprovedCascadeVertexFinding(kTRUE);
-    //taskWDV -> SetDoImprovedDCAV0DauPropagation(kTRUE);
-    //taskWDV -> SetDoImprovedCascadePosition(kTRUE);
+    //taskWDV->SetRunCascadeVertexer(kTRUE);
+    //taskWDV->SetUseImprovedFinding();
+    
+    //taskWDV->SetDoImprovedDCAV0DauPropagation(kTRUE);
+    //taskWDV->SetDoImprovedCascadePosition(kTRUE);
     //taskWDV->SetOnlyCombineMCTrue(kTRUE);
     //taskWDV -> SetCentralityInterval(0,0.5);
     
@@ -329,7 +332,7 @@ void run(
             for(auto i=0u;i<end;i++)
                 plugin->AddRunNumber(LHC17r.at(i));
         }
-        plugin->SetSplitMaxInputFileNumber(2000);
+        plugin->SetSplitMaxInputFileNumber(4000);
         plugin->SetExecutable(Form("%s%s.sh",taskname,option));
         plugin->SetTTL(20000);
         plugin->SetJDLName(Form("%s%s.jdl",taskname,option));
