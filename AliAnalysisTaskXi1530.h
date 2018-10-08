@@ -76,7 +76,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         void SetXi1530PionEtaCut (Double_t nXi1530PionEtaCut)  {fXi1530PionEtaCut = nXi1530PionEtaCut;}
         void SetXiEtaCut (Double_t nXiEtaCut)  {fXiEtaCut = nXiEtaCut;}
         void SetXi1530PionZVertexCut (Double_t nXi1530PionZVertexCut)  {fXi1530PionZVertexCut = nXi1530PionZVertexCut;}
-        void SetDCADist_LambdaDaughtersCut (Double_t nDCADist_LambdaDaughtersCut)  {fDCADist_LambdaDaughtersCut = nfDCADist_LambdaDaughtersCut;}
+        void SetDCADist_LambdaDaughtersCut (Double_t nDCADist_LambdaDaughtersCut)  {fDCADist_LambdaDaughtersCut = nDCADist_LambdaDaughtersCut;}
         void SetDCADist_XiDaughtersCut (Double_t nDCADist_XiDaughtersCut)  {fDCADist_XiDaughtersCut = nDCADist_XiDaughtersCut;}
     
         void SetDCADist_Lambda_PVCut (Double_t nDCADist_Lambda_PVCut)  {fDCADist_Lambda_PVCut = nDCADist_Lambda_PVCut;}
@@ -147,8 +147,8 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Double_t                        fXi1530PionEtaCut       = 0.8;
         Double_t                        fXiEtaCut               = 0.8;
         Double_t                        fXi1530PionZVertexCut   = 2.0;
-        Double_t                        fDCADist_LambdaDaughters = 1.6;
-        Double_t                        fDCADist_XiDaughters        = 1.6;
+        Double_t                        fDCADist_LambdaDaughtersCut = 1.6;
+        Double_t                        fDCADist_XiDaughtersCut     = 1.6;
         Double_t                        fDCADist_Lambda_PVCut       = 0.07;
         Double_t                        fV0CosineOfPointingAngleCut       = 0.97;
         Double_t                        fCascadeCosineOfPointingAngleCut       = 0.07;
