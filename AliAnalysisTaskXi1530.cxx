@@ -422,11 +422,11 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     //  Missing Vetex and Trriger Efficiency ---------------------------------
     if(IsMC){
         if(IsINEL0True)
-            FillTHnSparse("htriggered_CINT7",{kTrueINELg0,fCent,ftrackmult});
+            FillTHnSparse("htriggered_CINT7",{(double)kTrueINELg0,fCent,ftrackmult});
         if(IsPS)
-            FillTHnSparse("htriggered_CINT7",{kReco,fCent,ftrackmult});
+            FillTHnSparse("htriggered_CINT7",{(double)kReco,fCent,ftrackmult});
         if(IsPS && IsGoodVertex)
-            FillTHnSparse("htriggered_CINT7",{kGoodVtx,fCent,ftrackmult});
+            FillTHnSparse("htriggered_CINT7",{(double)kGoodVtx,fCent,ftrackmult});
     }
     // -----------------------------------------------------------------------
     
@@ -991,7 +991,7 @@ Bool_t AliAnalysisTaskXi1530::IsMCEventTrueINEL0(){
         if ( TMath::Abs(mcParticle->Eta()) > 1.0 ) continue;
         isINEL0 = kTRUE;
         break;
-        }
+    }
     return isINEL0;
 }
 Bool_t AliAnalysisTaskXi1530::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
