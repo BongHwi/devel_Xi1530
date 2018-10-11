@@ -187,7 +187,7 @@ void run(
         //plugin->Load("libpythia6_4_21.so");
         plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
         plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h libpythia6_4_21.so");
-        plugin->SetAliPhysicsVersion("vAN-20180918_ROOT6-1");
+        plugin->SetAliPhysicsVersion("vAN-20181009_ROOT6-1");
         plugin->SetAPIVersion("V1.1x");
         if(!ismc)plugin->SetRunPrefix("000");
         //plugin->SetDropToShell(0);
