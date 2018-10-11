@@ -172,10 +172,11 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s"); // Normal inv mass distribution of Xi1530
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
     
+    auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
     if(IsMC){
         // To get Trigger efficiency in each trk/V0M Multiplicity region
         auto MCType = AxisStr("Type",{"TrueINELg0","Reco","GoodVtx"});
-        auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
+        //auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
     
@@ -431,18 +432,18 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     
     //  Missing Vetex and Trriger Efficiency ---------------------------------
     if(IsMC){
-        Int_t trklbin = ftrackmult.FindBin(binTrklet) -1; // # of tracklet bin
+        //Int_t trklbin = binTrklet.FindBin(ftrackmult) -1; // # of tracklet bin
         if(IsINEL0True){
             FillTHnSparse("htriggered_CINT7",{(double)kTrueINELg0,fCent,ftrackmult});
-            fHistos -> FillTH1("htriggered_CINT7_true",centbin,1);
+            fHistos -> FillTH1("htriggered_CINT7_true",centbin);
         }
         if(IsPS){
             FillTHnSparse("htriggered_CINT7",{(double)kReco,fCent,ftrackmult});
-            fHistos -> FillTH1("htriggered_CINT7_reco",centbin,1);
+            fHistos -> FillTH1("htriggered_CINT7_reco",centbin);
         }
         if(IsPS && IsGoodVertex){
             FillTHnSparse("htriggered_CINT7",{(double)kGoodVtx,fCent,ftrackmult});
-            fHistos -> FillTH1("htriggered_CINT7_GoodVtx",centbin,1);
+            fHistos -> FillTH1("htriggered_CINT7_GoodVtx",centbin);
         }
     }
     // -----------------------------------------------------------------------
