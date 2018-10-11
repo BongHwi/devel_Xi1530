@@ -171,11 +171,12 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
         Double_t                        PVy = 999;
         Double_t                        PVz = 999;
         Double_t                        bField = 999;
-    ClassDef(AliAnalysisTaskXi1530, 4);
+    ClassDef(AliAnalysisTaskXi1530, 5);
     //1: Frist version
     //2: Add Track cut2 for the Xi daughter particles
     //3: Add FillMixingPool function
     //4: Add Cut parameters to header and add "Set" fuction for cut study&Systematic study
+    //5: testing
 };
 
 #endif
