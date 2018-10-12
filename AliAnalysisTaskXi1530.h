@@ -176,7 +176,7 @@ class AliAnalysisTaskXi1530 : public AliAnalysisTaskSE {
     //2: Add Track cut2 for the Xi daughter particles
     //3: Add FillMixingPool function
     //4: Add Cut parameters to header and add "Set" fuction for cut study&Systematic study
-    //5: testing
+    //5: Fix AddTask compling problem on "THistManager"
 };
 
 #endif
