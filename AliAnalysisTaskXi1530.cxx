@@ -151,7 +151,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
     fTrackCuts2 -> SetAcceptKinkDaughters(kFALSE);
     fTrackCuts2 -> SetMinNClustersTPC(50);
     fTrackCuts2 -> SetRequireTPCRefit(kTRUE);
-    fTrackCuts2 -> SetMaxChi2PerClusterTPC(4); //From Enrico
+    fTrackCuts2 -> SetMaxChi2PerClusterTPC(4);
     //fTrackCuts2 -> SetEtaRange(-0.8,0.8);
     fTrackCuts2 -> SetPtRange(0.15, 1e20);
     // ----------------------------------------------------------------------
@@ -178,7 +178,7 @@ void AliAnalysisTaskXi1530::UserCreateOutputObjects()
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
     
-    std::vector<TString> ent = {"All","CINT7","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"};
+    std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"};
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
@@ -351,8 +351,6 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
                                                            , AliESDtrackCuts::kTracklets
                                                            , 0.8); // tracklet in eta +_0.8
     fCent = GetMultiplicty(fEvt); // Centrality(AA), Multiplicity(pp)
-    FillTHnSparse("hMult",{fCent});
-    fHistos->FillTH1("hMult_QA",fCent);
     
     // PID response ----------------------------------------------------------
     fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
@@ -401,7 +399,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // Fill Numver of Events -------------------------------------------------
     fHistos -> FillTH1("hEventNumbers","All",1);
     if(IsSelectedTrig)
-        fHistos -> FillTH1("hEventNumbers","CINT7",1);
+        fHistos -> FillTH1("hEventNumbers","Trigger",1);
     if(IsSelectedTrig && !IncompleteDAQ)
         fHistos -> FillTH1("hEventNumbers","InCompleteDAQ",1);
     if(IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG)
@@ -447,7 +445,12 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     // -----------------------------------------------------------------------
     
     // Check tracks and casade, Fill histo************************************
-    if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition,
+    //if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition, // disabled
+    if (IsPS && IsGoodVertex && IsVtxInZCut){ // In Good Event condition, // IsMultSelcted -> diable
+        
+        FillTHnSparse("hMult",{fCent});
+        fHistos->FillTH1("hMult_QA",fCent); //Draw Multiplicity QA plot in only selected event.
+        
         if(IsMC) FillMCinput(fMCStack); // Note that MC input Event is filled at this moment.
         if (this -> GoodTracksSelection()      // If Good track
             && this -> GoodCascadeSelection()) // and Good cascade is in this event,

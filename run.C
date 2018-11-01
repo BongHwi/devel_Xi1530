@@ -120,9 +120,10 @@ void run(
     //taskWDV->SetOnlyCombineMCTrue(kTRUE);
     //taskWDV -> SetCentralityInterval(0,0.5);
     
-    gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
+    //gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
+    //AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
     
-    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
+    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/AddTaskXi1530.C(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
 #else
     // ROOT 5 MODE
     //
@@ -206,7 +207,7 @@ void run(
             }
             Int_t end = LHC16k.size();
             if (foption.Contains("test")) end = 1;
-            for(auto i=0u;i<end;i++)
+            for(auto i=60u;i<end;i++)
                 plugin->AddRunNumber(LHC16k.at(i));
         }
         if (foption.Contains("LHC16l")){
