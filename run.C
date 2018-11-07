@@ -207,7 +207,7 @@ void run(
             }
             Int_t end = LHC16k.size();
             if (foption.Contains("test")) end = 1;
-            for(auto i=60u;i<end;i++)
+            for(auto i=0u;i<end;i++)
                 plugin->AddRunNumber(LHC16k.at(i));
         }
         if (foption.Contains("LHC16l")){

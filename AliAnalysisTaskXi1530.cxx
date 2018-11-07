@@ -446,7 +446,7 @@ void AliAnalysisTaskXi1530::UserExec(Option_t *)
     
     // Check tracks and casade, Fill histo************************************
     //if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition, // disabled
-    if (IsPS && IsGoodVertex && IsVtxInZCut){ // In Good Event condition, // IsMultSelcted -> diable
+    if (IsINEL0Rec){ // In Good Event condition, // IsMultSelcted -> diable
         
         FillTHnSparse("hMult",{fCent});
         fHistos->FillTH1("hMult_QA",fCent); //Draw Multiplicity QA plot in only selected event.
