@@ -3,7 +3,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAODInputHandler.h"
 #include "AliESDInputHandler.h"
-#include "AliAnalysisTaskXi1530.h"
+#include "AliAnalysisTaskXi1530_temp.h"
 #endif
 
 
@@ -101,7 +101,7 @@ void run(
         return;
     }
     // PID response
-    AliAnalysisTask *fPIDResponse = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C(%d)",ismc)));
+    AliAnalysisTask *fPIDResponse = reinterpret_cast<AliAnalysisTaskXi1530_temp*>(gInterpreter->ExecuteMacro(Form("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C(%d)",ismc)));
     if(!fPIDResponse) {
         Printf("no fPIDResponse");
         return;
@@ -120,10 +120,10 @@ void run(
     //taskWDV->SetOnlyCombineMCTrue(kTRUE);
     //taskWDV -> SetCentralityInterval(0,0.5);
     
-    //gInterpreter->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
-    //AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
+    //gInterpreter->LoadMacro("AliAnalysisTaskXi1530_temp.cxx+g");
+    //AliAnalysisTaskXi1530_temp *myTask = reinterpret_cast<AliAnalysisTaskXi1530_temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
     
-    AliAnalysisTaskXi1530 *myTask = reinterpret_cast<AliAnalysisTaskXi1530*>(gInterpreter->ExecuteMacro(Form("$ALICE_PHYSICS/PWGLF/RESONANCES/extra/AddTaskXi1530.C(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
+    AliAnalysisTaskXi1530_temp *myTask = reinterpret_cast<AliAnalysisTaskXi1530_temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.C(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
 #else
     // ROOT 5 MODE
     //
@@ -143,10 +143,10 @@ void run(
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AliAnalysisTask *fPIDResponse = AddTaskPIDResponse(ismc); //! PID response object
     
-    gROOT->LoadMacro("AliAnalysisTaskXi1530.cxx+g");
+    gROOT->LoadMacro("AliAnalysisTaskXi1530_temp.cxx+g");
     
-    gROOT->LoadMacro("AddTaskXi1530.c");
-    AliAnalysisTaskXi1530 *myTask = AddTaskXi1530(taskname,option,nmix,highmult,isaa,ismc,setmixing);
+    gROOT->LoadMacro("AddTaskXi1530.C");
+    AliAnalysisTaskXi1530_temp *myTask = AddTaskXi1530(taskname,option,nmix,highmult,isaa,ismc,setmixing);
 #endif
     
     mgr->SetDebugLevel(0);
@@ -186,8 +186,8 @@ void run(
         AliAnalysisAlien *plugin = new AliAnalysisAlien();
         plugin->AddIncludePath("-I. -I$ROOTSYS/include -I$ALICE_ROOT -I$ALICE_ROOT/include -I$ALICE_PHYSICS/include");
         //plugin->Load("libpythia6_4_21.so");
-        plugin->SetAnalysisSource("AliAnalysisTaskXi1530.cxx");
-        plugin->SetAdditionalLibs("AliAnalysisTaskXi1530.cxx AliAnalysisTaskXi1530.h libpythia6_4_21.so");
+        plugin->SetAnalysisSource("AliAnalysisTaskXi1530_temp.cxx");
+        plugin->SetAdditionalLibs("AliAnalysisTaskXi1530_temp.cxx AliAnalysisTaskXi1530_temp.h libpythia6_4_21.so");
         plugin->SetAliPhysicsVersion("vAN-20181009_ROOT6-2");
         plugin->SetAPIVersion("V1.1x");
         if(!ismc)plugin->SetRunPrefix("000");
