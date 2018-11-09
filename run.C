@@ -120,7 +120,7 @@ void run(
     //taskWDV->SetOnlyCombineMCTrue(kTRUE);
     //taskWDV -> SetCentralityInterval(0,0.5);
     
-    //gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");
+    gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");
     //AliAnalysisTaskXi1530temp *myTask = reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
     
     AliAnalysisTaskXi1530temp *myTask = reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.C(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
