@@ -11,10 +11,10 @@
       location = "group:/Users/blim/GDrive/HIPEx/XiStar/devel_Xi1530/AddTaskXi1530.C">
    </FileRef>
    <FileRef
-      location = "container:/Users/blim/GDrive/HIPEx/XiStar/devel_Xi1530/AliAnalysisTaskXi1530_temp.h">
+      location = "container:/Users/blim/GDrive/HIPEx/XiStar/devel_Xi1530/AliAnalysisTaskXi1530temp.h">
    </FileRef>
    <FileRef
-      location = "container:/Users/blim/GDrive/HIPEx/XiStar/devel_Xi1530/AliAnalysisTaskXi1530_temp.cxx">
+      location = "container:/Users/blim/GDrive/HIPEx/XiStar/devel_Xi1530/AliAnalysisTaskXi1530temp.cxx">
    </FileRef>
    <FileRef
       location = "container:README.md">

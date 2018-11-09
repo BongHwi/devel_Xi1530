@@ -56,7 +56,7 @@
 #include "THistManager.h"
 //
 
-#include "AliAnalysisTaskXi1530_temp.h"
+#include "AliAnalysisTaskXi1530temp.h"
 
 // Some constants
 const Double_t        pi = TMath::Pi();
@@ -66,22 +66,22 @@ const Double_t  Ximass = 1.32171;
 enum { kData=1, kLS, kMixing, kMCReco, kMCTrue, kAllType}; //
 enum { kTrueINELg0=1, kReco, kGoodVtx}; //
 
-AliAnalysisTaskXi1530_tempRunTable::AliAnalysisTaskXi1530_tempRunTable() :
+AliAnalysisTaskXi1530tempRunTable::AliAnalysisTaskXi1530tempRunTable() :
 fCollisionType(kUnknownCollType)
 {;}
 
-AliAnalysisTaskXi1530_tempRunTable::AliAnalysisTaskXi1530_tempRunTable(Int_t runnumber)
+AliAnalysisTaskXi1530tempRunTable::AliAnalysisTaskXi1530tempRunTable(Int_t runnumber)
 {
     // Need to be Modified
     if (runnumber>=256504 && runnumber<=260014) fCollisionType=kPP;//LHC16kl
     else fCollisionType=kUnknownCollType;
 }
-AliAnalysisTaskXi1530_tempRunTable::~AliAnalysisTaskXi1530_tempRunTable()
+AliAnalysisTaskXi1530tempRunTable::~AliAnalysisTaskXi1530tempRunTable()
 {;}
 
 //___________________________________________________________________
-AliAnalysisTaskXi1530_temp::AliAnalysisTaskXi1530_temp()
-:AliAnalysisTaskSE("AliAnalysisTaskXi1530_temp"),
+AliAnalysisTaskXi1530temp::AliAnalysisTaskXi1530temp()
+:AliAnalysisTaskSE("AliAnalysisTaskXi1530temp"),
     fOption(),
     goodtrackindices(),
     goodcascadeindices(),
@@ -92,7 +92,7 @@ AliAnalysisTaskXi1530_temp::AliAnalysisTaskXi1530_temp()
     DefineOutput (2, TList::Class());
 }
 //___________________________________________________________________
-AliAnalysisTaskXi1530_temp::AliAnalysisTaskXi1530_temp(
+AliAnalysisTaskXi1530temp::AliAnalysisTaskXi1530temp(
     const char *name,
     const char *option
 )
@@ -106,9 +106,9 @@ AliAnalysisTaskXi1530_temp::AliAnalysisTaskXi1530_temp(
     DefineOutput (1, TList::Class());
     DefineOutput (2, TList::Class());
 }
-AliAnalysisTaskXi1530_temp::AliAnalysisTaskXi1530_temp
+AliAnalysisTaskXi1530temp::AliAnalysisTaskXi1530temp
 (
- const AliAnalysisTaskXi1530_temp& ap
+ const AliAnalysisTaskXi1530temp& ap
  )
 : fOption(ap.fOption)
 , goodtrackindices(ap.goodtrackindices)
@@ -117,19 +117,19 @@ AliAnalysisTaskXi1530_temp::AliAnalysisTaskXi1530_temp
 {
 }
 //___________________________________________________________________
-AliAnalysisTaskXi1530_temp& AliAnalysisTaskXi1530_temp::operator =
+AliAnalysisTaskXi1530temp& AliAnalysisTaskXi1530temp::operator =
 (
- const AliAnalysisTaskXi1530_temp& ap
+ const AliAnalysisTaskXi1530temp& ap
  )
 {
     // assignment operator
     
-    this->~AliAnalysisTaskXi1530_temp();
-    new(this) AliAnalysisTaskXi1530_temp(ap);
+    this->~AliAnalysisTaskXi1530temp();
+    new(this) AliAnalysisTaskXi1530temp(ap);
     return *this;
 }
 //___________________________________________________________________
-AliAnalysisTaskXi1530_temp::~AliAnalysisTaskXi1530_temp()
+AliAnalysisTaskXi1530temp::~AliAnalysisTaskXi1530temp()
 {
     delete fTrackCuts;
     delete fTrackCuts2;
@@ -137,7 +137,7 @@ AliAnalysisTaskXi1530_temp::~AliAnalysisTaskXi1530_temp()
     delete fRunTable;
 }
 //________________________________________________________________________
-void AliAnalysisTaskXi1530_temp::UserCreateOutputObjects()
+void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
 {
     // TrackCuts for Xi1530--------------------------------------------------
     // Primary pion cut(Xi1530pion)
@@ -283,7 +283,7 @@ void AliAnalysisTaskXi1530_temp::UserCreateOutputObjects()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskXi1530_temp::UserExec(Option_t *)
+void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
 {
     // Pointer to a event----------------------------------------------------
     AliVEvent *event = InputEvent();
@@ -462,7 +462,7 @@ void AliAnalysisTaskXi1530_temp::UserExec(Option_t *)
     PostData(1, fHistos->GetListOfHistograms());
 }
 //________________________________________________________________________
-Bool_t AliAnalysisTaskXi1530_temp::GoodTracksSelection(){
+Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection(){
     // Choose Good Tracks from AliESDtracks,
     //    and Save the label of them,
     //    and Save them for event mixing
@@ -519,7 +519,7 @@ Bool_t AliAnalysisTaskXi1530_temp::GoodTracksSelection(){
     return goodtrackindices.size();
 }
 
-Bool_t AliAnalysisTaskXi1530_temp::GoodCascadeSelection(){
+Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
     // Choose Good Cascade from AliESDcascade
     //   and Save the label of them
     //
@@ -697,7 +697,7 @@ Bool_t AliAnalysisTaskXi1530_temp::GoodCascadeSelection(){
     return goodcascadeindices.size();
 }
 
-void AliAnalysisTaskXi1530_temp::FillTracks(){
+void AliAnalysisTaskXi1530temp::FillTracks(){
     AliVTrack *track1;
     // charged track, pion
     AliESDcascade *Xicandidate;
@@ -840,10 +840,10 @@ void AliAnalysisTaskXi1530_temp::FillTracks(){
     }//mix loop
 }
 
-void AliAnalysisTaskXi1530_temp::Terminate(Option_t *){
+void AliAnalysisTaskXi1530temp::Terminate(Option_t *){
 }
 
-Bool_t AliAnalysisTaskXi1530_temp::SelectVertex2015pp(AliESDEvent *esd,
+Bool_t AliAnalysisTaskXi1530temp::SelectVertex2015pp(AliESDEvent *esd,
                                                 Bool_t checkSPDres, //enable check on vtx resolution
                                                 Bool_t requireSPDandTrk, //ask for both trk and SPD vertex
                                                 Bool_t checkProximity) //apply cut on relative position of spd and trk verteces
@@ -877,14 +877,14 @@ Bool_t AliAnalysisTaskXi1530_temp::SelectVertex2015pp(AliESDEvent *esd,
     }
     return kTRUE;
 }
-Bool_t AliAnalysisTaskXi1530_temp::IsGoodSPDvertexRes(const AliESDVertex * spdVertex){
+Bool_t AliAnalysisTaskXi1530temp::IsGoodSPDvertexRes(const AliESDVertex * spdVertex){
     // From AliPhysics/PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
     // Original author: Sergio Iga
     if (!spdVertex) return kFALSE;
     if (spdVertex->IsFromVertexerZ() && !(spdVertex->GetDispersion()<0.04 && spdVertex->GetZRes()<0.25)) return kFALSE;
     return kTRUE;
 }
-Double_t AliAnalysisTaskXi1530_temp::GetMultiplicty(AliVEvent *fEvt){
+Double_t AliAnalysisTaskXi1530temp::GetMultiplicty(AliVEvent *fEvt){
     // Set multiplicity value
     // fCent:
     //       0-100: Selected, value.
@@ -909,7 +909,7 @@ Double_t AliAnalysisTaskXi1530_temp::GetMultiplicty(AliVEvent *fEvt){
     }
     return fCent;
 }
-void AliAnalysisTaskXi1530_temp::FillMCinput(AliStack* fMCStack){
+void AliAnalysisTaskXi1530temp::FillMCinput(AliStack* fMCStack){
     // Fill MC input Xi1530 histogram
     for (Int_t it = 0; it < fMCStack->GetNprimary(); it++) {
         TParticle *mcInputTrack = (TParticle*)fMCStack->Particle(it);
@@ -921,7 +921,7 @@ void AliAnalysisTaskXi1530_temp::FillMCinput(AliStack* fMCStack){
     }
 }
 
-THnSparse* AliAnalysisTaskXi1530_temp::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t * opt){
+THnSparse* AliAnalysisTaskXi1530temp::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t * opt){
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     const TAxis * axises[bins.size()];
@@ -930,7 +930,7 @@ THnSparse* AliAnalysisTaskXi1530_temp::CreateTHnSparse(TString name, TString tit
     return h;
 }
 
-Long64_t AliAnalysisTaskXi1530_temp::FillTHnSparse( TString name, std::vector<Double_t> x, Double_t w ){
+Long64_t AliAnalysisTaskXi1530temp::FillTHnSparse( TString name, std::vector<Double_t> x, Double_t w ){
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     auto hsparse = dynamic_cast<THnSparse*>( fHistos->FindObject(name) );
@@ -941,7 +941,7 @@ Long64_t AliAnalysisTaskXi1530_temp::FillTHnSparse( TString name, std::vector<Do
     return FillTHnSparse( hsparse, x, w );
 }
 
-Long64_t AliAnalysisTaskXi1530_temp::FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w ){
+Long64_t AliAnalysisTaskXi1530temp::FillTHnSparse( THnSparse *h, std::vector<Double_t> x, Double_t w ){
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     if( int(x.size()) != h->GetNdimensions() ){
@@ -951,14 +951,14 @@ Long64_t AliAnalysisTaskXi1530_temp::FillTHnSparse( THnSparse *h, std::vector<Do
     return h->Fill( &x.front(), w );
 }
 
-TAxis AliAnalysisTaskXi1530_temp::AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax ){
+TAxis AliAnalysisTaskXi1530temp::AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax ){
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis(nbin, xmin, xmax);axis.SetName(name);
     return axis;
 }
 
-TAxis AliAnalysisTaskXi1530_temp::AxisStr( TString name, std::vector<TString> bin ){
+TAxis AliAnalysisTaskXi1530temp::AxisStr( TString name, std::vector<TString> bin ){
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis ax = AxisFix( name, bin.size(), 0.5, bin.size()+0.5);
@@ -968,14 +968,14 @@ TAxis AliAnalysisTaskXi1530_temp::AxisStr( TString name, std::vector<TString> bi
     return ax;
 }
 
-TAxis AliAnalysisTaskXi1530_temp::AxisVar( TString name, std::vector<Double_t> bin ){
+TAxis AliAnalysisTaskXi1530temp::AxisVar( TString name, std::vector<Double_t> bin ){
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis( bin.size()-1, &bin.front() ) ;axis.SetName(name);
     return axis;
 }
 
-TAxis AliAnalysisTaskXi1530_temp::AxisLog( TString name, int nbin, Double_t xmin, Double_t xmax, Double_t xmin0){
+TAxis AliAnalysisTaskXi1530temp::AxisLog( TString name, int nbin, Double_t xmin, Double_t xmax, Double_t xmin0){
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     int binoffset = ( xmin0<0 || (xmin-xmin0)<1e-9) ? 0 : 1;
@@ -987,7 +987,7 @@ TAxis AliAnalysisTaskXi1530_temp::AxisLog( TString name, int nbin, Double_t xmin
     return axis;
 }
 
-Bool_t AliAnalysisTaskXi1530_temp::IsMCEventTrueINEL0(){
+Bool_t AliAnalysisTaskXi1530temp::IsMCEventTrueINEL0(){
     // From AliPhysics/PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
     // Original author: Sergio Iga
     
@@ -1006,7 +1006,7 @@ Bool_t AliAnalysisTaskXi1530_temp::IsMCEventTrueINEL0(){
     }
     return isINEL0;
 }
-Bool_t AliAnalysisTaskXi1530_temp::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
+Bool_t AliAnalysisTaskXi1530temp::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion){
     // Check if associated Xi1530 is true Xi1530 in MC set
     if (!Xi) return kFALSE;
     if (!pion) return kFALSE;
@@ -1050,7 +1050,7 @@ Bool_t AliAnalysisTaskXi1530_temp::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pi
     }//D2esd->pion
     return TrueXi1530;
 }
-void AliAnalysisTaskXi1530_temp::FillTrackToEventPool(){
+void AliAnalysisTaskXi1530temp::FillTrackToEventPool(){
     // Fill Selected tracks to event mixing pool
     AliVTrack *goodtrack;
     

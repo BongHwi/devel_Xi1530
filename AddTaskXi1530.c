@@ -1,4 +1,4 @@
-AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
+AliAnalysisTaskXi1530temp* AddTaskXi1530(const char *taskname = "Xi1530"
                                      , const char *option = "LHC16k"
                                      , int nmix=20
                                      , bool hightmult=kFALSE
@@ -14,7 +14,7 @@ AliAnalysisTaskXi1530* AddTaskXi1530(const char *taskname = "Xi1530"
         return 0x0;
     }
     
-    AliAnalysisTaskXi1530 *taskXi1530 = new AliAnalysisTaskXi1530(taskname, Form("%s_%s",taskname,option));
+    AliAnalysisTaskXi1530temp *taskXi1530 = new AliAnalysisTaskXi1530temp(taskname, Form("%s_%s",taskname,option));
     //taskXi1530 -> SetFilterBit(768);
     taskXi1530 -> SetIsAA(isaa);
     taskXi1530 -> SetMixing(setmixing);

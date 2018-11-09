@@ -1,9 +1,9 @@
-#ifndef ALIANALYSISTASKXi1530_H
-#define ALIANALYSISTASKXi1530_H
+#ifndef ALIANALYSISTASKXi1530_TEMP_H
+#define ALIANALYSISTASKXi1530_TEMP_H
 //
-// Class AliAnalysisTaskXi1530_temp
+// Class AliAnalysisTaskXi1530temp
 //
-// AliAnalysisTaskXi1530_temp
+// AliAnalysisTaskXi1530temp
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
@@ -20,12 +20,12 @@ class AliPIDResponse;
 class AliPIDCombined;
 class THistManager;
 
-class AliAnalysisTaskXi1530_tempRunTable {
+class AliAnalysisTaskXi1530tempRunTable {
 public:
     enum {kPP,kPA,kAA,kUnknownCollType};
-    AliAnalysisTaskXi1530_tempRunTable();
-    AliAnalysisTaskXi1530_tempRunTable(Int_t runnumber);
-    ~AliAnalysisTaskXi1530_tempRunTable();
+    AliAnalysisTaskXi1530tempRunTable();
+    AliAnalysisTaskXi1530tempRunTable(Int_t runnumber);
+    ~AliAnalysisTaskXi1530tempRunTable();
     
     Bool_t IsPP(){
         return fCollisionType==kPP;
@@ -40,7 +40,7 @@ private:
     Int_t  fCollisionType=kPP; //! Is proton-proton collisions?
 };
 
-class AliAnalysisTaskXi1530_temp : public AliAnalysisTaskSE {
+class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     public:
     enum {kSD=0,kDD,kND,kCD,kAllProc,
         kXiStarCode          = 3324, // Xi(1530)^0 MC code
@@ -50,11 +50,11 @@ class AliAnalysisTaskXi1530_temp : public AliAnalysisTaskSE {
         kPionCode            = 211}; // Pion+ MC code
         //PN = unlike sign, PP and NN are like signs
     
-        AliAnalysisTaskXi1530_temp();
-        AliAnalysisTaskXi1530_temp(const char *name, const char *option);
-        AliAnalysisTaskXi1530_temp(const AliAnalysisTaskXi1530_temp& ap);
-        AliAnalysisTaskXi1530_temp& operator =(const AliAnalysisTaskXi1530_temp& ap);
-        ~AliAnalysisTaskXi1530_temp();
+        AliAnalysisTaskXi1530temp();
+        AliAnalysisTaskXi1530temp(const char *name, const char *option);
+        AliAnalysisTaskXi1530temp(const AliAnalysisTaskXi1530temp& ap);
+        AliAnalysisTaskXi1530temp& operator =(const AliAnalysisTaskXi1530temp& ap);
+        ~AliAnalysisTaskXi1530temp();
     
         virtual void    UserCreateOutputObjects();
         virtual void    UserExec(Option_t *);
@@ -120,7 +120,7 @@ class AliAnalysisTaskXi1530_temp : public AliAnalysisTaskSE {
         AliESDtrackCuts*                fTrackCuts2=nullptr; //!
         AliVEvent*                      fEvt=nullptr; //!
         UInt_t                          fFilterBit;
-        AliAnalysisTaskXi1530_tempRunTable*  fRunTable=nullptr; //!
+        AliAnalysisTaskXi1530tempRunTable*  fRunTable=nullptr; //!
     
         Double_t                        fCent=-1;
         Double_t                        ftrackmult=-1;
@@ -171,7 +171,7 @@ class AliAnalysisTaskXi1530_temp : public AliAnalysisTaskSE {
         Double_t                        PVy = 999;
         Double_t                        PVz = 999;
         Double_t                        bField = 999;
-    ClassDef(AliAnalysisTaskXi1530_temp, 5);
+    ClassDef(AliAnalysisTaskXi1530temp, 5);
     //1: Frist version
     //2: Add Track cut2 for the Xi daughter particles
     //3: Add FillMixingPool function
