@@ -159,9 +159,10 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     fHistos = new THistManager("Xi1530hists");
     
     auto binType = AxisStr("Type",{"DATA","LS","Mixing","MCReco","MCTrue"});
-    if (IsAA) binCent = AxisFix("Cent",10,0,100);
-    //else binCent = AxisFix("Cent",300,0,300);
-    else binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // 0 ~ -1, overflow, 0 ~ +1, underflow
+    if (IsAA && !IsHighMult) binCent = AxisFix("Cent",10,0,100); // for AA study
+    else if (!IsHighMult) binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // for kINT7 study
+    else binCent = AxisVar("Cent",{0,0.001,0.01,0.1,1,2}); // for HM study, 1-2 bin for overflow.
+    
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",1000,1.0,2.0);
     binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
@@ -278,7 +279,7 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
         fHistos -> CreateTH1("htriggered_CINT7_reco","",10,0,10,"s");
         fHistos -> CreateTH1("htriggered_CINT7_GoodVtx","",10,0,10,"s");
     }
-    fEMpool.resize(binCent.GetNbins(),std::vector<eventpool> (binZ.GetNbins()));
+    fEMpool.resize(binCent.GetNbins()+1,std::vector<eventpool> (binZ.GetNbins()+1));
     PostData(1, fHistos->GetListOfHistograms());
 }
 
@@ -446,8 +447,8 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
     
     // Check tracks and casade, Fill histo************************************
     //if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition, // disabled
-    if (IsINEL0Rec){ // In Good Event condition, // IsMultSelcted -> diable
-        
+    if (    !IsHighMult && IsINEL0Rec && IsMultSelcted // In Good Event condition in kINT7 mode,
+         || IsHighMult && IsINEL0Rec ){ // IsMultSelcted -> diable in HM mode
         FillTHnSparse("hMult",{fCent});
         fHistos->FillTH1("hMult_QA",fCent); //Draw Multiplicity QA plot in only selected event.
         
@@ -898,7 +899,8 @@ Double_t AliAnalysisTaskXi1530temp::GetMultiplicty(AliVEvent *fEvt){
         if (!(MultSelection->IsEventSelected()))
         {
             AliInfo("This event is not selected: AliMultSelection");
-            fCent = 999;
+            if(!isHighMult) fCent = 999;
+            else fCent = MultSelection->GetMultiplicityPercentile("V0M");
         }
         else fCent = MultSelection->GetMultiplicityPercentile("V0M");
     }

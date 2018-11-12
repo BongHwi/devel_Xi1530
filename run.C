@@ -28,7 +28,7 @@ const int LHC16l[] = {259888, 259868, 259867, 259866, 259860, 259842, 259841, 25
 class AliAnalysisGrid;
 void run(
          const char *taskname = "Xi1530"
-         , const char *option = "LHC16k_HM_test_Mix" // when scanning AOD, add "AOD"
+         , const char *option = "LHC16k_pass2_HM_test_Mix" // when scanning AOD, add "AOD"
          , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
@@ -188,7 +188,7 @@ void run(
         //plugin->Load("libpythia6_4_21.so");
         plugin->SetAnalysisSource("AliAnalysisTaskXi1530temp.cxx");
         plugin->SetAdditionalLibs("AliAnalysisTaskXi1530temp.cxx AliAnalysisTaskXi1530temp.h libpythia6_4_21.so");
-        plugin->SetAliPhysicsVersion("vAN-20181009_ROOT6-2");
+        plugin->SetAliPhysicsVersion("vAN-20181108_ROOT6-1");
         plugin->SetAPIVersion("V1.1x");
         if(!ismc)plugin->SetRunPrefix("000");
         //plugin->SetDropToShell(0);

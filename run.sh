@@ -29,7 +29,6 @@ currentdir=$PWD
 
 
 function download {
-alien-token-init
 cd $DOWN_DIR
 perl ${ALICE_PHYSICS}/PWGUD/DIFFRACTIVE/macros/alien_cp.pl ${basepath}/${taskname}${periods}/ root_archive.zip AnalysisResults.root
 }
