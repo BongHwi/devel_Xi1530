@@ -447,8 +447,8 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
     
     // Check tracks and casade, Fill histo************************************
     //if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition, // disabled
-    if (    !IsHighMult && IsINEL0Rec && IsMultSelcted // In Good Event condition in kINT7 mode,
-         || IsHighMult && IsINEL0Rec ){ // IsMultSelcted -> diable in HM mode
+    if (    (!IsHighMult && IsINEL0Rec && IsMultSelcted) // In Good Event condition in kINT7 mode,
+         || (IsHighMult && IsINEL0Rec) ){ // IsMultSelcted -> diable in HM mode
         FillTHnSparse("hMult",{fCent});
         fHistos->FillTH1("hMult_QA",fCent); //Draw Multiplicity QA plot in only selected event.
         
@@ -899,7 +899,7 @@ Double_t AliAnalysisTaskXi1530temp::GetMultiplicty(AliVEvent *fEvt){
         if (!(MultSelection->IsEventSelected()))
         {
             AliInfo("This event is not selected: AliMultSelection");
-            if(!isHighMult) fCent = 999;
+            if(!IsHighMult) fCent = 999;
             else fCent = MultSelection->GetMultiplicityPercentile("V0M");
         }
         else fCent = MultSelection->GetMultiplicityPercentile("V0M");
