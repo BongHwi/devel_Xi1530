@@ -44,6 +44,7 @@
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliMultiplicity.h"
+#include "AliMultSelectionTask.h"
 
 // from header
 #include "AliStack.h"
@@ -424,8 +425,8 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
 
     // Temporal Check for the HM triggerd data
     Bool_t fEvSel_IsNotPileup               = AliMultSelectionTask::IsNotPileupSPD                      (((AliESDEvent*)fEvt));
-    Bool_t fEvSel_IsNotPileupMV             = AliMultSelectionTask::IsNotPileupMV                       (((AliESDEvent*)fEvt));
-    Bool_t fEvSel_PassesTrackletVsCluster   = AliMultSelectionTask::PassesTrackletVsCluster             (((AliESDEvent*)fEvt));
+    Bool_t fEvSel_IsNotPileupMV             = !(AnalysisUtils->IsPileUpMV(((AliESDEvent*)fEvt)));
+    Bool_t fEvSel_PassesTrackletVsCluster   = !(AnalysisUtils->IsSPDClusterVsTrackletBG(((AliESDEvent*)fEvt)));
     Bool_t fEvSel_HasNoInconsistentVertices = AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(((AliESDEvent*)fEvt));
     Bool_t fEvSel_INELgtZERO                = AliMultSelectionTask::IsINELgtZERO                        (((AliESDEvent*)fEvt));
     Bool_t fEvSel_IsNotAsymmetricInVZERO    = AliMultSelectionTask::IsNotAsymmetricInVZERO              (((AliESDEvent*)fEvt));
