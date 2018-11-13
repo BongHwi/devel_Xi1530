@@ -151,7 +151,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
         Double_t                        fDCADist_XiDaughtersCut     = 1.6;
         Double_t                        fDCADist_Lambda_PVCut       = 0.07;
         Double_t                        fV0CosineOfPointingAngleCut       = 0.97;
-        Double_t                        fCascadeCosineOfPointingAngleCut       = 0.07;
+        Double_t                        fCascadeCosineOfPointingAngleCut       = 0.97;
         Double_t                        fXiMassWindowCut       = 0.007;
         Double_t                        fXi1530RapidityCut       = 0.5;
     

@@ -179,7 +179,8 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
     
-    std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"};
+    //std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"}; //Normal setup
+    std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True","IsNotPileupSPD", "IsNotPileupMV", "PassesTrackletVsCluster", "HasNoInconsistentSPDandTrackVertices", "IsINELgtZERO", "IsNotAsymmetricInVZERO", "HasGoodVertex2016", "TriggerMask"}; //HMT study setup
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
@@ -421,6 +422,25 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
 
     // *********************************************************************** // Event Selection done
 
+    // Temporal Check for the HM triggerd data
+    Bool_t fEvSel_IsNotPileup               = AliMultSelectionTask::IsNotPileupSPD                      (((AliESDEvent*)fEvt));
+    Bool_t fEvSel_IsNotPileupMV             = AliMultSelectionTask::IsNotPileupMV                       (((AliESDEvent*)fEvt));
+    Bool_t fEvSel_PassesTrackletVsCluster   = AliMultSelectionTask::PassesTrackletVsCluster             (((AliESDEvent*)fEvt));
+    Bool_t fEvSel_HasNoInconsistentVertices = AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(((AliESDEvent*)fEvt));
+    Bool_t fEvSel_INELgtZERO                = AliMultSelectionTask::IsINELgtZERO                        (((AliESDEvent*)fEvt));
+    Bool_t fEvSel_IsNotAsymmetricInVZERO    = AliMultSelectionTask::IsNotAsymmetricInVZERO              (((AliESDEvent*)fEvt));
+    Bool_t fEvSel_HasGoodVertex2016         = AliMultSelectionTask::HasGoodVertex2016                   (((AliESDEvent*)fEvt));
+    Bool_t fEvSel_TriggerMask               = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    
+    if(IsPS && fEvSel_IsNotPileup) fHistos -> FillTH1("hEventNumbers","IsNotPileupSPD",1);
+    if(IsPS && fEvSel_IsNotPileup && fEvSel_IsNotPileupMV) fHistos -> FillTH1("IsNotPileupMV","IsNotPileupSPD",1);
+    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster) fHistos -> FillTH1("PassesTrackletVsCluster","IsNotPileupSPD",1);
+    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices) fHistos -> FillTH1("HasNoInconsistentSPDandTrackVertices","IsNotPileupSPD",1);
+    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO) fHistos -> FillTH1("IsINELgtZERO","IsNotPileupSPD",1);
+    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO) fHistos -> FillTH1("IsNotAsymmetricInVZERO","IsNotPileupSPD",1);
+    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO && fEvSel_HasGoodVertex2016) fHistos -> FillTH1("HasGoodVertex2016","IsNotPileupSPD",1);
+    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO && fEvSel_HasGoodVertex2016 && fEvSel_TriggerMask) fHistos -> FillTH1("TriggerMask","IsNotPileupSPD",1);
+    
     
     // Event Mixing pool -----------------------------------------------------
     zbin = binZ.FindBin(fZ) -1; // Event mixing z-bin
