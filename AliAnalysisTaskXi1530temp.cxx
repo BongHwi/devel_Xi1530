@@ -64,7 +64,7 @@ const Double_t        pi = TMath::Pi();
 const Double_t  pionmass = AliPID::ParticleMass(AliPID::kPion);
 //const Double_t  Ximass = AliPID::ParticleMass(AliPID::kCascade);
 const Double_t  Ximass = 1.32171;
-enum { kData=1, kLS, kMixing, kMCReco, kMCTrue, kAllType}; //
+enum { kData=1, kLS, kMixing, kMCReco, kMCTrue, kMCTruePS, kAllType}; //
 enum { kTrueINELg0=1, kReco, kGoodVtx}; //
 
 AliAnalysisTaskXi1530tempRunTable::AliAnalysisTaskXi1530tempRunTable() :
@@ -159,10 +159,10 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     
     fHistos = new THistManager("Xi1530hists");
     
-    auto binType = AxisStr("Type",{"DATA","LS","Mixing","MCReco","MCTrue"});
+    auto binType = AxisStr("Type",{"DATA","LS","Mixing","MCReco","MCTrue", "kMCTruePS"});
     if (IsAA && !IsHighMult) binCent = AxisFix("Cent",10,0,100); // for AA study
     else if (!IsHighMult) binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // for kINT7 study
-    else binCent = AxisVar("Cent",{0,0.001,0.01,0.1,1,2}); // for HM study, 1-2 bin for overflow.
+    else binCent = AxisVar("Cent",{0,0.01,0.05,0.1,1,2}); // for HM study, 1-2 bin for overflow.
     
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",1000,1.0,2.0);
@@ -181,7 +181,7 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     }
     
     //std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"}; //Normal setup
-    std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True","IsNotPileupSPD", "IsNotPileupMV", "PassesTrackletVsCluster", "HasNoInconsistentSPDandTrackVertices", "IsINELgtZERO", "IsNotAsymmetricInVZERO", "HasGoodVertex2016", "TriggerMask"}; //HMT study setup
+    std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection","IsNotPileupSPD", "IsNotPileupMV", "PassesTrackletVsCluster", "HasNoInconsistentSPDandTrackVertices", "IsINELgtZERO", "IsNotAsymmetricInVZERO", "HasGoodVertex2016", "TriggerMask", "INELg0True"}; //HMT study setup
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
@@ -280,6 +280,9 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
         fHistos -> CreateTH1("htriggered_CINT7_true","",10,0,10,"s");
         fHistos -> CreateTH1("htriggered_CINT7_reco","",10,0,10,"s");
         fHistos -> CreateTH1("htriggered_CINT7_GoodVtx","",10,0,10,"s");
+        
+        fHistos->CreateTH3("hdXi_true","",100,0,100,1000,1.0,2.0,200,0,20);
+        fHistos->CreateTH3("hdXi_reco","",100,0,100,1000,1.0,2.0,200,0,20);
     }
     fEMpool.resize(binCent.GetNbins()+1,std::vector<eventpool> (binZ.GetNbins()+1));
     PostData(1, fHistos->GetListOfHistograms());
@@ -312,7 +315,7 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
     if (IsMC){
         if (fEvt->IsA()==AliESDEvent::Class()){
             fMCStack = MCEvent()->Stack();
-            // FillMCinput(fMCStack); // If I check this here, efficiency will include event cut as well.
+            FillMCinput(fMCStack, kFALSE);
             IsINEL0True = IsMCEventTrueINEL0();
         }// ESD Case
         else{
@@ -433,15 +436,14 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
     Bool_t fEvSel_HasGoodVertex2016         = AliMultSelectionTask::HasGoodVertex2016                   (((AliESDEvent*)fEvt));
     Bool_t fEvSel_TriggerMask               = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     
-    if(IsPS && fEvSel_IsNotPileup) fHistos -> FillTH1("hEventNumbers","IsNotPileupSPD",1);
-    if(IsPS && fEvSel_IsNotPileup && fEvSel_IsNotPileupMV) fHistos -> FillTH1("IsNotPileupMV","IsNotPileupSPD",1);
-    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster) fHistos -> FillTH1("PassesTrackletVsCluster","IsNotPileupSPD",1);
-    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices) fHistos -> FillTH1("HasNoInconsistentSPDandTrackVertices","IsNotPileupSPD",1);
-    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO) fHistos -> FillTH1("IsINELgtZERO","IsNotPileupSPD",1);
-    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO) fHistos -> FillTH1("IsNotAsymmetricInVZERO","IsNotPileupSPD",1);
-    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO && fEvSel_HasGoodVertex2016) fHistos -> FillTH1("HasGoodVertex2016","IsNotPileupSPD",1);
-    if(IsPS && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO && fEvSel_HasGoodVertex2016 && fEvSel_TriggerMask) fHistos -> FillTH1("TriggerMask","IsNotPileupSPD",1);
-    
+    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup) fHistos -> FillTH1("hEventNumbers","IsNotPileupSPD",1);
+    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup && fEvSel_IsNotPileupMV) fHistos -> FillTH1("hEventNumbers","IsNotPileupMV",1);
+    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster) fHistos -> FillTH1("hEventNumbers","PassesTrackletVsCluster",1);
+    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices) fHistos -> FillTH1("hEventNumbers","HasNoInconsistentSPDandTrackVertices",1);
+    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO) fHistos -> FillTH1("hEventNumbers","IsINELgtZERO",1);
+    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO) fHistos -> FillTH1("hEventNumbers","IsNotAsymmetricInVZERO",1);
+    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO && fEvSel_HasGoodVertex2016) fHistos -> FillTH1("hEventNumbers","HasGoodVertex2016",1);
+    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO && fEvSel_HasGoodVertex2016 && fEvSel_TriggerMask) fHistos -> FillTH1("hEventNumbers","TriggerMask",1);
     
     // Event Mixing pool -----------------------------------------------------
     zbin = binZ.FindBin(fZ) -1; // Event mixing z-bin
@@ -473,7 +475,8 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
         FillTHnSparse("hMult",{fCent});
         fHistos->FillTH1("hMult_QA",fCent); //Draw Multiplicity QA plot in only selected event.
         
-        if(IsMC) FillMCinput(fMCStack); // Note that MC input Event is filled at this moment.
+        if(IsMC) FillMCinput(fMCStack, kTRUE); // Note that MC input Event is filled at this moment.
+        if(IsMC) FillMCinputdXi(fMCStack); // Note that MC input Event is filled at this moment.
         if (this -> GoodTracksSelection()      // If Good track
             && this -> GoodCascadeSelection()) // and Good cascade is in this event,
             this -> FillTracks();              // Fill the histogram
@@ -669,6 +672,9 @@ Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
             
             // After selection above
             if(StandardXi){ // Save only the Xi is good candidate
+                
+                if(IsMC) if(IsTrueXi(((AliESDEvent*)fEvt)->GetCascade(it))) fHistos->FillTH3("hdXi_reco",fCent,Xicandidate->GetEffMassXi(),Xicandidate->Pt());
+                
                 fNCascade++;
                 goodcascadeindices.push_back(it);
                 
@@ -932,7 +938,7 @@ Double_t AliAnalysisTaskXi1530temp::GetMultiplicty(AliVEvent *fEvt){
     }
     return fCent;
 }
-void AliAnalysisTaskXi1530temp::FillMCinput(AliStack* fMCStack){
+void AliAnalysisTaskXi1530temp::FillMCinput(AliStack* fMCStack, Bool_t PS){
     // Fill MC input Xi1530 histogram
     for (Int_t it = 0; it < fMCStack->GetNprimary(); it++) {
         TParticle *mcInputTrack = (TParticle*)fMCStack->Particle(it);
@@ -940,7 +946,22 @@ void AliAnalysisTaskXi1530temp::FillMCinput(AliStack* fMCStack){
             Error("UserExec", "Could not receive MC track %d", it);
             continue;
         }
-        if(abs(mcInputTrack->GetPdgCode()) == kXiStarCode) FillTHnSparse("hInvMass",{kMCTrue,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
+        if(abs(mcInputTrack->GetPdgCode())!=kXiStarCode) continue;
+        if(!fMCStack->IsPhysicalPrimary(it)) continue;
+
+        if(PS) FillTHnSparse("hInvMass",{kMCTruePS,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
+        else FillTHnSparse("hInvMass",{kMCTrue,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
+    }
+}
+void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliStack* fMCStack){
+    // Fill MC input Xi1530 histogram
+    for (Int_t it = 0; it < fMCStack->GetNprimary(); it++) {
+        TParticle *mcInputTrack = (TParticle*)fMCStack->Particle(it);
+        if (!mcInputTrack) {
+            Error("UserExec", "Could not receive MC track %d", it);
+            continue;
+        }
+        if(abs(mcInputTrack->GetPdgCode()) == kXiCode) fHistos->FillTH3("hdXi_true",fCent,mcInputTrack->GetCalcMass(),mcInputTrack->Pt());
     }
 }
 
@@ -1073,6 +1094,42 @@ Bool_t AliAnalysisTaskXi1530temp::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pio
     }//D2esd->pion
     return TrueXi1530;
 }
+Bool_t AliAnalysisTaskXi1530temp::IsTrueXi(AliESDcascade* Xi){
+    // Check if associated Xi1530 is true Xi1530 in MC set
+    if (!Xi) return kFALSE;
+    
+    Bool_t TrueXi = kFALSE;
+    
+    AliESDtrack *pTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xi->GetPindex()));
+    AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xi->GetNindex()));
+    AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xi->GetBindex()));
+    
+    TParticle* MCXiD2esd = (TParticle*)fMCStack->Particle(abs(bTrackXi->GetLabel()));
+    TParticle* MCLamD1esd;
+    TParticle* MCLamD2esd;
+    TParticle* MCLamesd;
+    TParticle* MCXiesd;
+    
+    if (abs(MCXiD2esd->GetPdgCode()) == kPionCode) { //D2esd->pion
+        MCLamD1esd = (TParticle*)fMCStack->Particle(abs(pTrackXi->GetLabel()));
+        MCLamD2esd = (TParticle*)fMCStack->Particle(abs(nTrackXi->GetLabel()));
+        if (MCLamD1esd->GetMother(0) == MCLamD2esd->GetMother(0)) { //Same mother(lambda)
+            if ((abs(MCLamD1esd->GetPdgCode()) == kProtonCode && abs(MCLamD2esd->GetPdgCode()) == kPionCode) || (abs(MCLamD1esd->GetPdgCode()) == kPionCode && abs(MCLamD2esd->GetPdgCode()) == kProtonCode)) { //Lamda daugthers check #1
+                MCLamesd = (TParticle*)fMCStack->Particle(abs(MCLamD1esd->GetMother(0)));
+                if (abs(MCLamesd->GetPdgCode()) == kLambdaCode) { //Lambda check
+                    if (MCLamesd->GetMother(0) == MCXiD2esd->GetMother(0)) { // Lambda+pion(D2esd) mother check
+                        MCXiesd = (TParticle*)fMCStack->Particle(abs(MCLamesd->GetMother(0)));
+                        if (abs(MCXiesd->GetPdgCode()) == kXiCode) { // Xi Check
+                            TrueXi=kTRUE;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return TrueXi;
+}
+
 void AliAnalysisTaskXi1530temp::FillTrackToEventPool(){
     // Fill Selected tracks to event mixing pool
     AliVTrack *goodtrack;
