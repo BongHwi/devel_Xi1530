@@ -8,9 +8,6 @@
       location = "container:run.C">
    </FileRef>
    <FileRef
-      location = "group:/Users/blim/GDrive/HIPEx/XiStar/devel_Xi1530/AddTaskXi1530.C">
-   </FileRef>
-   <FileRef
       location = "container:/Users/blim/GDrive/HIPEx/XiStar/devel_Xi1530/AliAnalysisTaskXi1530temp.h">
    </FileRef>
    <FileRef
@@ -18,5 +15,8 @@
    </FileRef>
    <FileRef
       location = "container:README.md">
+   </FileRef>
+   <FileRef
+      location = "group:AddTaskXi1530.C">
    </FileRef>
 </Workspace>
