@@ -33,7 +33,7 @@ void run(
          , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
-         , const char *localorgrid = "grid"
+         , const char *localorgrid = "local"
          )
 {
     gSystem->Load("libTree.so");
@@ -103,6 +103,7 @@ void run(
     }
     MultSlection->SetAddInfo(kTRUE);
     MultSlection->SetSelectedTriggerClass(AliVEvent::kAny);
+    //MultSlection->SetAlternateOADBforEstimators("LHC16k"); //if needed
     // PID response
     AliAnalysisTask *fPIDResponse = reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(Form("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C(%d)",ismc)));
     if(!fPIDResponse) {
@@ -112,17 +113,29 @@ void run(
     // V0, Xi Super verexter by David
     //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C");
     //AliAnalysisTaskWeakDecayVertexer *taskWDV = AddTaskWeakDecayVertexer();
-    
-    //AliAnalysisTaskWeakDecayVertexer *taskWDV = reinterpret_cast<AliAnalysisTaskWeakDecayVertexer*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C"));
-    //taskWDV->SetRunV0Vertexer(kTRUE);
-    //taskWDV->SetRunCascadeVertexer(kTRUE);
-    //taskWDV->SetUseImprovedFinding();
-    
-    //taskWDV->SetDoImprovedDCAV0DauPropagation(kTRUE);
-    //taskWDV->SetDoImprovedCascadePosition(kTRUE);
-    //taskWDV->SetOnlyCombineMCTrue(kTRUE);
-    //taskWDV -> SetCentralityInterval(0,0.5);
-    
+  /*  
+    AliAnalysisTaskWeakDecayVertexer *taskWDV = reinterpret_cast<AliAnalysisTaskWeakDecayVertexer*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C"));
+    //______________________________________________________________
+    //Revertexing configuration
+    //WARNING: This applies only to the Cascade analysis
+    taskWDV ->SetUseImprovedFinding(); 
+
+        //V0-Related topological selections
+    taskWDV ->     SetV0VertexerDCAFirstToPV(0.05);
+    taskWDV ->     SetV0VertexerDCASecondtoPV(0.05);
+    taskWDV ->     SetV0VertexerDCAV0Daughters(1.6);
+    taskWDV ->     SetV0VertexerCosinePA(0.97);
+    taskWDV ->     SetV0VertexerMinRadius(0.5);
+    taskWDV ->     SetV0VertexerMaxRadius(200);
+        
+        //Cascade-Related topological selections
+    taskWDV ->     SetCascVertexerMinV0ImpactParameter(0.05);
+    taskWDV ->     SetCascVertexerV0MassWindow(0.007);
+    taskWDV ->     SetCascVertexerDCABachToPV(0.05);
+    taskWDV ->     SetCascVertexerDCACascadeDaughters(1.6);
+    taskWDV ->     SetCascVertexerCascadeMinRadius(.5);
+    taskWDV ->     SetCascVertexerCascadeCosinePA(.97);
+*/
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");
     //AliAnalysisTaskXi1530temp *myTask = reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
     
@@ -141,7 +154,7 @@ void run(
     // Multiplicity selection
     gROOT->LoadMacro("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C");
     AliMultSelectionTask *MultSlection = AddTaskMultSelection();
-    
+
     // PID Response
     gROOT->LoadMacro("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C");
     AliAnalysisTask *fPIDResponse = AddTaskPIDResponse(ismc); //! PID response object
@@ -200,7 +213,7 @@ void run(
             if(ismc){
                 if (foption.Contains("pass2")) plugin->SetGridDataDir("/alice/sim/2018/LHC18c6b4"); //resonance injected
                 else plugin->SetGridDataDir("/alice/sim/2018/LHC18c6b"); //resonance injected
-                //plugin->SetGridDataDir("/alice/sim/2017/LHC17d20a1"); //general use
+                //plugin->SetGridDataDir("/alice/sim/2018/LHC18f1"); //general use, LHC18f1 for pass2, LHC17d20a1 for pass1
                 plugin->SetDataPattern("*AliESDs.root");
             }
             else {

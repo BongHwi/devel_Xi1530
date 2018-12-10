@@ -67,6 +67,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
         void SetIsMC     (Bool_t ismc)      {IsMC = ismc;}
         void SetnMix     (Int_t nMix)       {fnMix = nMix;}
         void SetHighMult (Bool_t highmult)  {IsHighMult = highmult;}
+        void SetIsPrimaryMC (Bool_t isprimarymc)  {IsPrimaryMC = isprimarymc;}
     
         // Set Functions for the cut study & Systematic study
         void SetTPCNsigXi1530PionCut (Double_t nXi1530PionCut)  {fTPCNsigXi1530PionCut = nXi1530PionCut;}
@@ -164,6 +165,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
         Bool_t                          IsINEL0Rec = kFALSE;
         Bool_t                          IsINEL0True = kFALSE;
         Bool_t                          IsHighMult = kFALSE;
+        Bool_t                          IsPrimaryMC = kTRUE;
         THistManager*                   fHistos=nullptr; //!
         TClonesArray*                   fMCArray=nullptr; //!
         AliStack*                       fMCStack=nullptr; //!

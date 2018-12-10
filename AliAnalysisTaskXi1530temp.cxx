@@ -187,8 +187,7 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
     
-    //std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"}; //Normal setup
-    std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection","IsNotPileupSPD", "IsNotPileupMV", "PassesTrackletVsCluster", "HasNoInconsistentSPDandTrackVertices", "IsINELgtZERO", "IsNotAsymmetricInVZERO", "HasGoodVertex2016", "TriggerMask", "INELg0True"}; //HMT study setup
+    std::vector<TString> ent = {"All","Trigger","InCompleteDAQ","No BG","No pile up","Tracklet>1","Good vertex","|Zvtx|<10cm","AliMultSelection", "INELg0True"}; //Normal setup
     auto hNofEvt = fHistos->CreateTH1("hEventNumbers","",ent.size(), 0, ent.size());
     for(auto i=0u;i<ent.size();i++) hNofEvt->GetXaxis()->SetBinLabel(i+1,ent.at(i).Data());
     
@@ -287,11 +286,7 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
         fHistos -> CreateTH1("htriggered_CINT7_reco","",10,0,10,"s");
         fHistos -> CreateTH1("htriggered_CINT7_GoodVtx","",10,0,10,"s");
         
-        fHistos -> CreateTH2("hXi1530Vertex_Primary","",400,-20,20,40,-200,20);
-        fHistos -> CreateTH2("hXi1530Vertex_Secondary","",400,-20,20,400,-20,20);
         
-        fHistos -> CreateTH1("hPtPrimaryXi1530","",200,0,20,"s");
-        fHistos -> CreateTH1("hPtSecondaryXi1530","",200,0,20,"s");
     }
     fEMpool.resize(binCent.GetNbins()+1,std::vector<eventpool> (binZ.GetNbins()+1));
     PostData(1, fHistos->GetListOfHistograms());
@@ -324,8 +319,6 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
     if (IsMC){
         if (fEvt->IsA()==AliESDEvent::Class()){
             fMCStack = MCEvent()->Stack();
-            FillMCinput(fMCStack, kFALSE);
-            FillMCinputdXi(fMCStack, kFALSE);
             IsINEL0True = IsMCEventTrueINEL0();
         }// ESD Case
         else{
@@ -440,25 +433,6 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
 
     // *********************************************************************** // Event Selection done
 
-    // Temporal Check for the HM triggerd data
-    Bool_t fEvSel_IsNotPileup               = AliMultSelectionTask::IsNotPileupSPD                      (((AliESDEvent*)fEvt));
-    Bool_t fEvSel_IsNotPileupMV             = !(AnalysisUtils->IsPileUpMV(((AliESDEvent*)fEvt)));
-    Bool_t fEvSel_PassesTrackletVsCluster   = !(AnalysisUtils->IsSPDClusterVsTrackletBG(((AliESDEvent*)fEvt)));
-    Bool_t fEvSel_HasNoInconsistentVertices = AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(((AliESDEvent*)fEvt));
-    Bool_t fEvSel_INELgtZERO                = AliMultSelectionTask::IsINELgtZERO                        (((AliESDEvent*)fEvt));
-    Bool_t fEvSel_IsNotAsymmetricInVZERO    = AliMultSelectionTask::IsNotAsymmetricInVZERO              (((AliESDEvent*)fEvt));
-    Bool_t fEvSel_HasGoodVertex2016         = AliMultSelectionTask::HasGoodVertex2016                   (((AliESDEvent*)fEvt));
-    Bool_t fEvSel_TriggerMask               = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-    
-    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup) fHistos -> FillTH1("hEventNumbers","IsNotPileupSPD",1);
-    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup && fEvSel_IsNotPileupMV) fHistos -> FillTH1("hEventNumbers","IsNotPileupMV",1);
-    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster) fHistos -> FillTH1("hEventNumbers","PassesTrackletVsCluster",1);
-    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices) fHistos -> FillTH1("hEventNumbers","HasNoInconsistentSPDandTrackVertices",1);
-    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO) fHistos -> FillTH1("hEventNumbers","IsINELgtZERO",1);
-    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO) fHistos -> FillTH1("hEventNumbers","IsNotAsymmetricInVZERO",1);
-    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO && fEvSel_HasGoodVertex2016) fHistos -> FillTH1("hEventNumbers","HasGoodVertex2016",1);
-    if(IsPS && IsGoodVertex && IsVtxInZCut  && fEvSel_IsNotPileup & fEvSel_IsNotPileupMV && fEvSel_PassesTrackletVsCluster && fEvSel_HasNoInconsistentVertices && fEvSel_INELgtZERO && fEvSel_IsNotAsymmetricInVZERO && fEvSel_HasGoodVertex2016 && fEvSel_TriggerMask) fHistos -> FillTH1("hEventNumbers","TriggerMask",1);
-    
     // Event Mixing pool -----------------------------------------------------
     zbin = binZ.FindBin(fZ) -1; // Event mixing z-bin
     centbin = binCent.FindBin(fCent) -1; // Event mixing cent bin
@@ -492,15 +466,24 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
     }
     // ----------------------------------------------------------------------
 
+    // Signal Loss Correction -----------------------------------------------
+    if(IsMC && IsSelectedTrig){
+        FillMCinput(fMCStack, kFALSE);
+        FillMCinputdXi(fMCStack, kFALSE);
+    }
+    // ----------------------------------------------------------------------
 
     // Check tracks and casade, Fill histo************************************
     //if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition, // disabled
     if (    (!IsHighMult && IsINEL0Rec && IsMultSelcted) // In Good Event condition in kINT7 mode,
          || (IsHighMult && IsINEL0Rec) ){ // IsMultSelcted -> diable in HM mode
-        FillTHnSparse("hMult",{fCent});
-        fHistos->FillTH1("hMult_QA",fCent); //Draw Multiplicity QA plot in only selected event.
         
-        FillTHnSparse("hV0MSignal",{kPS,fCent,intensity}); //V0M signal QA
+        //Draw Multiplicity QA plot in only selected event.
+        FillTHnSparse("hMult",{fCent});
+        fHistos->FillTH1("hMult_QA",fCent); 
+        
+        //V0M signal QA
+        FillTHnSparse("hV0MSignal",{kPS,fCent,intensity}); 
 
         if(IsMC){
             FillMCinput(fMCStack, kTRUE); // Note that MC input Event is filled at this moment.
@@ -509,7 +492,7 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
         if (this -> GoodTracksSelection()      // If Good track
             && this -> GoodCascadeSelection()) // and Good cascade is in this event,
             this -> FillTracks();              // Fill the histogram
-        if (fsetmixing && goodtrackindices.size()) FillTrackToEventPool();
+        if (fsetmixing && goodtrackindices.size()) FillTrackToEventPool(); // use only pion track pool.
     }
     // ***********************************************************************
     
@@ -810,10 +793,8 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
             temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionmass);
             
             vecsum = temp1+temp2; // temp1 = cascade, temp2=pion
-            
             // Y cut
             if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue;
-            
             // PropagateToDCA cut
             track1->GetXYZ(PiX); AliVertex *XiStarVtx = new AliVertex(PiX,0,0);
             if(!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))) continue;
@@ -826,7 +807,7 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
             if (IsMC) {
                 if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
                     if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
-                        
+
                         // True Xi1530 signals
                         FillTHnSparse("hInvMass",{(double)kMCReco,fCent,vecsum.Pt(),vecsum.M()});
                         
@@ -977,9 +958,7 @@ void AliAnalysisTaskXi1530temp::FillMCinput(AliStack* fMCStack, Bool_t PS){
             continue;
         }
         if(abs(mcInputTrack->GetPdgCode())!=kXiStarCode) continue;
-        
-        if(mcInputTrack->IsPrimary()) fHistos->FillTH2("hXi1530Vertex_Primary",mcInputTrack->Vx(),mcInputTrack->Vy());
-        else fHistos->FillTH2("hXi1530Vertex_Primary",mcInputTrack->Vx(),mcInputTrack->Vy());
+        if(IsPrimaryMC && !mcInputTrack->IsPrimary()) continue;
         
         if(PS) FillTHnSparse("hInvMass",{(double)kMCTruePS,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
         else FillTHnSparse("hInvMass",{(double)kMCTrue,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
@@ -1118,13 +1097,9 @@ Bool_t AliAnalysisTaskXi1530temp::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pio
                             if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) { // Xi+pion mother check
                                 MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
                                 if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) { //Xi1530 check
-                                        TrueXi1530 = kTRUE; // Primary Check
-                                    if(MCXiStaresd->IsPrimary()){
-                                        fHistos->FillTH1("hPtPrimaryXi1530",MCXiStaresd->Pt());
-                                    }
-                                    else{
-                                        fHistos->FillTH1("hPtSecondaryXi1530",MCXiStaresd->Pt());
-                                    } 
+                                    if(IsPrimaryMC && MCXiStaresd->IsPrimary()){
+                                        TrueXi1530 = kTRUE;
+                                    } // Primary(input) Xi1530 check
                                 }//Xi1530 check
                             }// Xi+pion mother check
                         }// Xi Check
