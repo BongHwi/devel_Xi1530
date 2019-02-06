@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2018/10/13
+//  Last Modified Date: 2018/12/14
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -66,7 +66,7 @@ const Double_t  pionmass = AliPID::ParticleMass(AliPID::kPion);
 const Double_t  Ximass = 1.32171;
 enum { kData=1, kLS, kMixing, kMCReco, kMCTrue, kMCTruePS, kAllType}; // for Physicsl Results
 enum { kIsSelected=1, kPS, kAllNone}; // for V0M signal QA plot
-enum { kTrueINELg0=1, kReco, kGoodVtx}; // for Trigger Efficiency
+enum { kTrueINELg0=1, kTrig, kReco, kGoodVtx}; // for Trigger Efficiency
 
 AliAnalysisTaskXi1530tempRunTable::AliAnalysisTaskXi1530tempRunTable() :
 fCollisionType(kUnknownCollType)
@@ -182,7 +182,7 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
     if(IsMC){
         // To get Trigger efficiency in each trk/V0M Multiplicity region
-        auto MCType = AxisStr("Type",{"TrueINELg0","Reco","GoodVtx"});
+        auto MCType = AxisStr("Type",{"TrueINELg0","Triggered","Reco","GoodVtx"});
         //auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
         CreateTHnSparse("htriggered_CINT7","",3,{MCType,binCent,binTrklet},"s"); // inv mass distribution of Xi
     }
@@ -194,6 +194,7 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     // QA Histograms--------------------------------------------------
     //
     fHistos -> CreateTH1("hMult_QA","",1000,0,100,"s");
+    fHistos -> CreateTH1("hMult_QA_onlyMult","",1000,0,100,"s");
     fHistos -> CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
     // T P C   P I D
     //// before
@@ -282,11 +283,13 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
         fHistos->CreateTH2("hLambda_Rxy_TrueMC","",400,-200,200,400,-200,200);
         fHistos->CreateTH2("hXi_Rxy_TrueMC","",400,-200,200,400,-200,200);
         
-        fHistos -> CreateTH1("htriggered_CINT7_true","",10,0,10,"s");
-        fHistos -> CreateTH1("htriggered_CINT7_reco","",10,0,10,"s");
-        fHistos -> CreateTH1("htriggered_CINT7_GoodVtx","",10,0,10,"s");
-        
-        
+        fHistos -> CreateTH1("htriggered_CINT7_true","",1000,0,1000,"s");
+        fHistos -> CreateTH1("htriggered_CINT7_trig","",1000,0,1000,"s");
+        fHistos -> CreateTH1("htriggered_CINT7_reco","",1000,0,1000,"s");
+        fHistos -> CreateTH1("htriggered_CINT7_GoodVtx","",1000,0,1000,"s");
+
+        fHistos->CreateTH1("hMC_generated_Y", "", 400, -2, 2, "s");
+        fHistos->CreateTH1("hMC_reconstructed_Y", "", 400, -2, 2, "s");
     }
     fEMpool.resize(binCent.GetNbins()+1,std::vector<eventpool> (binZ.GetNbins()+1));
     PostData(1, fHistos->GetListOfHistograms());
@@ -335,8 +338,8 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
     if(!IsMC){
         if(!IsHighMult) IsSelectedTrig = (inputHandler->IsEventSelected()
                                      & AliVEvent::kINT7);
-    else IsSelectedTrig = (inputHandler->IsEventSelected()
-                           & AliVEvent::kHighMultV0);
+        else IsSelectedTrig = (inputHandler->IsEventSelected()
+                              & AliVEvent::kHighMultV0);
     }
     else IsSelectedTrig = (inputHandler->IsEventSelected()
                                      & AliVEvent::kINT7);
@@ -364,7 +367,7 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
                                                            , AliESDtrackCuts::kTracklets
                                                            , 0.8); // tracklet in eta +_0.8
     fCent = GetMultiplicty(fEvt); // Centrality(AA), Multiplicity(pp)
-    
+
     // PID response ----------------------------------------------------------
     fPIDResponse = (AliPIDResponse*) inputHandler->GetPIDResponse();
     if(!fPIDResponse) AliInfo("No PIDd");
@@ -399,7 +402,8 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
     
     AliMultSelection *MultSelection = (AliMultSelection*) fEvt->FindListObject("MultSelection");
     Bool_t IsMultSelcted = MultSelection->IsEventSelected();
-    
+    if (IsSelectedTrig && IsMultSelcted)
+        fHistos->FillTH1("hMult_QA_onlyMult", fCent);
     // Physics Selection------------------------------------------------------
     IsPS = IsSelectedTrig    // CINT7 Trigger selected
        && !IncompleteDAQ     // No IncompleteDAQ
@@ -445,11 +449,15 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
             FillTHnSparse("htriggered_CINT7",{(double)kTrueINELg0,fCent,ftrackmult});
             fHistos -> FillTH1("htriggered_CINT7_true",centbin);
         }
+        if(IsSelectedTrig){
+            FillTHnSparse("htriggered_CINT7",{(double)kTrig,fCent,ftrackmult});
+            fHistos -> FillTH1("htriggered_CINT7_trig",centbin);
+        }
         if(IsPS){
             FillTHnSparse("htriggered_CINT7",{(double)kReco,fCent,ftrackmult});
             fHistos -> FillTH1("htriggered_CINT7_reco",centbin);
         }
-        if(IsPS && IsGoodVertex){
+        if( IsINEL0Rec){
             FillTHnSparse("htriggered_CINT7",{(double)kGoodVtx,fCent,ftrackmult});
             fHistos -> FillTH1("htriggered_CINT7_GoodVtx",centbin);
         }
@@ -474,10 +482,9 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t *)
     // ----------------------------------------------------------------------
 
     // Check tracks and casade, Fill histo************************************
-    //if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted){ // In Good Event condition, // disabled
-    if (    (!IsHighMult && IsINEL0Rec && IsMultSelcted) // In Good Event condition in kINT7 mode,
-         || (IsHighMult && IsINEL0Rec) ){ // IsMultSelcted -> diable in HM mode
-        
+    if ( (IsINEL0Rec && IsMultSelcted) || (IsMC && IsINEL0Rec) )
+    { // In Good Event condition: (IsPS && IsGoodVertex && IsVtxInZCut) && IsMultSelcted
+
         //Draw Multiplicity QA plot in only selected event.
         FillTHnSparse("hMult",{fCent});
         fHistos->FillTH1("hMult_QA",fCent); 
@@ -740,13 +747,11 @@ Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
 }
 
 void AliAnalysisTaskXi1530temp::FillTracks(){
-    AliVTrack *track1;
-    // charged track, pion
-    AliESDcascade *Xicandidate;
-    // Cascade
+    AliVTrack *track1;          // charged track, pion
+    AliESDcascade *Xicandidate; // Cascade
     
     TLorentzVector temp1,temp2;
-    TLorentzVector vecsum;
+    TLorentzVector vecsum;      // Xi1530 candidate
     
     // The following CovMatrix is set so that PropogateToDCA() ignores track errors.
     // Only used to propagate Xi to third pion for XiStar reconstruction
@@ -769,7 +774,6 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
     }
     
     for (UInt_t i = 0; i < ncascade; i++) {
-        
         Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
         if(!Xicandidate) continue;
         
@@ -795,6 +799,7 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
             vecsum = temp1+temp2; // temp1 = cascade, temp2=pion
             // Y cut
             if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue;
+
             // PropagateToDCA cut
             track1->GetXYZ(PiX); AliVertex *XiStarVtx = new AliVertex(PiX,0,0);
             if(!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))) continue;
@@ -810,7 +815,7 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
 
                         // True Xi1530 signals
                         FillTHnSparse("hInvMass",{(double)kMCReco,fCent,vecsum.Pt(),vecsum.M()});
-                        
+                        fHistos->FillTH1("hMC_reconstructed_Y", vecsum.Rapidity());
                         // For cut study
                         fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
                         fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaXiDaughters()));
@@ -837,7 +842,6 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
                         Double_t cX, cY, cZ;
                         Xicandidate->GetXYZcascade(cX,cY,cZ);
                         fHistos->FillTH2("hXi_Rxy_TrueMC",cX,cY);
-                        
                     }//Xi1530 check
                 }// MC ESD
                 else{ // !! NEED TO UPDATE FOR AOD CASE !!
@@ -934,13 +938,7 @@ Double_t AliAnalysisTaskXi1530temp::GetMultiplicty(AliVEvent *fEvt){
     AliMultSelection *MultSelection = (AliMultSelection*) fEvt->FindListObject("MultSelection");
     if(MultSelection)
     {
-        if (!(MultSelection->IsEventSelected()))
-        {
-            AliInfo("This event is not selected: AliMultSelection");
-            if(!IsHighMult) fCent = 999;
-            else fCent = MultSelection->GetMultiplicityPercentile("V0M");
-        }
-        else fCent = MultSelection->GetMultiplicityPercentile("V0M");
+        fCent = MultSelection->GetMultiplicityPercentile("V0M");
     }
     else
     {
@@ -959,7 +957,11 @@ void AliAnalysisTaskXi1530temp::FillMCinput(AliStack* fMCStack, Bool_t PS){
         }
         if(abs(mcInputTrack->GetPdgCode())!=kXiStarCode) continue;
         if(IsPrimaryMC && !mcInputTrack->IsPrimary()) continue;
-        
+        fHistos->FillTH1("hMC_generated_Y", mcInputTrack->Y());
+
+        // Y cut
+        if (fabs(mcInputTrack->Y()) > fXi1530RapidityCut) continue;
+            
         if(PS) FillTHnSparse("hInvMass",{(double)kMCTruePS,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
         else FillTHnSparse("hInvMass",{(double)kMCTrue,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
     }
@@ -1057,8 +1059,8 @@ Bool_t AliAnalysisTaskXi1530temp::IsMCEventTrueINEL0(){
         }
         if(!fMCStack->IsPhysicalPrimary(iT)) continue;
         if(!(mcParticle->Pt()>0.0)) continue;
-        if((TMath::Abs(mcParticle->GetPDG()->Charge())==0)) continue; // Added for charged particle
         if ( TMath::Abs(mcParticle->Eta()) > 1.0 ) continue;
+        if (!(TMath::Abs(mcParticle->GetPDG()->Charge()) == 3)) continue;
         isINEL0 = kTRUE;
         break;
     }
@@ -1097,9 +1099,14 @@ Bool_t AliAnalysisTaskXi1530temp::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pio
                             if (MCXiesd->GetMother(0) == MCXiStarD2esd->GetMother(0)) { // Xi+pion mother check
                                 MCXiStaresd = (TParticle*)fMCStack->Particle(abs(MCXiesd->GetMother(0)));
                                 if (abs(MCXiStaresd->GetPdgCode()) == kXiStarCode) { //Xi1530 check
-                                    if(IsPrimaryMC && MCXiStaresd->IsPrimary()){
+                                    if (IsPrimaryMC){
+                                        if (MCXiStaresd->IsPrimary()){
+                                            TrueXi1530 = kTRUE;
+                                        } // Primary(input) Xi1530 check
+                                    }
+                                    else{
                                         TrueXi1530 = kTRUE;
-                                    } // Primary(input) Xi1530 check
+                                    }
                                 }//Xi1530 check
                             }// Xi+pion mother check
                         }// Xi Check
