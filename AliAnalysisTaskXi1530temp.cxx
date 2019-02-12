@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2018/12/14
+//  Last Modified Date: 2019/02/06
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -193,8 +193,14 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     
     // QA Histograms--------------------------------------------------
     //
-    fHistos -> CreateTH1("hMult_QA","",1000,0,100,"s");
-    fHistos -> CreateTH1("hMult_QA_onlyMult","",1000,0,100,"s");
+    if (IsHighMult){
+        fHistos->CreateTH1("hMult_QA", "", 100, 0, 0.1, "s");
+        fHistos->CreateTH1("hMult_QA_onlyMult", "", 100, 0, 0.1, "s");
+    }
+    else{
+        fHistos->CreateTH1("hMult_QA", "", 1000, 0, 100, "s");
+        fHistos->CreateTH1("hMult_QA_onlyMult", "", 1000, 0, 100, "s");
+    }
     fHistos -> CreateTH2("hPhiEta","",180,0,2*pi,40,-2,2);
     // T P C   P I D
     //// before
