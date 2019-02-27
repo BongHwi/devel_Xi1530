@@ -67,7 +67,7 @@ const Double_t  Ximass = 1.32171;
 enum { kData=1, kLS, kMixing, kMCReco, kMCTrue, kMCTruePS, kAllType}; // for Physicsl Results
 enum { kIsSelected=1, kPS, kAllNone}; // for V0M signal QA plot
 enum { kTrueINELg0=1, kTrig, kReco, kGoodVtx}; // for Trigger Efficiency
-
+enum {kDefaultOption=1, kTPCNsigmaXi1530PionLoose, kTPCNsigmaXi1530PionTight, kTPCNsigmaLambdaProtonLoose, kTPCNsigmaLambdaProtonTight, kTPCNsigmaLambdaPionLoose, kTPCNsigmaLambdaPionTight, kTPCNsigmaBachelorPionLoose, kTPCNsigmaBachelorPionTight, kXi1530PionZVertexLoose, kXi1530PionZVertexTight, kDCADistLambdaDaughtersLoose, kDCADistLambdaDaughtersTight, kDCADistLambdaPVLoose, kDCADistLambdaPVTight, kV0CosineOfPointingAngleLoose, kV0CosineOfPointingAngleTight, kCascadeCosineOfPointingAngleLoose, kCascadeCosineOfPointingAngleTight, kXiMassWindowLoose, kXiMassWindowTight, kXiTrackCut}; // for Systematic study
 AliAnalysisTaskXi1530tempRunTable::AliAnalysisTaskXi1530tempRunTable() :
 fCollisionType(kUnknownCollType)
 {;}
@@ -147,6 +147,7 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     fTrackCuts -> GetStandardITSTPCTrackCuts2011(kTRUE,kTRUE);
     fTrackCuts -> SetEtaRange(-0.8,0.8);
     fTrackCuts -> SetPtRange(0.15, 1e20);
+
     // secondary particle cut(Xi daugthers)
     fTrackCuts2 = new AliESDtrackCuts();
     //fTrackCuts2 -> GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE); // not primary
@@ -156,6 +157,11 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     fTrackCuts2 -> SetMaxChi2PerClusterTPC(4);
     //fTrackCuts2 -> SetEtaRange(-0.8,0.8);
     fTrackCuts2 -> SetPtRange(0.15, 1e20);
+
+    // secondary particle cut(Xi daugthers) for systematic study
+    fTrackCuts3 = new AliESDtrackCuts();
+    fTrackCuts3 -> GetStandardITSTPCTrackCuts2011(kFALSE,kTRUE); // not primary
+    fTrackCuts3 -> SetPtRange(0.15, 1e20);
     // ----------------------------------------------------------------------
     
     fHistos = new THistManager("Xi1530hists");
@@ -171,11 +177,12 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",2000,1.0,3.0);
     binZ = AxisVar("Z",{-10,-5,-3,-1,1,3,5,10});
-    
     auto binType_V0M = AxisStr("Type",{"isSelected","isSelectedPS"});
+    // Axis for the systematic study
+    binSystematics = AxisStr("Sys", SysCheck);
 
     CreateTHnSparse("hInvMass_dXi","InvMass",4,{binType,binCent,binPt,binMass},"s"); // inv mass distribution of Xi
-    CreateTHnSparse("hInvMass","InvMass",4,{binType,binCent,binPt,binMass},"s"); // Normal inv mass distribution of Xi1530
+    CreateTHnSparse("hInvMass", "InvMass", 5, {binSystematics,binType, binCent, binPt, binMass}, "s"); // Normal inv mass distribution of Xi1530
     CreateTHnSparse("hMult","Multiplicity",1,{binCent},"s");
     CreateTHnSparse("hV0MSignal","V0MSignal",3,{binType_V0M,binCent,AxisFix("V0MSig",2000,0,2000)},"s");
     
@@ -516,13 +523,14 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection(){
     // Choose Good Tracks from AliESDtracks,
     //    and Save the label of them,
     //    and Save them for event mixing
+    //    for the systematic study, this will be done in "loose cut option"
     //
     // it includes several cuts:
     // - TPC PID cut for pion
     // - Eta cut
     // - Z-vertex cut
     // - DCA cut for primary particle
-    // - pion mass window cut
+    // - pion mass window cut <-- not using now
     //
     const UInt_t ntracks = fEvt ->GetNumberOfTracks();
     goodtrackindices.clear();
@@ -540,7 +548,7 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection(){
             Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
             fHistos->FillTH2("hTPCPIDXi1530Pion",track->GetTPCmomentum(),track->GetTPCsignal());
             fHistos->FillTH1("hTPCPIDsignalXi1530Pion",fTPCNSigPion);
-            if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut) continue;
+            if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose) continue;
             fHistos->FillTH2("hTPCPIDXi1530Pion_cut",track->GetTPCmomentum(),track->GetTPCsignal());
             fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",fTPCNSigPion);
 
@@ -548,7 +556,7 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection(){
             if(abs(track->Eta()) > fXi1530PionEtaCut) continue;
             
             // Z vertex cut
-            if(abs(track->GetZ() - fZ) > fXi1530PionZVertexCut) continue;
+            if(abs(track->GetZ() - fZ) > fXi1530PionZVertexCut_loose) continue;
             
             // Pion mass window
             //if (fabs(track->M() - pionmass) > 0.007) continue;
@@ -572,6 +580,7 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection(){
 Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
     // Choose Good Cascade from AliESDcascade
     //   and Save the label of them
+    //    for the systematic study, this will be done in "loose cut option"
     //
     // it includes several cuts:
     // - daughter particle standard track cut
@@ -582,7 +591,7 @@ Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
     // - Mass window cut for Xi
     // - Eta cut
     // - XY Raidus cut(not applied), just for check
-    
+
     goodcascadeindices.clear();
     const UInt_t ncascade = fEvt->GetNumberOfCascades();
     
@@ -593,7 +602,6 @@ Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
     
     fNCascade = 0;
     Bool_t StandardXi=kTRUE;
-    
     for (UInt_t it = 0; it < ncascade; it++){
         StandardXi=kTRUE;
         if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
@@ -633,9 +641,9 @@ Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
             fHistos->FillTH1("hTPCPIDsignalLambdaPion",fTPCNSigLambdaPion);
             fHistos->FillTH1("hTPCPIDsignalBachelorPion",fTPCNSigBachelorPion);
             
-            if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut) StandardXi=kFALSE; // PID for proton
-            if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) StandardXi=kFALSE; // PID for 1st pion
-            if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut) StandardXi=kFALSE; // PID for 2nd pion
+            if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_loose) StandardXi=kFALSE; // PID for proton
+            if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_loose) StandardXi=kFALSE; // PID for 1st pion
+            if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut_loose) StandardXi=kFALSE; // PID for 2nd pion
             
             // DCA cut
             // DCA between Dautgher particles
@@ -644,8 +652,8 @@ Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
                 fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters",fDCADist_Lambda);
                 fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters",fDCADist_Xi);
             
-            if( fDCADist_Lambda > fDCADist_LambdaDaughtersCut) StandardXi=kFALSE;// DCA proton-pion
-            if( fDCADist_Xi > fDCADist_XiDaughtersCut) StandardXi=kFALSE;// DCA Lambda-pion
+            if( fDCADist_Lambda > fDCADist_LambdaDaughtersCut_loose) StandardXi=kFALSE;// DCA proton-pion
+            if( fDCADist_Xi > fDCADist_XiDaughtersCut_loose) StandardXi=kFALSE;// DCA Lambda-pion
             
             // DCA to PV
             Double_t fDCADist_Lambda_PV       = fabs(Xicandidate->GetD(PVx, PVy, PVz));
@@ -665,7 +673,7 @@ Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
                 fHistos -> FillTH1("hDCADist_LambdaPion_to_PV",fDCADist_LambdaPion_PV);
                 fHistos -> FillTH1("hDCADist_BachelorPion_to_PV",fDCADist_BachelorPion_PV);
             
-            if( fDCADist_Lambda_PV < fDCADist_Lambda_PVCut) StandardXi=kFALSE;// DCA proton-pion
+            if( fDCADist_Lambda_PV < fDCADist_Lambda_PVCut_loose) StandardXi=kFALSE;// DCA proton-pion
             
             // CPA cut
             Double_t fLambdaCPA = Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
@@ -673,13 +681,13 @@ Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection(){
                 fHistos -> FillTH1("hCosPA_lambda",fLambdaCPA);
                 fHistos -> FillTH1("hCosPA_Xi",fXiCPA);
             
-            if(fLambdaCPA < fV0CosineOfPointingAngleCut) StandardXi=kFALSE;
-            if(fXiCPA < fCascadeCosineOfPointingAngleCut) StandardXi=kFALSE;
+            if(fLambdaCPA < fV0CosineOfPointingAngleCut_loose) StandardXi=kFALSE;
+            if(fXiCPA < fCascadeCosineOfPointingAngleCut_loose) StandardXi=kFALSE;
             
             // Mass window cut
             Double_t fMass_Xi = Xicandidate->M();
                 fHistos -> FillTH1("hMass_Xi",fMass_Xi);
-            if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut) StandardXi=kFALSE;
+            if (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_loose) StandardXi=kFALSE;
             
             // Eta cut
             if(abs(Xicandidate->Eta()) > fXiEtaCut) StandardXi=kFALSE;
@@ -758,7 +766,9 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
     
     TLorentzVector temp1,temp2;
     TLorentzVector vecsum;      // Xi1530 candidate
-    
+    Double_t fTPCNSigProton, fTPCNSigLambdaPion, fTPCNSigBachelorPion;
+    Double_t fDCADist_LambdaProton_PV, fDCADist_LambdaPion_PV;
+
     // The following CovMatrix is set so that PropogateToDCA() ignores track errors.
     // Only used to propagate Xi to third pion for XiStar reconstruction
     // Origin: AliPhysics/PWGLF/RESONANCES/extra/AliXiStar.cxx (Dhevan Gangadharan)
@@ -779,85 +789,186 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
         }
     }
     
-    for (UInt_t i = 0; i < ncascade; i++) {
-        Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
-        if(!Xicandidate) continue;
-        
-        AliESDtrack *pTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
-        AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
-        AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
-        
-        temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Ximass);
-        
-        // for PropogateToDCA
-        xiVtx[0] = Xicandidate->Xv(); xiVtx[1] = Xicandidate->Yv(); xiVtx[2] = Xicandidate->Zv();
-        xiP[0] = Xicandidate->Px(); xiP[1] = Xicandidate->Py(); xiP[2] = Xicandidate->Pz();
-        fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(Xicandidate->Charge()));
-        
-        for (UInt_t j = 0; j < ntracks; j++) {
-            track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[j]);
-            if (!track1) continue;
-            
-            if(track1->GetID() == pTrackXi->GetID() || track1->GetID() == nTrackXi->GetID() || track1->GetID() == bTrackXi->GetID()) continue;
-            
-            temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionmass);
-            
-            vecsum = temp1+temp2; // temp1 = cascade, temp2=pion
-            // Y cut
-            if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue;
 
-            // PropagateToDCA cut
-            track1->GetXYZ(PiX); AliVertex *XiStarVtx = new AliVertex(PiX,0,0);
-            if(!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))) continue;
+    for (double sys = 0; sys < (double)binSystematics.GetNbins(); sys++ ){
+        // Systematic study loop.
+        // sys = 0 -> Default cut option
+        // for more details, please check "SysCheck" in header file.
+        
+        for (UInt_t i = 0; i < ncascade; i++) {
+            Xicandidate = ((AliESDEvent*)fEvt)->GetCascade(goodcascadeindices[i]);
+            if(!Xicandidate) continue;
             
-            auto sign = kAllType;
-            if ((Xicandidate->Charge() ==-1 && track1->Charge()==+1)
-                || (Xicandidate->Charge() ==+1 && track1->Charge()==-1)) sign = kData; //Unlike sign -> Data
-            else sign = kLS; //like sign bg
+            AliESDtrack *pTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetPindex()));
+            AliESDtrack *nTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetNindex()));
+            AliESDtrack *bTrackXi   = ((AliESDEvent*)fEvt)->GetTrack(TMath::Abs( Xicandidate->GetBindex()));
             
-            if (IsMC) {
-                if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
-                    if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
+            if (Xicandidate->Charge() == -1)
+            { // Xi- has +proton, -pion
+                fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kPion);
+            }
+            else
+            { // Xi+ has -proton, +pion
+                fTPCNSigProton = fPIDResponse->NumberOfSigmasTPC(nTrackXi, AliPID::kProton);
+                fTPCNSigLambdaPion = fPIDResponse->NumberOfSigmasTPC(pTrackXi, AliPID::kPion);
+            }
+            fTPCNSigBachelorPion = fPIDResponse->NumberOfSigmasTPC(bTrackXi, AliPID::kPion); // bachelor is always pion
 
-                        // True Xi1530 signals
-                        FillTHnSparse("hInvMass",{(double)kMCReco,fCent,vecsum.Pt(),vecsum.M()});
-                        fHistos->FillTH1("hMC_reconstructed_Y", vecsum.Rapidity());
-                        // For cut study
-                        fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
-                        fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaXiDaughters()));
-                        if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
-                            fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
-                            fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
-                        }
-                        else{
-                            fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
-                            fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
-                        }
-                        fHistos -> FillTH1("hDCADist_BachelorPion_to_PV_TrueMC",fabs(bTrackXi->GetD(PVx, PVy, bField)));
-                        
-                        fHistos -> FillTH1("hDCADist_lambda_to_PV_TrueMC",fabs(Xicandidate->GetD(PVx, PVy, PVz)));
-                        fHistos -> FillTH1("hDCADist_Xi_to_PV_TrueMC",fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
-                        
-                        fHistos->FillTH2("hPhiEta_Xi_TrueMC",Xicandidate->Phi(),Xicandidate->Eta());
-                        
-                        Double_t LambdaX, LambdaY, LambdaZ;
-                        Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
-                        
-                        fHistos->FillTH2("hLambda_Rxy_TrueMC",LambdaX,LambdaY);
-                        
-                        Double_t cX, cY, cZ;
-                        Xicandidate->GetXYZcascade(cX,cY,cZ);
-                        fHistos->FillTH2("hXi_Rxy_TrueMC",cX,cY);
-                    }//Xi1530 check
-                }// MC ESD
-                else{ // !! NEED TO UPDATE FOR AOD CASE !!
-                    //
-                }// MC AOD
-            }// MC
-            FillTHnSparse("hInvMass",{(double)sign,fCent,vecsum.Pt(),vecsum.M()});
-            if((int)sign == (int)kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
-            if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
+            temp1.SetXYZM(Xicandidate->Px(),Xicandidate->Py(), Xicandidate->Pz(), Ximass);
+            
+            // for PropogateToDCA
+            xiVtx[0] = Xicandidate->Xv(); xiVtx[1] = Xicandidate->Yv(); xiVtx[2] = Xicandidate->Zv();
+            xiP[0] = Xicandidate->Px(); xiP[1] = Xicandidate->Py(); xiP[2] = Xicandidate->Pz();
+            fXiTrack->Set(xiVtx, xiP, fCovMatrix, Short_t(Xicandidate->Charge()));
+            
+            for (UInt_t j = 0; j < ntracks; j++) {
+                track1 = (AliVTrack*) fEvt->GetTrack(goodtrackindices[j]);
+                if (!track1) continue;
+                
+                if(track1->GetID() == pTrackXi->GetID() || track1->GetID() == nTrackXi->GetID() || track1->GetID() == bTrackXi->GetID()) continue;
+
+                // PID Cut Systematic check -------------------------------------------------
+                Double_t fTPCNSigPion = fPIDResponse->NumberOfSigmasTPC(track1, AliPID::kPion);
+                
+                // Xi1530Pion PID
+                if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") && (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut)) 
+                    continue;
+                if ((SysCheck.at(sys) == "TPCNsigmaXi1530PionTight") && (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_tight))
+                    continue;
+                // LambdaProton
+                if ((SysCheck.at(sys) != "TPCNsigmaLambdaProtonLoose") && (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut))
+                    continue;
+                if ((SysCheck.at(sys) == "TPCNsigmaLambdaProtonTight") && (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_tight))
+                    continue;
+                // LambdaPion
+                if ((SysCheck.at(sys) != "TPCNsigmaLambdaPionLoose") && (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut))
+                    continue;
+                if ((SysCheck.at(sys) == "TPCNsigmaLambdaPionTight") && (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_tight))
+                    continue;
+                // BachelorPion
+                if ((SysCheck.at(sys) != "TPCNsigmaBachelorPionLoose") && (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut))
+                    continue;
+                if ((SysCheck.at(sys) == "TPCNsigmaBachelorPionTight") && (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut_tight))
+                    continue;
+                
+                // Xi1530Pion DCA zVetex Check
+                if ((SysCheck.at(sys) != "Xi1530PionZVertexLoose") && (abs(track1->GetZ() - fZ) > fXi1530PionZVertexCut))
+                    continue;
+                if ((SysCheck.at(sys) == "Xi1530PionZVertexTight") && (abs(track1->GetZ() - fZ) > fXi1530PionZVertexCut_tight))
+                    continue;
+
+                // DCA between daughters Check
+                Double_t fDCADist_Lambda = fabs(Xicandidate->GetDcaV0Daughters());
+                Double_t fDCADist_Xi = fabs(Xicandidate->GetDcaXiDaughters());
+                if ((SysCheck.at(sys) != "DCADistLambdaDaughtersLoose") && (fDCADist_Lambda > fDCADist_LambdaDaughtersCut))
+                    continue;
+                if ((SysCheck.at(sys) == "DCADistLambdaDaughtersTight") && (fDCADist_Lambda > fDCADist_LambdaDaughtersCut_tight))
+                    continue;
+                if ((SysCheck.at(sys) != "DCADistXiDaughtersLoose") && (fDCADist_Xi > fDCADist_XiDaughtersCut))
+                    continue;
+                if ((SysCheck.at(sys) == "DCADistXiDaughtersTight") && (fDCADist_Xi > fDCADist_XiDaughtersCut_tight))
+                    continue;
+
+                // DCA Lambda to PV Check
+                Double_t fDCADist_Lambda_PV = fabs(Xicandidate->GetD(PVx, PVy, PVz));
+                if ((SysCheck.at(sys) != "DCADistLambdaPVLoose") && (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut))
+                    continue;
+                if ((SysCheck.at(sys) == "DCADistLambdaPVTight") && (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut_tight))
+                    continue;
+                
+                // CPA Check
+                Double_t fLambdaCPA = Xicandidate->GetV0CosineOfPointingAngle(PVx, PVy, PVz);
+                Double_t fXiCPA = Xicandidate->GetCascadeCosineOfPointingAngle(PVx, PVy, PVz);
+
+                if ((SysCheck.at(sys) != "V0CosineOfPointingAngleLoose") && (fLambdaCPA < fV0CosineOfPointingAngleCut))
+                    continue;
+                if ((SysCheck.at(sys) == "V0CosineOfPointingAngleTight") && (fLambdaCPA < fV0CosineOfPointingAngleCut_tight))
+                    continue;
+                if ((SysCheck.at(sys) != "CascadeCosineOfPointingAngleLoose") && (fXiCPA < fCascadeCosineOfPointingAngleCut))
+                    continue;
+                if ((SysCheck.at(sys) == "CascadeCosineOfPointingAngleTight") && (fXiCPA < fCascadeCosineOfPointingAngleCut_tight))
+                    continue;
+
+                // Xi Mass Window Check
+                Double_t fMass_Xi = Xicandidate->M();
+                if ((SysCheck.at(sys) != "XiMassWindowLoose") && (fabs(fMass_Xi - Ximass) > fXiMassWindowCut))
+                    continue;
+                if ((SysCheck.at(sys) == "XiMassWindowTight") && (fabs(fMass_Xi - Ximass) > fXiMassWindowCut_tight))
+                    continue;
+                
+                // XiTrack Cut Systematic check ---------------------------------------------
+                if(SysCheck.at(sys) == "XiTrackCut"){
+                    if (!fTrackCuts3->AcceptTrack(pTrackXi))
+                        continue;
+                    if (!fTrackCuts3->AcceptTrack(nTrackXi))
+                        continue;
+                    if (!fTrackCuts3->AcceptTrack(bTrackXi))
+                        continue;
+                }
+                temp2.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionmass);
+                
+                vecsum = temp1+temp2; // temp1 = cascade, temp2=pion
+                // Y cut
+                if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue;
+
+                // PropagateToDCA cut
+                track1->GetXYZ(PiX); AliVertex *XiStarVtx = new AliVertex(PiX,0,0);
+                if(!(fXiTrack->PropagateToDCA(XiStarVtx, bField, 3))) continue;
+                
+                auto sign = kAllType;
+                if ((Xicandidate->Charge() ==-1 && track1->Charge()==+1)
+                    || (Xicandidate->Charge() ==+1 && track1->Charge()==-1)) sign = kData; //Unlike sign -> Data
+                else sign = kLS; //like sign bg
+                
+                if (IsMC) {
+                    if (fEvt->IsA()==AliESDEvent::Class()){ // ESD case
+                        if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
+
+                            // True Xi1530 signals
+                            FillTHnSparse("hInvMass",{sys,(double)kMCReco,fCent,vecsum.Pt(),vecsum.M()});
+                            fHistos->FillTH1("hMC_reconstructed_Y", vecsum.Rapidity());
+                            // For cut study
+                            fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
+                            fHistos -> FillTH1("hDCADist_Xi_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaXiDaughters()));
+                            if(Xicandidate->Charge() == -1) { // Xi- has +proton, -pion
+                                fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                                fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                            }
+                            else{
+                                fHistos -> FillTH1("hDCADist_LambdaProton_to_PV_TrueMC",fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                                fHistos -> FillTH1("hDCADist_LambdaPion_to_PV_TrueMC",fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                            }
+                            fHistos -> FillTH1("hDCADist_BachelorPion_to_PV_TrueMC",fabs(bTrackXi->GetD(PVx, PVy, bField)));
+                            
+                            fHistos -> FillTH1("hDCADist_lambda_to_PV_TrueMC",fabs(Xicandidate->GetD(PVx, PVy, PVz)));
+                            fHistos -> FillTH1("hDCADist_Xi_to_PV_TrueMC",fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
+                            
+                            fHistos->FillTH2("hPhiEta_Xi_TrueMC",Xicandidate->Phi(),Xicandidate->Eta());
+                            
+                            Double_t LambdaX, LambdaY, LambdaZ;
+                            Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
+                            
+                            fHistos->FillTH2("hLambda_Rxy_TrueMC",LambdaX,LambdaY);
+                            
+                            Double_t cX, cY, cZ;
+                            Xicandidate->GetXYZcascade(cX,cY,cZ);
+                            fHistos->FillTH2("hXi_Rxy_TrueMC",cX,cY);
+                        }//Xi1530 check
+                    }// MC ESD
+                    else{ // !! NEED TO UPDATE FOR AOD CASE !!
+                        //
+                    }// MC AOD
+                }// MC
+                FillTHnSparse("hInvMass", {sys,(double) sign, fCent, vecsum.Pt(), vecsum.M()});
+                if(sys == 0){
+                    if((int)sign == (int)kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
+                if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
+                }
+            }
         }
+        AliInfo(Form("Sys check! %.f", sys));
+        if((!fsetsystematics) && (sys == 0)) break;
     }
     
     // Event Mixing
@@ -881,8 +992,8 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
                     || (Xicandidate->Charge() ==+1 && track1->Charge()==+1)) continue; // check only unlike-sign
                 
                 if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue; // rapidity cut
-                
-                FillTHnSparse("hInvMass",{(double)kMixing,fCent,vecsum.Pt(),vecsum.M()});
+
+                FillTHnSparse("hInvMass", {(double)kDefaultOption,(double) kMixing, fCent, vecsum.Pt(), vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix",vecsum.M());
             }
         }
@@ -968,8 +1079,8 @@ void AliAnalysisTaskXi1530temp::FillMCinput(AliStack* fMCStack, Bool_t PS){
         // Y cut
         if (fabs(mcInputTrack->Y()) > fXi1530RapidityCut) continue;
             
-        if(PS) FillTHnSparse("hInvMass",{(double)kMCTruePS,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
-        else FillTHnSparse("hInvMass",{(double)kMCTrue,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
+        if(PS) FillTHnSparse("hInvMass",{(double)kDefaultOption,(double)kMCTruePS,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
+        else FillTHnSparse("hInvMass",{(double)kDefaultOption,(double)kMCTrue,fCent,mcInputTrack->Pt(),mcInputTrack->GetCalcMass()});
     }
 }
 void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliStack* fMCStack, Bool_t PS){

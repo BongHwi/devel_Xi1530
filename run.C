@@ -29,7 +29,7 @@ const int LHC16l[] = {259888, 259868, 259867, 259866, 259860, 259842, 259841, 25
 class AliAnalysisGrid;
 void run(
          const char *taskname = "Xi1530"
-         , const char *option = "LHC16k_pass2_HM_test" // when scanning AOD, add "AOD"
+         , const char *option = "LHC16k_pass2_SYS_MC_Mix_test" // when scanning AOD, add "AOD"
          , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
@@ -68,9 +68,8 @@ void run(
     int nmix = 20;
     bool highmult = kFALSE;
     TString foption = option;
-    if(foption.Contains("MC")) ismc = true;
-    if(foption.Contains("Mix")) setmixing = true;
-    if(foption.Contains("HM")) highmult = true;
+    const char* suffix = "test";
+    if(foption.Contains("MC"))ismc = kTRUE;
     
     // analysis manager
     AliAnalysisManager* mgr = new AliAnalysisManager(Form("%s%s",taskname,option));
@@ -111,8 +110,13 @@ void run(
         return;
     }
     // V0, Xi Super verexter by David
-    
+    /*
     AliAnalysisTaskWeakDecayVertexer *taskWDV = reinterpret_cast<AliAnalysisTaskWeakDecayVertexer *>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C"));
+    taskWDV->SetUseImprovedFinding();
+
+    //______________________________________________________________
+    //Revertexing configuration
+    //WARNING: This applies only to the Cascade analysis
     taskWDV->SetUseImprovedFinding();
 
     //V0-Related topological selections
@@ -130,7 +134,7 @@ void run(
     taskWDV->SetCascVertexerDCACascadeDaughters(1.6);
     taskWDV->SetCascVertexerCascadeMinRadius(.5);
     taskWDV->SetCascVertexerCascadeCosinePA(.97);
-    
+    */
     /*  
     AliAnalysisTaskWeakDecayVertexer *taskWDV = reinterpret_cast<AliAnalysisTaskWeakDecayVertexer*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C"));
     //______________________________________________________________
@@ -157,8 +161,7 @@ void run(
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");
     //AliAnalysisTaskXi1530temp *myTask = reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
     
-    AliAnalysisTaskXi1530temp *myTask = reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.C(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
-    if (foption.Contains("Gen")) myTask->SetIsPrimaryMC(kFALSE);
+    AliAnalysisTaskXi1530temp *myTask = reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.C(\"%s\",\"%s\",%i,\"%s\")",taskname,option,nmix,suffix)));
 #else
     // ROOT 5 MODE
     //
@@ -184,7 +187,7 @@ void run(
     AliAnalysisTaskXi1530temp *myTask = AddTaskXi1530(taskname,option,nmix,highmult,isaa,ismc,setmixing);
 #endif
     
-    mgr->SetDebugLevel(0);
+    //mgr->SetDebugLevel(1);
     if (!mgr->InitAnalysis()) return;
     mgr->PrintStatus();
     
@@ -223,7 +226,7 @@ void run(
         //plugin->Load("libpythia6_4_21.so");
         plugin->SetAnalysisSource("AliAnalysisTaskXi1530temp.cxx");
         plugin->SetAdditionalLibs("AliAnalysisTaskXi1530temp.cxx AliAnalysisTaskXi1530temp.h libpythia6_4_21.so");
-        plugin->SetAliPhysicsVersion("vAN-20181108_ROOT6-1");
+        plugin->SetAliPhysicsVersion("vAN-20190212_ROOT6-1");
         plugin->SetAPIVersion("V1.1x");
         if(!ismc)plugin->SetRunPrefix("000");
         //plugin->SetDropToShell(0);
