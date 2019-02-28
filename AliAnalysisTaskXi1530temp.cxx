@@ -926,7 +926,7 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
                         if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
 
                             // True Xi1530 signals
-                            FillTHnSparse("hInvMass",{sys,(double)kMCReco,fCent,vecsum.Pt(),vecsum.M()});
+                            FillTHnSparse("hInvMass", {(double)sys, (double)kMCReco, fCent, vecsum.Pt(), vecsum.M()});
                             fHistos->FillTH1("hMC_reconstructed_Y", vecsum.Rapidity());
                             // For cut study
                             fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
@@ -960,10 +960,10 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
                         //
                     }// MC AOD
                 }// MC
-                FillTHnSparse("hInvMass", {sys,(double) sign, fCent, vecsum.Pt(), vecsum.M()});
+                FillTHnSparse("hInvMass", {(double)sys, (double)sign, fCent, vecsum.Pt(), vecsum.M()});
                 if(sys == 0){
                     if((int)sign == (int)kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
-                if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
+                    if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
                 }
             }
         }
