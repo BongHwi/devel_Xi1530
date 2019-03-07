@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/03/01
+//  Last Modified Date: 2019/03/07
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -170,9 +170,9 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects()
     if(!IsMC){
         if (IsAA && !IsHighMult) binCent = AxisFix("Cent",10,0,100); // for AA study
         else if (!IsHighMult) binCent = AxisVar("Cent",{0,1,5,10,15,20,30,40,50,70,100}); // for kINT7 study
-        else binCent = AxisFix("Cent",100,0,0.1); // for HM study.
+        else binCent = AxisVar("Cent",{0,0.01,0.03,0.05,0.07,0.1}); // for HM study
     }
-    else binCent = AxisFix("Cent",1000,0,100); // for MC, including HM/Int7
+    else binCent = AxisVar("Cent",{0,0.01,0.03,0.05,0.07,0.01,1,5,10,15,20,30,40,50,70,100}); // for kINT7 study
     
     auto binPt   = AxisFix("Pt",200,0,20);
     auto binMass = AxisFix("Mass",2000,1.0,3.0);
@@ -929,7 +929,7 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
                         if ( IsTrueXi1530(Xicandidate,track1) ){ // MC Association, if it comes from True Xi1530
 
                             // True Xi1530 signals
-                            FillTHnSparse("hInvMass", {(double)sys, (double)kMCReco, fCent, vecsum.Pt(), vecsum.M()});
+                            FillTHnSparse("hInvMass", {(double)sys, (double)kMCReco, (double)fCent, vecsum.Pt(), vecsum.M()});
                             fHistos->FillTH1("hMC_reconstructed_Y", vecsum.Rapidity());
                             // For cut study
                             fHistos -> FillTH1("hDCADist_Lambda_BTW_Daughters_TrueMC",fabs(Xicandidate->GetDcaV0Daughters()));
@@ -963,7 +963,7 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
                         //
                     }// MC AOD
                 }// MC
-                FillTHnSparse("hInvMass", {(double)sys, (double)sign, fCent, vecsum.Pt(), vecsum.M()});
+                FillTHnSparse("hInvMass", {(double)sys, (double)sign, (double)fCent, vecsum.Pt(), vecsum.M()});
                 if(sys == 0){
                     if((int)sign == (int)kData) fHistos->FillTH1("hTotalInvMass_data",vecsum.M());
                     if((int)sign == (int)kLS) fHistos->FillTH1("hTotalInvMass_LS",vecsum.M());
@@ -996,7 +996,7 @@ void AliAnalysisTaskXi1530temp::FillTracks(){
                 
                 if (fabs(vecsum.Rapidity()) > fXi1530RapidityCut) continue; // rapidity cut
 
-                FillTHnSparse("hInvMass", {(double)kDefaultOption,(double) kMixing, fCent, vecsum.Pt(), vecsum.M()});
+                FillTHnSparse("hInvMass", {(double)kDefaultOption,(double) kMixing, (double)fCent, vecsum.Pt(), vecsum.M()});
                 fHistos->FillTH1("hTotalInvMass_Mix",vecsum.M());
             }
         }

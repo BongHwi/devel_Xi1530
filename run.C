@@ -29,7 +29,7 @@ const int LHC16l[] = {259888, 259868, 259867, 259866, 259860, 259842, 259841, 25
 class AliAnalysisGrid;
 void run(
          const char *taskname = "Xi1530"
-         , const char *option = "LHC16k_pass2_SYS_MC_Mix_test" // when scanning AOD, add "AOD"
+         , const char *option = "LHC16k_pass2_SYS_Mix_test" // when scanning AOD, add "AOD"
          , const char *gridmode = "test" // or "terminate" to merge
          , UInt_t     istart = 0
          , UInt_t     iend = 25
@@ -110,7 +110,7 @@ void run(
         return;
     }
     // V0, Xi Super verexter by David
-    /*
+    
     AliAnalysisTaskWeakDecayVertexer *taskWDV = reinterpret_cast<AliAnalysisTaskWeakDecayVertexer *>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C"));
     taskWDV->SetUseImprovedFinding();
 
@@ -134,7 +134,7 @@ void run(
     taskWDV->SetCascVertexerDCACascadeDaughters(1.6);
     taskWDV->SetCascVertexerCascadeMinRadius(.5);
     taskWDV->SetCascVertexerCascadeCosinePA(.97);
-    */
+    
     /*  
     AliAnalysisTaskWeakDecayVertexer *taskWDV = reinterpret_cast<AliAnalysisTaskWeakDecayVertexer*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C"));
     //______________________________________________________________
@@ -157,7 +157,7 @@ void run(
     taskWDV ->     SetCascVertexerDCACascadeDaughters(1.6);
     taskWDV ->     SetCascVertexerCascadeMinRadius(.5);
     taskWDV ->     SetCascVertexerCascadeCosinePA(.97);
-*/
+    */
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");
     //AliAnalysisTaskXi1530temp *myTask = reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
     
@@ -393,7 +393,8 @@ void run(
             for(auto i=0u;i<end;i++)
                 plugin->AddRunNumber(LHC10b.at(i));
         }
-        plugin->SetSplitMaxInputFileNumber(8000);
+        if (foption.Contains("SYS")) plugin->SetSplitMaxInputFileNumber(4000);
+        else plugin->SetSplitMaxInputFileNumber(8000);
         plugin->SetExecutable(Form("%s%s.sh",taskname,option));
         plugin->SetTTL(40000);
         plugin->SetJDLName(Form("%s%s.jdl",taskname,option));
