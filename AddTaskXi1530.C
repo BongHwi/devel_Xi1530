@@ -37,7 +37,15 @@ AliAnalysisTaskXi1530temp* AddTaskXi1530(const char *taskname = "Xi1530"
     if(foption.Contains("SYS")){
         taskXi1530->SetSystematics(kTRUE); // default: kFALSE
         std::cout << "AliAnaylsisTaskXi1530:: Systematic Study mode " << std::endl;
-    } 
+    }
+    if (foption.Contains("NoQA")) {
+        taskXi1530->SetNoQA(kFALSE);  // default: kTRUE
+        std::cout << "AliAnaylsisTaskXi1530:: NoQA mode " << std::endl;
+    }
+    if (foption.Contains("EXO")) {
+        taskXi1530->SetExoticFinder(kTRUE);  // default: kFALSE
+        std::cout << "AliAnaylsisTaskXi1530:: ExoticFinder mode " << std::endl;
+    }
     taskXi1530 -> SetnMix(nmix);
     
     if(!taskXi1530) return 0x0;

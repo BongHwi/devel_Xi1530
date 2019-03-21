@@ -14,8 +14,8 @@
 class AliAnalysisTask;
 class AliESDtrackCuts;
 class AliESDEvent;
+class AliMCEvent;
 class AliAODEvent;
-class AliStack;
 class AliPIDResponse;
 class AliPIDCombined;
 class THistManager;
@@ -69,7 +69,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     void SetnMix(Int_t nMix) { fnMix = nMix; }
     void SetHighMult(Bool_t highmult) { IsHighMult = highmult; }
     void SetIsPrimaryMC(Bool_t isprimarymc) { IsPrimaryMC = isprimarymc; }
-
+    void SetNoQA(Bool_t noQA) { fQA = noQA; }
     // Set Functions for the cut study & Systematic study
     void SetTPCNsigXi1530PionCut(Int_t fSysOption, Double_t nXi1530PionCut) {
         if (fSysOption == 0)
@@ -199,6 +199,12 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     void SetXiSysTrackCut(Bool_t cutoption) { fsetXiSysTrackCut = cutoption; }
     void SetSystematics(Bool_t fSystematics) { fsetsystematics = fSystematics; }
 
+    void SetExoticFinder(Bool_t exotic) { 
+        fExoticFinder = exotic;
+        fXiMassWindowCut = 0.015;
+        fTPCNsigXi1530PionCut = 1.5;
+        }
+
     Bool_t GoodTracksSelection();
     Bool_t GoodCascadeSelection();
     void FillTracks();
@@ -212,8 +218,8 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Bool_t IsMCEventTrueINEL0();
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi(AliESDcascade* Xi);
-    void FillMCinput(AliStack* fMCStack, Bool_t PS);
-    void FillMCinputdXi(AliStack* fMCStack, Bool_t PS);
+    void FillMCinput(AliMCEvent* fMCEvent, Bool_t PS);
+    void FillMCinputdXi(AliMCEvent* fMCEvent, Bool_t PS);
     void FillTrackToEventPool();
 
     TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
@@ -332,25 +338,31 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Bool_t IsINEL0True = kFALSE;
     Bool_t IsHighMult = kFALSE;
     Bool_t IsPrimaryMC = kTRUE;
+    Bool_t fQA = kTRUE;
+    Bool_t fExoticFinder = kFALSE;
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
-    AliStack* fMCStack = nullptr;      //!
+    AliMCEvent* fMCEvent = nullptr;      //!
     Int_t fNTracks = 0;
     Int_t fNCascade = 0;
     Double_t PVx = 999;
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530temp, 9);
+    ClassDef(AliAnalysisTaskXi1530temp, 11);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
     // 4: Add Cut parameters to header and add "Set" fuction for cut
-    // study&Systematic study 5: include AliAnalysisTaskSE.h to avoid compile
-    // problem. 6: Add IsPrimaryMC option for MC study 7: Add Systematics option
-    // for systematics study 8: Change default systmatics on TPC PID for Xi
-    // daughter, Add Setter function for that. 9: Hot fix for the AliPhysics
-    // building
+    // study&Systematic study
+    // 5: include AliAnalysisTaskSE.h to avoid compile problem.
+    // 6: Add IsPrimaryMC option for MC study
+    // 7: Add Systematics option for systematics study
+    // 8: Change default systmatics on TPC PID for Xi daughter,
+    // Add Setter function for that.
+    // 9: Hot fix for the AliPhysics building
+    // 10: Add NoQA option to reduce output file size
+    // 11: Not using AliStack informed by DPG and BTG coordination
 };
 
 #endif
