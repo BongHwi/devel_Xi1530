@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/03/22
+//  Last Modified Date: 2019/03/27
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -104,8 +104,7 @@ AliAnalysisTaskXi1530tempRunTable::AliAnalysisTaskXi1530tempRunTable()
     ;
 }
 
-AliAnalysisTaskXi1530tempRunTable::AliAnalysisTaskXi1530tempRunTable(
-    Int_t runnumber) {
+AliAnalysisTaskXi1530tempRunTable::AliAnalysisTaskXi1530tempRunTable(Int_t runnumber) {
     // Need to be Modified
     if (runnumber >= 256504 && runnumber <= 260014)
         fCollisionType = kPP;  // LHC16kl
@@ -129,7 +128,7 @@ AliAnalysisTaskXi1530temp::AliAnalysisTaskXi1530temp()
 }
 //___________________________________________________________________
 AliAnalysisTaskXi1530temp::AliAnalysisTaskXi1530temp(const char* name,
-                                                     const char* option)
+                                             const char* option)
     : AliAnalysisTaskSE(name),
       fOption(option),
       goodtrackindices(),
@@ -139,8 +138,7 @@ AliAnalysisTaskXi1530temp::AliAnalysisTaskXi1530temp(const char* name,
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class());
 }
-AliAnalysisTaskXi1530temp::AliAnalysisTaskXi1530temp(
-    const AliAnalysisTaskXi1530temp& ap)
+AliAnalysisTaskXi1530temp::AliAnalysisTaskXi1530temp(const AliAnalysisTaskXi1530temp& ap)
     : fOption(ap.fOption),
       goodtrackindices(ap.goodtrackindices),
       goodcascadeindices(ap.goodcascadeindices),
@@ -306,6 +304,26 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
                            "s");
         fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_cut", "", 100, -5, 5, "s");
 
+        //// Systemtatics
+        //
+        fHistos->CreateTH1("hTPCPIDsignalLambdaProton_loose", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("hTPCPIDsignalLambdaPion_loose", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("hTPCPIDsignalBachelorPion_loose", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_loose", "", 100, -5, 5,
+                           "s");
+
+        fHistos->CreateTH1("hTPCPIDsignalLambdaProton_tight", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("hTPCPIDsignalLambdaPion_tight", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("hTPCPIDsignalBachelorPion_tight", "", 100, -5, 5,
+                           "s");
+        fHistos->CreateTH1("hTPCPIDsignalXi1530Pion_tight", "", 100, -5, 5,
+                           "s");
+
         // D C A
         // between daughters
         // before
@@ -315,6 +333,15 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
         fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_cut", "", 300, 0, 3,
                            "s");
         fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_cut", "", 300, 0, 3, "s");
+        // systematics
+        fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_loose", "", 300, 0, 3,
+                           "s");
+        fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_loose", "", 300, 0, 3,
+                           "s");
+        fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_tight", "", 300, 0, 3,
+                           "s");
+        fHistos->CreateTH1("hDCADist_Xi_BTW_Daughters_tight", "", 300, 0, 3,
+                           "s");
         // to PV
         // before
         fHistos->CreateTH1("hDCADist_lambda_to_PV", "", 500, 0, 5, "s");
@@ -331,6 +358,8 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
         fHistos->CreateTH1("hDCADist_BachelorPion_to_PV_cut", "", 500, 0, 5,
                            "s");
 
+        fHistos->CreateTH1("hDCADist_lambda_to_PV_loose", "", 500, 0, 5, "s");
+        fHistos->CreateTH1("hDCADist_lambda_to_PV_tight", "", 500, 0, 5, "s");
         // C P A
         // before
         fHistos->CreateTH1("hCosPA_lambda", "", 150, 0.85, 1.0, "s");
@@ -339,9 +368,17 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
         fHistos->CreateTH1("hCosPA_lambda_cut", "", 150, 0.85, 1.0, "s");
         fHistos->CreateTH1("hCosPA_Xi_cut", "", 150, 0.85, 1.0, "s");
 
+        fHistos->CreateTH1("hCosPA_lambda_loose", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("hCosPA_Xi_loose", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("hCosPA_lambda_tight", "", 150, 0.85, 1.0, "s");
+        fHistos->CreateTH1("hCosPA_Xi_tight", "", 150, 0.85, 1.0, "s");
+
         // M a s s   W i n d o w
         fHistos->CreateTH1("hMass_Xi", "", 200, 1.2, 1.4, "s");      // before
         fHistos->CreateTH1("hMass_Xi_cut", "", 200, 1.2, 1.4, "s");  // after
+
+        fHistos->CreateTH1("hMass_Xi_loose", "", 200, 1.2, 1.4, "s");
+        fHistos->CreateTH1("hMass_Xi_tight", "", 200, 1.2, 1.4, "s");
 
         // E t a
         fHistos->CreateTH2("hPhiEta_Xi", "", 180, 0, 2 * pi, 40, -2,
@@ -358,7 +395,8 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
                            200);  // before
         fHistos->CreateTH2("hXi_Rxy_cut", "", 400, -200, 200, 400, -200,
                            200);  // after
-
+        if (fExoticFinder)
+            fHistos->CreateTH1("hExoOpenAngle", "", 180, 0, 2 * pi, "s");
         if (IsMC) {
             // For MC True stduy purpose
             fHistos->CreateTH1("hDCADist_Lambda_BTW_Daughters_TrueMC", "", 300,
@@ -1092,6 +1130,7 @@ void AliAnalysisTaskXi1530temp::FillTracks() {
                 if ((SysCheck.at(sys) != "TPCNsigmaXi1530PionLoose") &&
                     (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut))
                     continue;
+
                 if ((SysCheck.at(sys) == "TPCNsigmaXi1530PionTight") &&
                     (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_tight))
                     continue;
@@ -1104,7 +1143,7 @@ void AliAnalysisTaskXi1530temp::FillTracks() {
                     if (abs(fTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
                         continue;
                 }
-                if (SysCheck.at(sys) != "TPCNsigmaXiTight") {
+                if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
                     if (abs(fTPCNSigProton) > fTPCNsigLambdaProtonCut_tight)
                         continue;
                     if (abs(fTPCNSigLambdaPion) > fTPCNsigLambdaPionCut_tight)
@@ -1202,9 +1241,10 @@ void AliAnalysisTaskXi1530temp::FillTracks() {
                     continue;
 
                 // Opening Angle - Not using in normal mode
-                if(fExoticFinder){
+                if (fExoticFinder) {
                     Double_t angle = temp1.Angle(temp2.Vect());
-                    if (angle < 0.785) // 45 degree
+                    fHistos->FillTH1("hExoOpenAngle", angle);
+                    if (abs(angle) < 0.0785398)  // 45 degree
                         continue;
                 }
 
@@ -1291,6 +1331,144 @@ void AliAnalysisTaskXi1530temp::FillTracks() {
                         fHistos->FillTH1("hTotalInvMass_data", vecsum.M());
                     if ((int)sign == (int)kLS)
                         fHistos->FillTH1("hTotalInvMass_LS", vecsum.M());
+                }
+
+                // Fill the QA Histos
+                if (fQA) {
+                    if (SysCheck.at(sys) == "DefaultOption") {
+                        if (Xicandidate->Charge() ==
+                            -1) {  // Xi- has +proton, -pion
+                            fHistos->FillTH2("hTPCPIDLambdaProton_cut",
+                                             pTrackXi->GetTPCmomentum(),
+                                             pTrackXi->GetTPCsignal());
+                            fHistos->FillTH2("hTPCPIDLambdaPion_cut",
+                                             nTrackXi->GetTPCmomentum(),
+                                             nTrackXi->GetTPCsignal());
+                            fHistos->FillTH1(
+                                "hDCADist_LambdaProton_to_PV_cut",
+                                fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                            fHistos->FillTH1(
+                                "hDCADist_LambdaPion_to_PV_cut",
+                                fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                        } else {  // Xi+ has -proton, +pion
+                            fHistos->FillTH2("hTPCPIDLambdaProton_cut",
+                                             nTrackXi->GetTPCmomentum(),
+                                             nTrackXi->GetTPCsignal());
+                            fHistos->FillTH2("hTPCPIDLambdaPion_cut",
+                                             pTrackXi->GetTPCmomentum(),
+                                             pTrackXi->GetTPCsignal());
+                            fHistos->FillTH1(
+                                "hDCADist_LambdaProton_to_PV_cut",
+                                fabs(nTrackXi->GetD(PVx, PVy, bField)));
+                            fHistos->FillTH1(
+                                "hDCADist_LambdaPion_to_PV_cut",
+                                fabs(pTrackXi->GetD(PVx, PVy, bField)));
+                        }
+                        fHistos->FillTH2("hTPCPIDBachelorPion_cut",
+                                         bTrackXi->GetTPCmomentum(),
+                                         bTrackXi->GetTPCsignal());
+
+                        // TPC PID Signal
+                        fHistos->FillTH1("hTPCPIDsignalLambdaProton_cut",
+                                         fTPCNSigProton);
+                        fHistos->FillTH1("hTPCPIDsignalLambdaPion_cut",
+                                         fTPCNSigLambdaPion);
+                        fHistos->FillTH1("hTPCPIDsignalBachelorPion_cut",
+                                         fTPCNSigBachelorPion);
+
+                        // DCA QA
+                        fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_cut",
+                                         fDCADist_Lambda);
+                        fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_cut",
+                                         fDCADist_Xi);
+                        fHistos->FillTH1("hDCADist_lambda_to_PV_cut",
+                                         fDCADist_Lambda_PV);
+                        fHistos->FillTH1(
+                            "hDCADist_Xi_to_PV_cut",
+                            fabs(Xicandidate->GetDcascade(PVx, PVy, PVz)));
+                        fHistos->FillTH1(
+                            "hDCADist_BachelorPion_to_PV_cut",
+                            fabs(bTrackXi->GetD(PVx, PVy, bField)));
+
+                        // CPA QA
+                        fHistos->FillTH1("hCosPA_lambda_cut", fLambdaCPA);
+                        fHistos->FillTH1("hCosPA_Xi_cut", fXiCPA);
+
+                        // Mass window QA
+                        fHistos->FillTH1("hMass_Xi_cut", fMass_Xi);
+
+                        // Eta
+                        fHistos->FillTH2("hPhiEta_Xi_cut", Xicandidate->Phi(),
+                                         Xicandidate->Eta());
+
+                        // XY Radius
+                        Double_t LambdaX, LambdaY, LambdaZ;
+                        Xicandidate->GetXYZ(LambdaX, LambdaY, LambdaZ);
+                        fHistos->FillTH2("hLambda_Rxy_cut", LambdaX, LambdaY);
+                        Double_t cX, cY, cZ;
+                        Xicandidate->GetXYZcascade(cX, cY, cZ);
+                        fHistos->FillTH2("hXi_Rxy_cut", cX, cY);
+                    }
+                    // PID
+                    if (SysCheck.at(sys) == "TPCNsigmaXi1530PionLoose")
+                        fHistos->FillTH1("hTPCPIDsignalXi1530Pion_loose",
+                                         fTPCNSigPion);
+                    if (SysCheck.at(sys) == "TPCNsigmaXi1530PionTight")
+                        fHistos->FillTH1("hTPCPIDsignalXi1530Pion_tight",
+                                         fTPCNSigPion);
+                    if (SysCheck.at(sys) == "TPCNsigmaXiLoose") {
+                        fHistos->FillTH1("hTPCPIDsignalLambdaProton_loose",
+                                         fTPCNSigProton);
+                        fHistos->FillTH1("hTPCPIDsignalLambdaPion_loose",
+                                         fTPCNSigLambdaPion);
+                        fHistos->FillTH1("hTPCPIDsignalBachelorPion_loose",
+                                         fTPCNSigBachelorPion);
+                    }
+                    if (SysCheck.at(sys) == "TPCNsigmaXiTight") {
+                        fHistos->FillTH1("hTPCPIDsignalLambdaProton_tight",
+                                         fTPCNSigProton);
+                        fHistos->FillTH1("hTPCPIDsignalLambdaPion_tight",
+                                         fTPCNSigLambdaPion);
+                        fHistos->FillTH1("hTPCPIDsignalBachelorPion_tight",
+                                         fTPCNSigBachelorPion);
+                    }
+                    // Xi1530Pion DCA zVetex Check
+                    if (SysCheck.at(sys) == "Xi1530PionZVertexLoose")
+                        fHistos->FillTH1("hDCADist_lambda_to_PV_loose",
+                                         abs(track1->GetZ() - fZ));
+                    if (SysCheck.at(sys) == "Xi1530PionZVertexTight")
+                        fHistos->FillTH1("hDCADist_lambda_to_PV_tight",
+                                         abs(track1->GetZ() - fZ));
+
+                    // DCA between daughters Check
+                    if (SysCheck.at(sys) == "DCADistLambdaDaughtersLoose")
+                        fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_loose",
+                                         fDCADist_Lambda);
+                    if (SysCheck.at(sys) == "DCADistLambdaDaughtersTight")
+                        fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_loose",
+                                         fDCADist_Lambda);
+                    if (SysCheck.at(sys) == "DCADistXiDaughtersLoose")
+                        fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_loose",
+                                         fDCADist_Xi);
+                    if (SysCheck.at(sys) == "DCADistXiDaughtersTight")
+                        fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_tight",
+                                         fDCADist_Xi);
+
+                    // CPA Check
+                    if (SysCheck.at(sys) == "V0CosineOfPointingAngleLoose")
+                        fHistos->FillTH1("hCosPA_lambda_loose", fLambdaCPA);
+                    if (SysCheck.at(sys) == "V0CosineOfPointingAngleTight")
+                        fHistos->FillTH1("hCosPA_lambda_tight", fLambdaCPA);
+                    if (SysCheck.at(sys) == "CascadeCosineOfPointingAngleLoose")
+                        fHistos->FillTH1("hCosPA_Xi_loose", fXiCPA);
+                    if (SysCheck.at(sys) == "CascadeCosineOfPointingAngleTight")
+                        fHistos->FillTH1("hCosPA_Xi_tight", fXiCPA);
+
+                    // Xi Mass window
+                    if (SysCheck.at(sys) == "XiMassWindowLoose")
+                        fHistos->FillTH1("hMass_Xi_loose", fMass_Xi);
+                    if (SysCheck.at(sys) == "CascadeCosineOfPointingAngleTight")
+                        fHistos->FillTH1("hMass_Xi_tight", fMass_Xi);
                 }
             }
         }
@@ -1455,8 +1633,7 @@ void AliAnalysisTaskXi1530temp::FillMCinput(AliMCEvent* fMCEvent, Bool_t PS) {
                                        mcInputTrack->GetCalcMass()});
     }
 }
-void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliMCEvent* fMCEvent,
-                                               Bool_t PS) {
+void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliMCEvent* fMCEvent, Bool_t PS) {
     // Fill MC input Xi1530 histogram
     for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++) {
         TParticle* mcInputTrack =
@@ -1479,10 +1656,10 @@ void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliMCEvent* fMCEvent,
 }
 
 THnSparse* AliAnalysisTaskXi1530temp::CreateTHnSparse(TString name,
-                                                      TString title,
-                                                      Int_t ndim,
-                                                      std::vector<TAxis> bins,
-                                                      Option_t* opt) {
+                                                  TString title,
+                                                  Int_t ndim,
+                                                  std::vector<TAxis> bins,
+                                                  Option_t* opt) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     const TAxis* axises[bins.size()];
@@ -1493,8 +1670,8 @@ THnSparse* AliAnalysisTaskXi1530temp::CreateTHnSparse(TString name,
 }
 
 Long64_t AliAnalysisTaskXi1530temp::FillTHnSparse(TString name,
-                                                  std::vector<Double_t> x,
-                                                  Double_t w) {
+                                              std::vector<Double_t> x,
+                                              Double_t w) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     auto hsparse = dynamic_cast<THnSparse*>(fHistos->FindObject(name));
@@ -1506,8 +1683,8 @@ Long64_t AliAnalysisTaskXi1530temp::FillTHnSparse(TString name,
 }
 
 Long64_t AliAnalysisTaskXi1530temp::FillTHnSparse(THnSparse* h,
-                                                  std::vector<Double_t> x,
-                                                  Double_t w) {
+                                              std::vector<Double_t> x,
+                                              Double_t w) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     if (int(x.size()) != h->GetNdimensions()) {
@@ -1519,9 +1696,9 @@ Long64_t AliAnalysisTaskXi1530temp::FillTHnSparse(THnSparse* h,
 }
 
 TAxis AliAnalysisTaskXi1530temp::AxisFix(TString name,
-                                         int nbin,
-                                         Double_t xmin,
-                                         Double_t xmax) {
+                                     int nbin,
+                                     Double_t xmin,
+                                     Double_t xmax) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis(nbin, xmin, xmax);
@@ -1529,8 +1706,7 @@ TAxis AliAnalysisTaskXi1530temp::AxisFix(TString name,
     return axis;
 }
 
-TAxis AliAnalysisTaskXi1530temp::AxisStr(TString name,
-                                         std::vector<TString> bin) {
+TAxis AliAnalysisTaskXi1530temp::AxisStr(TString name, std::vector<TString> bin) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis ax = AxisFix(name, bin.size(), 0.5, bin.size() + 0.5);
@@ -1540,8 +1716,7 @@ TAxis AliAnalysisTaskXi1530temp::AxisStr(TString name,
     return ax;
 }
 
-TAxis AliAnalysisTaskXi1530temp::AxisVar(TString name,
-                                         std::vector<Double_t> bin) {
+TAxis AliAnalysisTaskXi1530temp::AxisVar(TString name, std::vector<Double_t> bin) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis(bin.size() - 1, &bin.front());
@@ -1550,10 +1725,10 @@ TAxis AliAnalysisTaskXi1530temp::AxisVar(TString name,
 }
 
 TAxis AliAnalysisTaskXi1530temp::AxisLog(TString name,
-                                         int nbin,
-                                         Double_t xmin,
-                                         Double_t xmax,
-                                         Double_t xmin0) {
+                                     int nbin,
+                                     Double_t xmin,
+                                     Double_t xmax,
+                                     Double_t xmin0) {
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     int binoffset = (xmin0 < 0 || (xmin - xmin0) < 1e-9) ? 0 : 1;
@@ -1590,8 +1765,7 @@ Bool_t AliAnalysisTaskXi1530temp::IsMCEventTrueINEL0() {
     }
     return isINEL0;
 }
-Bool_t AliAnalysisTaskXi1530temp::IsTrueXi1530(AliESDcascade* Xi,
-                                               AliVTrack* pion) {
+Bool_t AliAnalysisTaskXi1530temp::IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion) {
     // Check if associated Xi1530 is true Xi1530 in MC set
     if (!Xi)
         return kFALSE;
