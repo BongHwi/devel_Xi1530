@@ -349,7 +349,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530temp, 12);
+    ClassDef(AliAnalysisTaskXi1530temp, 13);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -364,6 +364,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     // 10: Add NoQA option to reduce output file size
     // 11: Not using AliStack informed by DPG and BTG coordination
     // 12: Add Exotic option and change default systematic vaule
+    // 13: Change Lambda PV Cut default values(reversed)
 };
 
 #endif
