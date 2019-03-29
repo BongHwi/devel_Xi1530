@@ -160,7 +160,7 @@ const int LHC16l[] = {
 class AliAnalysisGrid;
 void run(const char* taskname = "Xi1530",
          const char* option =
-             "LHC16k_pass2_SYS_MC_test_NoQA_EXO"  // when scanning AOD, add "AOD"
+             "LHC16k_pass2_SYS_test_EXO"  // when scanning AOD, add "AOD"
          ,
          const char* gridmode = "test"  // or "terminate" to merge
          ,
@@ -275,46 +275,21 @@ void run(const char* taskname = "Xi1530",
         // WARNING: This applies only to the Cascade analysis
         taskWDV->SetUseImprovedFinding();
 
-        // V0-Related topological selections
-        taskWDV->SetV0VertexerDCAFirstToPV(0.05);
-        taskWDV->SetV0VertexerDCASecondtoPV(0.05);
-        taskWDV->SetV0VertexerDCAV0Daughters(1.6);
-        taskWDV->SetV0VertexerCosinePA(0.97);
-        taskWDV->SetV0VertexerMinRadius(0.5);
-        taskWDV->SetV0VertexerMaxRadius(200);
+        //__R_ADDTASK__ ->     SetV0VertexerDCAFirstToPV(0.05);
+        //__R_ADDTASK__ ->     SetV0VertexerDCASecondtoPV(0.05);
+        taskWDV->SetV0VertexerDCAV0Daughters(2.0);
+        taskWDV->SetV0VertexerCosinePA(0.95);
+        //__R_ADDTASK__ ->     SetV0VertexerMinRadius(0.5);
+        //__R_ADDTASK__ ->     SetV0VertexerMaxRadius(200);
 
         // Cascade-Related topological selections
-        taskWDV->SetCascVertexerMinV0ImpactParameter(0.05);
-        taskWDV->SetCascVertexerV0MassWindow(0.007);
-        taskWDV->SetCascVertexerDCABachToPV(0.05);
-        taskWDV->SetCascVertexerDCACascadeDaughters(1.6);
-        taskWDV->SetCascVertexerCascadeMinRadius(.5);
-        taskWDV->SetCascVertexerCascadeCosinePA(.97);
+        //__R_ADDTASK__ ->     SetCascVertexerMinV0ImpactParameter(0.00);
+        taskWDV->SetCascVertexerV0MassWindow(0.008);
+        //__R_ADDTASK__ ->     SetCascVertexerDCABachToPV(0.05);
+        taskWDV->SetCascVertexerDCACascadeDaughters(2.0);
+        //__R_ADDTASK__ ->     SetCascVertexerCascadeMinRadius(.5);
+        taskWDV->SetCascVertexerCascadeCosinePA(.95);
     }
-    /*
-    AliAnalysisTaskWeakDecayVertexer *taskWDV =
-    reinterpret_cast<AliAnalysisTaskWeakDecayVertexer*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C"));
-    //______________________________________________________________
-    //Revertexing configuration
-    //WARNING: This applies only to the Cascade analysis
-    taskWDV ->SetUseImprovedFinding();
-
-        //V0-Related topological selections
-    taskWDV ->     SetV0VertexerDCAFirstToPV(0.05);
-    taskWDV ->     SetV0VertexerDCASecondtoPV(0.05);
-    taskWDV ->     SetV0VertexerDCAV0Daughters(1.6);
-    taskWDV ->     SetV0VertexerCosinePA(0.97);
-    taskWDV ->     SetV0VertexerMinRadius(0.5);
-    taskWDV ->     SetV0VertexerMaxRadius(200);
-
-        //Cascade-Related topological selections
-    taskWDV ->     SetCascVertexerMinV0ImpactParameter(0.05);
-    taskWDV ->     SetCascVertexerV0MassWindow(0.007);
-    taskWDV ->     SetCascVertexerDCABachToPV(0.05);
-    taskWDV ->     SetCascVertexerDCACascadeDaughters(1.6);
-    taskWDV ->     SetCascVertexerCascadeMinRadius(.5);
-    taskWDV ->     SetCascVertexerCascadeCosinePA(.97);
-    */
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");
     // AliAnalysisTaskXi1530temp *myTask =
     // reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(Form("AddTaskXi1530.c(\"%s\",\"%s\",%i,%d,%d,%d,%d)",taskname,option,nmix,highmult,isaa,ismc,setmixing)));
