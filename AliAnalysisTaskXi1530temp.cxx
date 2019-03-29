@@ -717,12 +717,6 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection() {
             }
             if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose)
                 continue;
-            if (fQA) {
-                fHistos->FillTH2("hTPCPIDXi1530Pion_cut",
-                                 track->GetTPCmomentum(),
-                                 track->GetTPCsignal());
-                fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut", fTPCNSigPion);
-            }
 
             // Eta cut
             if (abs(track->Eta()) > fXi1530PionEtaCut)
@@ -1336,6 +1330,9 @@ void AliAnalysisTaskXi1530temp::FillTracks() {
                 // Fill the QA Histos
                 if (fQA) {
                     if (SysCheck.at(sys) == "DefaultOption") {
+                        fHistos->FillTH2("hTPCPIDXi1530Pion_cut",
+                                         track->GetTPCmomentum(),
+                                         track->GetTPCsignal());
                         if (Xicandidate->Charge() ==
                             -1) {  // Xi- has +proton, -pion
                             fHistos->FillTH2("hTPCPIDLambdaProton_cut",
@@ -1375,7 +1372,8 @@ void AliAnalysisTaskXi1530temp::FillTracks() {
                                          fTPCNSigLambdaPion);
                         fHistos->FillTH1("hTPCPIDsignalBachelorPion_cut",
                                          fTPCNSigBachelorPion);
-
+                        fHistos->FillTH1("hTPCPIDsignalXi1530Pion_cut",
+                                         fTPCNSigPion);
                         // DCA QA
                         fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_cut",
                                          fDCADist_Lambda);
@@ -1445,7 +1443,7 @@ void AliAnalysisTaskXi1530temp::FillTracks() {
                         fHistos->FillTH1("hDCADist_Lambda_BTW_Daughters_loose",
                                          fDCADist_Lambda);
                     if (SysCheck.at(sys) == "DCADistLambdaDaughtersTight")
-                        fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_loose",
+                        fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_tight",
                                          fDCADist_Lambda);
                     if (SysCheck.at(sys) == "DCADistXiDaughtersLoose")
                         fHistos->FillTH1("hDCADist_Xi_BTW_Daughters_loose",

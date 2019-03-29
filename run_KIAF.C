@@ -11,7 +11,7 @@
 void run_KIAF(const char* dataset = "test1.list",
         const char* taskname = "Xi1530",
          const char* option =
-             "LHC16k_pass2_SYS_MC_test_NoQA_EXO"  // when scanning AOD, add "AOD"
+             "LHC16k_pass2_SYS_Mix"  // when scanning AOD, add "AOD"
          ,
          const char* gridmode = "test"  // or "terminate" to merge
          ,
@@ -146,5 +146,5 @@ void run_KIAF(const char* dataset = "test1.list",
     Printf("Starting Analysis....");
 
     TChain* chain = CreateESDChain(dataset);
-
+    mgr->StartAnalysis("local",chain);
 }
