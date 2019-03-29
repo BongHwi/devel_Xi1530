@@ -310,9 +310,9 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Double_t fDCADist_XiDaughtersCut = 1.6;
     Double_t fDCADist_XiDaughtersCut_tight = 1.2;
 
-    Double_t fDCADist_Lambda_PVCut_loose = 0.09;
+    Double_t fDCADist_Lambda_PVCut_loose = 0.05;
     Double_t fDCADist_Lambda_PVCut = 0.07;
-    Double_t fDCADist_Lambda_PVCut_tight = 0.05;
+    Double_t fDCADist_Lambda_PVCut_tight = 0.09;
 
     Double_t fV0CosineOfPointingAngleCut_loose = 0.96;
     Double_t fV0CosineOfPointingAngleCut = 0.97;
