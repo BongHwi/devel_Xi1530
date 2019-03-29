@@ -16,21 +16,21 @@ vector<Int_t> LHC16k = {
     258109, 258108, 258107, 258063, 258062, 258060, 258059, 258053, 258049,
     258045, 258042, 258041, 258039, 258019, 258017, 258014, 258012, 258008,
     258003, 257992, 257989, 257986, 257979, 257963, 257960, 257957, 257939,
-    257937, 257936, 257855, 257853, 257851, 257850, 257804, 257803, 257800,
-    257799, 257798, 257797, 257773, 257765, 257757, 257754, 257737, 257735,
-    257734, 257733, 257727, 257725, 257724, 257697, 257694, 257692, 257691,
-    257689, 257688, 257687, 257685, 257684, 257682, 257644, 257642, 257636,
-    257635, 257632, 257630, 257606, 257605, 257604, 257601, 257595, 257594,
-    257592, 257590, 257588, 257587, 257566, 257562, 257561, 257560, 257541,
-    257540, 257539, 257537, 257531, 257530, 257492, 257491, 257490, 257488,
-    257487, 257474, 257468, 257457, 257433, 257364, 257358, 257330, 257322,
-    257320, 257318, 257260, 257224, 257209, 257206, 257204, 257144, 257141,
-    257139, 257138, 257137, 257136, 257100, 257095, 257092, 257086, 257084,
-    257082, 257080, 257077, 257012, 257011, 256944, 256942, 256941, 256697,
-    256695, 256694, 256692, 256691, 256684, 256681, 256677, 256676, 256658,
-    256620, 256619, 256592, 256591, 256589, 256567, 256565, 256564, 256562,
-    256560, 256557, 256556, 256554, 256552, 256514, 256512, 256510, 256506,
-    256504};  // for run
+    257937, 257936, 257892, 257855, 257853, 257851, 257850, 257804, 257803,
+    257800, 257799, 257798, 257797, 257773, 257765, 257757, 257754, 257737,
+    257735, 257734, 257733, 257727, 257725, 257724, 257697, 257694, 257692,
+    257691, 257689, 257688, 257687, 257685, 257684, 257682, 257644, 257642,
+    257636, 257635, 257632, 257630, 257606, 257605, 257604, 257601, 257595,
+    257594, 257592, 257590, 257588, 257587, 257566, 257562, 257561, 257560,
+    257541, 257540, 257539, 257537, 257531, 257530, 257492, 257491, 257490,
+    257488, 257487, 257474, 257468, 257457, 257433, 257364, 257358, 257330,
+    257322, 257320, 257318, 257260, 257224, 257209, 257206, 257204, 257144,
+    257141, 257139, 257138, 257137, 257136, 257100, 257095, 257092, 257086,
+    257084, 257082, 257080, 257077, 257028, 257026, 257021, 257012, 257011,
+    256944, 256942, 256941, 256697, 256695, 256694, 256692, 256691, 256684,
+    256681, 256677, 256676, 256658, 256620, 256619, 256592, 256591, 256589,
+    256567, 256565, 256564, 256562, 256560, 256557, 256556, 256554, 256552,
+    256514, 256512, 256510, 256506, 256504};  // for run
 vector<Int_t> LHC16l = {
     259888, 259868, 259867, 259866, 259860, 259842, 259841, 259822, 259789,
     259788, 259781, 259756, 259752, 259751, 259750, 259748, 259747, 259477,
@@ -160,7 +160,7 @@ const int LHC16l[] = {
 class AliAnalysisGrid;
 void run(const char* taskname = "Xi1530",
          const char* option =
-             "LHC16k_pass2_SYS_Mix_test"  // when scanning AOD, add "AOD"
+             "LHC16k_pass2_SYS_MC_test_NoQA_EXO"  // when scanning AOD, add "AOD"
          ,
          const char* gridmode = "test"  // or "terminate" to merge
          ,
@@ -202,12 +202,15 @@ void run(const char* taskname = "Xi1530",
     bool isaa = kFALSE;
     bool ismc = kFALSE;
     bool setmixing = kFALSE;
+    bool vertexer = false;
     int nmix = 20;
     bool highmult = kFALSE;
     TString foption = option;
     const char* suffix = "test";
     if (foption.Contains("MC"))
         ismc = kTRUE;
+    if (foption.Contains("Vertex"))
+        vertexer = true;
 
     // analysis manager
     AliAnalysisManager* mgr =
@@ -259,35 +262,35 @@ void run(const char* taskname = "Xi1530",
         return;
     }
     // V0, Xi Super verexter by David
+    if(vertexer){
+        AliAnalysisTaskWeakDecayVertexer* taskWDV =
+            reinterpret_cast<AliAnalysisTaskWeakDecayVertexer*>(
+                gInterpreter->ExecuteMacro(
+                    "$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/"
+                    "AddTaskWeakDecayVertexer.C"));
+        taskWDV->SetUseImprovedFinding();
 
-    AliAnalysisTaskWeakDecayVertexer* taskWDV =
-        reinterpret_cast<AliAnalysisTaskWeakDecayVertexer*>(
-            gInterpreter->ExecuteMacro(
-                "$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/"
-                "AddTaskWeakDecayVertexer.C"));
-    taskWDV->SetUseImprovedFinding();
+        //______________________________________________________________
+        // Revertexing configuration
+        // WARNING: This applies only to the Cascade analysis
+        taskWDV->SetUseImprovedFinding();
 
-    //______________________________________________________________
-    // Revertexing configuration
-    // WARNING: This applies only to the Cascade analysis
-    taskWDV->SetUseImprovedFinding();
+        // V0-Related topological selections
+        taskWDV->SetV0VertexerDCAFirstToPV(0.05);
+        taskWDV->SetV0VertexerDCASecondtoPV(0.05);
+        taskWDV->SetV0VertexerDCAV0Daughters(1.6);
+        taskWDV->SetV0VertexerCosinePA(0.97);
+        taskWDV->SetV0VertexerMinRadius(0.5);
+        taskWDV->SetV0VertexerMaxRadius(200);
 
-    // V0-Related topological selections
-    taskWDV->SetV0VertexerDCAFirstToPV(0.05);
-    taskWDV->SetV0VertexerDCASecondtoPV(0.05);
-    taskWDV->SetV0VertexerDCAV0Daughters(1.6);
-    taskWDV->SetV0VertexerCosinePA(0.97);
-    taskWDV->SetV0VertexerMinRadius(0.5);
-    taskWDV->SetV0VertexerMaxRadius(200);
-
-    // Cascade-Related topological selections
-    taskWDV->SetCascVertexerMinV0ImpactParameter(0.05);
-    taskWDV->SetCascVertexerV0MassWindow(0.007);
-    taskWDV->SetCascVertexerDCABachToPV(0.05);
-    taskWDV->SetCascVertexerDCACascadeDaughters(1.6);
-    taskWDV->SetCascVertexerCascadeMinRadius(.5);
-    taskWDV->SetCascVertexerCascadeCosinePA(.97);
-
+        // Cascade-Related topological selections
+        taskWDV->SetCascVertexerMinV0ImpactParameter(0.05);
+        taskWDV->SetCascVertexerV0MassWindow(0.007);
+        taskWDV->SetCascVertexerDCABachToPV(0.05);
+        taskWDV->SetCascVertexerDCACascadeDaughters(1.6);
+        taskWDV->SetCascVertexerCascadeMinRadius(.5);
+        taskWDV->SetCascVertexerCascadeCosinePA(.97);
+    }
     /*
     AliAnalysisTaskWeakDecayVertexer *taskWDV =
     reinterpret_cast<AliAnalysisTaskWeakDecayVertexer*>(gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/AddTaskWeakDecayVertexer.C"));
