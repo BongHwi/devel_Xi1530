@@ -144,6 +144,6 @@ void run_KIAF(const char* dataset = "test1.list",
     // start analysis
     Printf("Starting Analysis....");
 
-    TChain* chain = CreateESDChain(dataset);
+    TChain* chain = CreateESDChain(dataset,-1);
     mgr->StartAnalysis("local",chain);
 }
