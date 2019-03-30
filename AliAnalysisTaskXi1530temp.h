@@ -302,9 +302,9 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Double_t fXi1530PionZVertexCut = 2.0;
     Double_t fXi1530PionZVertexCut_tight = 1.5;
 
-    Double_t fDCADist_LambdaDaughtersCut_loose = 2.0;
-    Double_t fDCADist_LambdaDaughtersCut = 1.6;
-    Double_t fDCADist_LambdaDaughtersCut_tight = 1.2;
+    Double_t fDCADist_LambdaDaughtersCut_loose = 1.5;
+    Double_t fDCADist_LambdaDaughtersCut = 1.4;
+    Double_t fDCADist_LambdaDaughtersCut_tight = 1.3;
 
     Double_t fDCADist_XiDaughtersCut_loose = 2.0;
     Double_t fDCADist_XiDaughtersCut = 1.6;
