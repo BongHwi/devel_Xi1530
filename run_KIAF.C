@@ -53,7 +53,7 @@ void run_KIAF(const char* dataset = "test1.list",
         vertexer = true;
     const char* option2 =
              "LHC16k_pass2_EXO";
-    const char* suffix = "EXO";
+    const char* suffix2 = "EXO";
 
     // analysis manager
     AliAnalysisManager* mgr =
