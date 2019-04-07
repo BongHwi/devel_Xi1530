@@ -160,7 +160,7 @@ const int LHC16l[] = {
 class AliAnalysisGrid;
 void run(const char* taskname = "Xi1530",
          const char* option =
-             "LHC16k_pass2_SYS_test_EXO"  // when scanning AOD, add "AOD"
+             "LHC16k_pass2_test_GenMC"  // when scanning AOD, add "AOD"
          ,
          const char* gridmode = "test"  // or "terminate" to merge
          ,
@@ -268,26 +268,25 @@ void run(const char* taskname = "Xi1530",
                 gInterpreter->ExecuteMacro(
                     "$ALICE_PHYSICS/PWGLF/STRANGENESS/Cascades/Run2/macros/"
                     "AddTaskWeakDecayVertexer.C"));
-        taskWDV->SetUseImprovedFinding();
 
         //______________________________________________________________
         // Revertexing configuration
         // WARNING: This applies only to the Cascade analysis
         taskWDV->SetUseImprovedFinding();
 
-        //__R_ADDTASK__ ->     SetV0VertexerDCAFirstToPV(0.05);
-        //__R_ADDTASK__ ->     SetV0VertexerDCASecondtoPV(0.05);
+        taskWDV->SetV0VertexerDCAFirstToPV(0.1);
+        taskWDV->SetV0VertexerDCASecondtoPV(0.1);
         taskWDV->SetV0VertexerDCAV0Daughters(2.0);
         taskWDV->SetV0VertexerCosinePA(0.95);
-        //__R_ADDTASK__ ->     SetV0VertexerMinRadius(0.5);
-        //__R_ADDTASK__ ->     SetV0VertexerMaxRadius(200);
+        taskWDV->SetV0VertexerMinRadius(0.5);
+        taskWDV->SetV0VertexerMaxRadius(200);
 
         // Cascade-Related topological selections
-        //__R_ADDTASK__ ->     SetCascVertexerMinV0ImpactParameter(0.00);
+        taskWDV->SetCascVertexerMinV0ImpactParameter(0.05);
         taskWDV->SetCascVertexerV0MassWindow(0.008);
-        //__R_ADDTASK__ ->     SetCascVertexerDCABachToPV(0.05);
+        taskWDV->SetCascVertexerDCABachToPV(0.02);
         taskWDV->SetCascVertexerDCACascadeDaughters(2.0);
-        //__R_ADDTASK__ ->     SetCascVertexerCascadeMinRadius(.5);
+        taskWDV->SetCascVertexerCascadeMinRadius(.5);
         taskWDV->SetCascVertexerCascadeCosinePA(.95);
     }
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");

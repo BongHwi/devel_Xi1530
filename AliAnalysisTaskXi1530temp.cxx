@@ -71,6 +71,8 @@ enum {
     kMCReco,
     kMCTrue,
     kMCTruePS,
+    kINEL10,
+    kINEL,
     kAllType
 };                                                 // for Physicsl Results
 enum { kIsSelected = 1, kPS, kAllNone };           // for V0M signal QA plot
@@ -188,7 +190,7 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
     fHistos = new THistManager("Xi1530hists");
 
     auto binType = AxisStr(
-        "Type", {"DATA", "LS", "Mixing", "MCReco", "MCTrue", "kMCTruePS"});
+        "Type", {"DATA", "LS", "Mixing", "MCReco", "MCTrue", "kMCTruePS", "INEL10", "INEL"});
     if (!IsMC) {
         if (IsAA && !IsHighMult)
             binCent = AxisFix("Cent", 10, 0, 100);  // for AA study
@@ -645,9 +647,20 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
     // ----------------------------------------------------------------------
 
     // Signal Loss Correction -----------------------------------------------
-    if (IsMC && IsSelectedTrig) {
-        FillMCinput(fMCEvent, kFALSE);
-        FillMCinputdXi(fMCEvent, kFALSE);
+    if (IsMC) {
+        // INEL?
+        FillMCinput(fMCEvent, 1);
+        FillMCinputdXi(fMCEvent, 1);
+
+        if (IsVtxInZCut) {  // INEL10
+            FillMCinput(fMCEvent, 2);
+            FillMCinputdXi(fMCEvent, 2);
+        }
+
+        if (IsSelectedTrig) {  // INT7(MB)
+            FillMCinput(fMCEvent, 3);
+            FillMCinputdXi(fMCEvent, 3);
+        }
     }
     // ----------------------------------------------------------------------
 
@@ -665,13 +678,9 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
             // V0M signal QA
             FillTHnSparse("hV0MSignal", {kPS, (double)fCent, intensity});
         }
-        if (IsMC) {
-            FillMCinput(
-                fMCEvent,
-                kTRUE);  // Note that MC input Event is filled at this moment.
-            FillMCinputdXi(
-                fMCEvent,
-                kTRUE);  // Note that MC input Event is filled at this moment.
+        if (IsMC) {  // After All Event cut!
+            FillMCinput(fMCEvent, 4);
+            FillMCinputdXi(fMCEvent, 4);
         }
         if (this->GoodTracksSelection()  // If Good track
             &&
@@ -1555,8 +1564,12 @@ Double_t AliAnalysisTaskXi1530temp::GetMultiplicty(AliVEvent* fEvt) {
     }
     return fCenttemp;
 }
-void AliAnalysisTaskXi1530temp::FillMCinput(AliMCEvent* fMCEvent, Bool_t PS) {
+void AliAnalysisTaskXi1530temp::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
     // Fill MC input Xi1530 histogram
+    // check = 1: INEL?
+    // check = 2: INEL10
+    // check = 3: MB(V0AND)
+    // check = 4: After all event cuts
     for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++) {
         TParticle* mcInputTrack =
             (TParticle*)fMCEvent->GetTrack(it)->Particle();
@@ -1575,19 +1588,31 @@ void AliAnalysisTaskXi1530temp::FillMCinput(AliMCEvent* fMCEvent, Bool_t PS) {
         if (fabs(mcInputTrack->Y()) > fXi1530RapidityCut)
             continue;
 
-        if (PS)
+        if (check == 1)
+            FillTHnSparse("hInvMass",
+                          {(double)kDefaultOption, (double)kINEL, (double)fCent,
+                           mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+        else if (check == 2)
+            FillTHnSparse("hInvMass",
+                          {(double)kDefaultOption, (double)kINEL10, (double)fCent,
+                           mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+        else if (check == 3)
             FillTHnSparse(
                 "hInvMass",
                 {(double)kDefaultOption, (double)kMCTruePS, (double)fCent,
                  mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
-        else
+        else if (check == 4)
             FillTHnSparse("hInvMass", {(double)kDefaultOption, (double)kMCTrue,
                                        (double)fCent, mcInputTrack->Pt(),
                                        mcInputTrack->GetCalcMass()});
     }
 }
-void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliMCEvent* fMCEvent, Bool_t PS) {
+void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check) {
     // Fill MC input Xi1530 histogram
+    // check = 1: INEL?
+    // check = 2: INEL10
+    // check = 3: MB(V0AND)
+    // check = 4: After all event cuts
     for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++) {
         TParticle* mcInputTrack =
             (TParticle*)fMCEvent->GetTrack(it)->Particle();
@@ -1597,14 +1622,26 @@ void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliMCEvent* fMCEvent, Bool_t PS) 
         }
         if (!(abs(mcInputTrack->GetPdgCode()) == kXiCode))
             continue;
-        if (PS)
+
+        if (check == 1)
             FillTHnSparse("hInvMass_dXi",
-                          {(double)kMCTruePS, (double)fCent, mcInputTrack->Pt(),
-                           mcInputTrack->GetCalcMass()});
-        else
-            FillTHnSparse("hInvMass_dXi",
-                          {(double)kMCTrue, (double)fCent, mcInputTrack->Pt(),
-                           mcInputTrack->GetCalcMass()});
+                          {(double)kINEL, (double)fCent,
+                           mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+        else if (check == 2)
+            FillTHnSparse(
+                "hInvMass_dXi",
+                {(double)kINEL10, (double)fCent,
+                 mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+        else if (check == 3)
+            FillTHnSparse(
+                "hInvMass_dXi",
+                {(double)kMCTruePS, (double)fCent,
+                 mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+        else if (check == 4)
+            FillTHnSparse(
+                "hInvMass_dXi",
+                {(double)kMCTrue, (double)fCent,
+                 mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
     }
 }
 
