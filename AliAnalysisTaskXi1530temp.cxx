@@ -70,7 +70,7 @@ enum {
     kMixing,
     kMCReco,
     kMCTrue,
-    kMCTruePS,
+    kMCTruePS, //6
     kINEL10,
     kINEL,
     kAllType
@@ -254,11 +254,10 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
                         "s");  // inv mass distribution of Xi
     }
 
-    std::vector<TString> ent = {
-        "All",         "Trigger",     "InCompleteDAQ",
-        "No BG",       "No pile up",  "Tracklet>1",
-        "Good vertex", "|Zvtx|<10cm", "AliMultSelection",
-        "INELg0True"};  // Normal setup
+    std::vector<TString> ent = {"All",         "Trigger",    "InCompleteDAQ",
+                                "No BG",       "No pile up", "Good vertex",
+                                "|Zvtx|<10cm", "IENLgtZERO", "AliMultSelection",
+                                "INELg0True"};  // Normal setup
     auto hNofEvt =
         fHistos->CreateTH1("hEventNumbers", "", ent.size(), 0, ent.size());
     for (auto i = 0u; i < ent.size(); i++)
@@ -524,7 +523,6 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
     fPIDResponse = (AliPIDResponse*)inputHandler->GetPIDResponse();
     if (!fPIDResponse)
         AliInfo("No PIDd");
-    // -----------------------------------------------------------------------
 
     // Vertex Check-----------------------------------------------------------
     const AliVVertex* pVtx = fEvt->GetPrimaryVertex();
@@ -534,7 +532,8 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
     PVy = pVtx->GetY();
     PVz = pVtx->GetZ();
     fZ = spdVtx->GetZ();
-
+    /*
+    // 2015 configuration
     Bool_t IsGoodVertex =
         spdVtx->GetStatus() &&
         SelectVertex2015pp(((AliESDEvent*)fEvt),
@@ -544,20 +543,36 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
                            kFALSE  // Don't need both trk and spd
                            ,
                            kTRUE);  // z-position difference      < 0.5 cm
+    */
+    Bool_t IsGoodVertex =
+        AliMultSelectionTask::HasGoodVertex2016(fEvt) &&
+        AliMultSelectionTask::HasNoInconsistentSPDandTrackVertices(fEvt);
     Bool_t IsVtxInZCut = (fabs(fZ) < 10);
+    // Bool_t IsVtxInZCut = AliMultSelectionTask::IsAcceptedVertexPosition(fEvt);
     Bool_t IsTrackletinEta1 =
         (AliESDtrackCuts::GetReferenceMultiplicity(
              ((AliESDEvent*)fEvt), AliESDtrackCuts::kTracklets, 1.0) >= 1);
 
     // Multi Selection--------------------------------------------------------
     // Include:
-    //    – INEL>0 selection: At least one SPD tracklet is required within |η| <
-    //    1 (IsTrackletinEta1) – Pileup rejection using
-    //    AliAnalysisUtils::IsPileUpSPD()                 (IsNotPileUp) – SPD
-    //    vertex z resolution < 0.02 cm (IsGoodVertex) -> GetZRes()<0.25 (rough)
+    //    – INEL>0 selection: At least one SPD tracklet is required within
+    //       |η| < 1 (IsTrackletinEta1)
+    //    – Pileup rejection using AliAnalysisUtils::IsPileUpSPD()
+    //      + IsPileupFromSPDInMultBins() (IsNotPileUp)
+    //      + IsPileUpMV()
+    //    - IsSPDClusterVsTrackletBG
+    //    - IsSelectedTrigger: for given trigger. default: AliVEvent::kMB
+    //    – SPD vertex z resolution < 0.2 cm (IsGoodVertex)
     //    – z-position difference between trackand SPD vertex < 0.5 cm
-    //    (IsGoodVertex) – vertex z position: |vz| < 10 cm (IsVtxInZCut)
+    //      (IsGoodVertex)
+    //    – vertex z position: |vz| < 10 cm (IsVtxInZCut)
+    //    - INEL>0: at least 1 tracklet in eta +_1 region. (IsTrackletinEta1)
+    //    - IsNotAsymmetricInVZERO: checks if VZERO signals are not heavily
+    //                              asymmetric
     // Most of them are already choosed in above sections.
+    // Not included:
+    //    - IsPileUpMV
+    //    - IsNotAsymmetricInVZERO
 
     AliMultSelection* MultSelection =
         (AliMultSelection*)fEvt->FindListObject("MultSelection");
@@ -568,12 +583,12 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
     IsPS = IsSelectedTrig        // CINT7 Trigger selected
            && !IncompleteDAQ     // No IncompleteDAQ
            && !SPDvsClustersBG   // No SPDvsClusters Background
-           && IsNotPileUp        // PileUp rejection
-           && IsTrackletinEta1;  // at least 1 tracklet in eta +_1 region.
+           && IsNotPileUp;        // PileUp rejection
 
     IsINEL0Rec =
         IsPS && IsGoodVertex &&
-        IsVtxInZCut;  // recontructed INEL > 0 is PS + vtx + Zvtx inside +-10
+        IsVtxInZCut &&  // recontructed INEL > 0 is PS + vtx + Zvtx inside +-10
+        IsTrackletinEta1;  // at least 1 tracklet in eta +_1 region.
 
     // Fill Numver of Events -------------------------------------------------
     fHistos->FillTH1("hEventNumbers", "All", 1);
@@ -585,12 +600,12 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
         fHistos->FillTH1("hEventNumbers", "No BG", 1);
     if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG && IsNotPileUp)
         fHistos->FillTH1("hEventNumbers", "No pile up", 1);
-    if (IsPS)
-        fHistos->FillTH1("hEventNumbers", "Tracklet>1", 1);
     if (IsPS && IsGoodVertex)
         fHistos->FillTH1("hEventNumbers", "Good vertex", 1);
     if (IsPS && IsGoodVertex && IsVtxInZCut)
         fHistos->FillTH1("hEventNumbers", "|Zvtx|<10cm", 1);
+    if (IsINEL0Rec)
+        fHistos->FillTH1("hEventNumbers", "IENLgtZERO", 1);
     if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted)
         fHistos->FillTH1("hEventNumbers", "AliMultSelection", 1);
 
@@ -665,11 +680,8 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
     // ----------------------------------------------------------------------
 
     // Check tracks and casade, Fill histo************************************
-    if ((IsINEL0Rec && IsMultSelcted) ||
-        (IsMC &&
-         IsINEL0Rec)) {  // In Good Event condition: (IsPS && IsGoodVertex &&
-                         // IsVtxInZCut) && IsMultSelcted
-
+    if (IsINEL0Rec && IsMultSelcted) {  // In Good Event condition: (IsPS && IsGoodVertex &&
+                                        // IsVtxInZCut) && IsMultSelcted
         // Draw Multiplicity QA plot in only selected event.
         if (fQA) {
             FillTHnSparse("hMult", {(double)fCent});
