@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/03/29
+//  Last Modified Date: 2019/04/08
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -606,7 +606,7 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
         fHistos->FillTH1("hEventNumbers", "|Zvtx|<10cm", 1);
     if (IsINEL0Rec)
         fHistos->FillTH1("hEventNumbers", "IENLgtZERO", 1);
-    if (IsPS && IsGoodVertex && IsVtxInZCut && IsMultSelcted)
+    if (IsINEL0Rec && IsMultSelcted)
         fHistos->FillTH1("hEventNumbers", "AliMultSelection", 1);
 
     if (IsMC && IsINEL0True)
@@ -641,7 +641,8 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
                           {(double)kReco, (double)fCent, ftrackmult});
             fHistos->FillTH1("htriggered_CINT7_reco", centbin);
         }
-        if (IsINEL0Rec) {
+        if (IsINEL0True&& IsINEL0Rec && IsMultSelcted) {  // N of event used.
+            // Used event from IsINEL0True.
             FillTHnSparse("htriggered_CINT7",
                           {(double)kGoodVtx, (double)fCent, ftrackmult});
             fHistos->FillTH1("htriggered_CINT7_GoodVtx", centbin);
