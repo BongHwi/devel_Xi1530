@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/04/08
+//  Last Modified Date: 2019/04/14
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -70,13 +70,24 @@ enum {
     kMixing,
     kMCReco,
     kMCTrue,
-    kMCTruePS, //6
+    kMCTruePS,  // 6
     kINEL10,
-    kINEL,
+    kINELg010,
     kAllType
 };                                                 // for Physicsl Results
 enum { kIsSelected = 1, kPS, kAllNone };           // for V0M signal QA plot
-enum { kTrueINELg0 = 1, kTrig, kReco, kGoodVtx };  // for Trigger Efficiency
+enum {
+    kTrueINELg0 = 1,
+    kTrig_TrueINELg0,
+    kGoodVtx_TrueINELg0,
+    kVzCutted_TrueINELg0,
+    kSelected_TrueINELg0,
+    kTrue,
+    kTrig,
+    kGoodVtx,
+    kVzCutted,
+    kSelected,
+};  // for Trigger Efficiency, Vertext Correction
 enum {
     kDefaultOption = 1,
     kTPCNsigmaXi1530PionLoose,
@@ -101,6 +112,17 @@ enum {
     kXiMassWindowTight,
     kXiTrackCut
 };  // for Systematic study
+enum {
+    kALL = 1,
+    kTrigger,
+    kInCompleteDAQ,
+    kNoBG,
+    kNoPileUp,
+    kGoodVertex,
+    kZvtx10,
+    kIENLgtZERO,
+    kAliMultSelection
+};  // for Event Check
 AliAnalysisTaskXi1530tempRunTable::AliAnalysisTaskXi1530tempRunTable()
     : fCollisionType(kUnknownCollType) {
     ;
@@ -190,7 +212,7 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
     fHistos = new THistManager("Xi1530hists");
 
     auto binType = AxisStr(
-        "Type", {"DATA", "LS", "Mixing", "MCReco", "MCTrue", "kMCTruePS", "INEL10", "INEL"});
+        "Type", {"DATA", "LS", "Mixing", "MCReco", "MCTrue", "kMCTruePS", "INEL10", "INELg010"});
     if (!IsMC) {
         if (IsAA && !IsHighMult)
             binCent = AxisFix("Cent", 10, 0, 100);  // for AA study
@@ -245,13 +267,15 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
 
     auto binTrklet =
         AxisVar("nTrklet", {0, 5, 10, 15, 20, 25, 30, 35, 40, 100});
+    
     if (IsMC) {
         // To get Trigger efficiency in each trk/V0M Multiplicity region
-        auto MCType =
-            AxisStr("Type", {"TrueINELg0", "Triggered", "Reco", "GoodVtx"});
-        // auto binTrklet = AxisVar("nTrklet",{0,5,10,15,20,25,30,35,40,100});
+        auto MCType = AxisStr(
+            "Type", {"kTrueINELg0", "kTrig_TrueINELg0", "kGoodVtx_TrueINELg0",
+                     "kVzCutted_TrueINELg0", "kSelected_TrueINELg0", "kTrue",
+                     "kTrig", "kGoodVtx", "kVzCutted", "kSelected"});
         CreateTHnSparse("htriggered_CINT7", "", 3, {MCType, binCent, binTrklet},
-                        "s");  // inv mass distribution of Xi
+                        "s");
     }
 
     std::vector<TString> ent = {"All",         "Trigger",    "InCompleteDAQ",
@@ -262,6 +286,9 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
         fHistos->CreateTH1("hEventNumbers", "", ent.size(), 0, ent.size());
     for (auto i = 0u; i < ent.size(); i++)
         hNofEvt->GetXaxis()->SetBinLabel(i + 1, ent.at(i).Data());
+
+    auto binEvent = AxisStr("Event", ent);
+    CreateTHnSparse("hEventNumbers_multi", "", 2, {binEvent, binCent},"s");    
 
     // QA Histograms--------------------------------------------------
     //
@@ -434,12 +461,6 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
     fHistos->CreateTH1("hTotalInvMass_LS", "", 2000, 0.5, 2.5, "s");
     fHistos->CreateTH1("hTotalInvMass_Mix", "", 2000, 0.5, 2.5, "s");
 
-    if (IsMC) {
-        fHistos->CreateTH1("htriggered_CINT7_true", "", 1000, 0, 1000, "s");
-        fHistos->CreateTH1("htriggered_CINT7_trig", "", 1000, 0, 1000, "s");
-        fHistos->CreateTH1("htriggered_CINT7_reco", "", 1000, 0, 1000, "s");
-        fHistos->CreateTH1("htriggered_CINT7_GoodVtx", "", 1000, 0, 1000, "s");
-    }
     fEMpool.resize(binCent.GetNbins() + 1,
                    std::vector<eventpool>(binZ.GetNbins() + 1));
     PostData(1, fHistos->GetListOfHistograms());
@@ -592,22 +613,39 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
 
     // Fill Numver of Events -------------------------------------------------
     fHistos->FillTH1("hEventNumbers", "All", 1);
-    if (IsSelectedTrig)
+    FillTHnSparse("hEventNumbers_multi", {kALL, (double)fCent});
+    if (IsSelectedTrig){
         fHistos->FillTH1("hEventNumbers", "Trigger", 1);
-    if (IsSelectedTrig && !IncompleteDAQ)
+        FillTHnSparse("hEventNumbers_multi", {kTrigger, (double)fCent});
+    }
+    if (IsSelectedTrig && !IncompleteDAQ){
         fHistos->FillTH1("hEventNumbers", "InCompleteDAQ", 1);
-    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG)
+        FillTHnSparse("hEventNumbers_multi", {kInCompleteDAQ, (double)fCent});
+    }
+    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG){
         fHistos->FillTH1("hEventNumbers", "No BG", 1);
-    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG && IsNotPileUp)
+        FillTHnSparse("hEventNumbers_multi", {kNoBG, (double)fCent});
+    }
+    if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG && IsNotPileUp){
         fHistos->FillTH1("hEventNumbers", "No pile up", 1);
-    if (IsPS && IsGoodVertex)
+        FillTHnSparse("hEventNumbers_multi", {kNoPileUp, (double)fCent});
+    }
+    if (IsPS && IsGoodVertex){
         fHistos->FillTH1("hEventNumbers", "Good vertex", 1);
-    if (IsPS && IsGoodVertex && IsVtxInZCut)
+        FillTHnSparse("hEventNumbers_multi", {kGoodVertex, (double)fCent});
+    }
+    if (IsPS && IsGoodVertex && IsVtxInZCut){
         fHistos->FillTH1("hEventNumbers", "|Zvtx|<10cm", 1);
-    if (IsINEL0Rec)
+        FillTHnSparse("hEventNumbers_multi", {kZvtx10, (double)fCent});
+    }   
+    if (IsINEL0Rec){
         fHistos->FillTH1("hEventNumbers", "IENLgtZERO", 1);
-    if (IsINEL0Rec && IsMultSelcted)
+        FillTHnSparse("hEventNumbers_multi", {kIENLgtZERO, (double)fCent});
+    }
+    if (IsINEL0Rec && IsMultSelcted){
         fHistos->FillTH1("hEventNumbers", "AliMultSelection", 1);
+        FillTHnSparse("hEventNumbers_multi", {kAliMultSelection, (double)fCent});
+    }
 
     if (IsMC && IsINEL0True)
         fHistos->FillTH1("hEventNumbers", "INELg0True",
@@ -624,29 +662,37 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
 
     //  Missing Vetex and Trriger Efficiency ---------------------------------
     if (IsMC) {
-        // Int_t trklbin = binTrklet.FindBin(ftrackmult) -1; // # of tracklet
         // bin
         if (IsINEL0True) {
             FillTHnSparse("htriggered_CINT7",
                           {(double)kTrueINELg0, (double)fCent, ftrackmult});
-            fHistos->FillTH1("htriggered_CINT7_true", centbin);
+            if (IsSelectedTrig)
+                FillTHnSparse("htriggered_CINT7", {(double)kTrig_TrueINELg0,
+                                                   (double)fCent, ftrackmult});
+            if (IsPS && IsGoodVertex)
+                FillTHnSparse("htriggered_CINT7", {(double)kGoodVtx_TrueINELg0,
+                                                   (double)fCent, ftrackmult});
+            if (IsPS && IsGoodVertex && IsVtxInZCut)
+                FillTHnSparse("htriggered_CINT7", {(double)kVzCutted_TrueINELg0,
+                                                   (double)fCent, ftrackmult});
+            if (IsINEL0Rec && IsMultSelcted)
+                FillTHnSparse("htriggered_CINT7", {(double)kSelected_TrueINELg0,
+                                                   (double)fCent, ftrackmult});
         }
-        if (IsSelectedTrig) {
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kTrig, (double)fCent, ftrackmult});
-            fHistos->FillTH1("htriggered_CINT7_trig", centbin);
-        }
-        if (IsPS) {
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kReco, (double)fCent, ftrackmult});
-            fHistos->FillTH1("htriggered_CINT7_reco", centbin);
-        }
-        if (IsINEL0True&& IsINEL0Rec && IsMultSelcted) {  // N of event used.
-            // Used event from IsINEL0True.
-            FillTHnSparse("htriggered_CINT7",
-                          {(double)kGoodVtx, (double)fCent, ftrackmult});
-            fHistos->FillTH1("htriggered_CINT7_GoodVtx", centbin);
-        }
+        FillTHnSparse("htriggered_CINT7",
+                      {(double)kTrue, (double)fCent, ftrackmult});
+        if (IsSelectedTrig)
+            FillTHnSparse("htriggered_CINT7", {(double)kTrig,
+                                               (double)fCent, ftrackmult});
+        if (IsPS && IsGoodVertex)
+            FillTHnSparse("htriggered_CINT7", {(double)kGoodVtx,
+                                               (double)fCent, ftrackmult});
+        if (IsPS && IsGoodVertex && IsVtxInZCut)
+            FillTHnSparse("htriggered_CINT7", {(double)kVzCutted,
+                                               (double)fCent, ftrackmult});
+        if (IsINEL0Rec && IsMultSelcted)
+            FillTHnSparse("htriggered_CINT7", {(double)kSelected,
+                                               (double)fCent, ftrackmult});
     }
     // -----------------------------------------------------------------------
 
@@ -664,16 +710,15 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
 
     // Signal Loss Correction -----------------------------------------------
     if (IsMC) {
-        // INEL?
-        FillMCinput(fMCEvent, 1);
-        FillMCinputdXi(fMCEvent, 1);
-
+        if (IsINEL0True && IsVtxInZCut) {  // INEL>0|10
+            FillMCinput(fMCEvent, 1);
+            FillMCinputdXi(fMCEvent, 1);
+        }
         if (IsVtxInZCut) {  // INEL10
             FillMCinput(fMCEvent, 2);
             FillMCinputdXi(fMCEvent, 2);
         }
-
-        if (IsSelectedTrig) {  // INT7(MB)
+        if (IsSelectedTrig) {  // INEL>0 +|Vz| < 10 cm
             FillMCinput(fMCEvent, 3);
             FillMCinputdXi(fMCEvent, 3);
         }
@@ -1579,7 +1624,7 @@ Double_t AliAnalysisTaskXi1530temp::GetMultiplicty(AliVEvent* fEvt) {
 }
 void AliAnalysisTaskXi1530temp::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
     // Fill MC input Xi1530 histogram
-    // check = 1: INEL?
+    // check = 1: INELg0|10
     // check = 2: INEL10
     // check = 3: MB(V0AND)
     // check = 4: After all event cuts
@@ -1602,9 +1647,10 @@ void AliAnalysisTaskXi1530temp::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
             continue;
 
         if (check == 1)
-            FillTHnSparse("hInvMass",
-                          {(double)kDefaultOption, (double)kINEL, (double)fCent,
-                           mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+            FillTHnSparse(
+                "hInvMass",
+                {(double)kDefaultOption, (double)kINELg010, (double)fCent,
+                 mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
         else if (check == 2)
             FillTHnSparse("hInvMass",
                           {(double)kDefaultOption, (double)kINEL10, (double)fCent,
@@ -1622,7 +1668,7 @@ void AliAnalysisTaskXi1530temp::FillMCinput(AliMCEvent* fMCEvent, Int_t check) {
 }
 void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check) {
     // Fill MC input Xi1530 histogram
-    // check = 1: INEL?
+    // check = 1: INEL>0|10
     // check = 2: INEL10
     // check = 3: MB(V0AND)
     // check = 4: After all event cuts
@@ -1638,7 +1684,7 @@ void AliAnalysisTaskXi1530temp::FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check
 
         if (check == 1)
             FillTHnSparse("hInvMass_dXi",
-                          {(double)kINEL, (double)fCent,
+                          {(double)kINELg010, (double)fCent,
                            mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
         else if (check == 2)
             FillTHnSparse(
