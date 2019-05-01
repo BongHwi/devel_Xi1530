@@ -213,20 +213,19 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
 
     auto binType = AxisStr(
         "Type", {"DATA", "LS", "Mixing", "MCReco", "MCTrue", "kMCTruePS", "INEL10", "INELg010"});
+    vector<double> centaxisbin;
     if (!IsMC) {
         if (IsAA && !IsHighMult)
-            binCent = AxisFix("Cent", 10, 0, 100);  // for AA study
+            centaxisbin = {0,10,20,30,40,50,60,70,80,90,100};  // for AA study
         else if (!IsHighMult)
-            binCent = AxisVar("Cent", {0, 1, 5, 10, 15, 20, 30, 40, 50, 70,
-                                       100});  // for kINT7 study
+            centaxisbin = {0, 1, 5, 10, 15, 20, 30, 40, 50, 70, 100};  // for kINT7 study
         else
-            binCent = AxisVar(
-                "Cent", {0, 0.01, 0.03, 0.05, 0.07, 0.1});  // for HM study
+            centaxisbin = {0, 0.01, 0.03, 0.05, 0.07, 0.1};  // for HM study
     } else
-        binCent =
-            AxisVar("Cent", {0, 0.01, 0.03, 0.05, 0.07, 0.01, 1, 5, 10, 15, 20,
-                             30, 40, 50, 70, 100});  // for kINT7 study
+        centaxisbin =  {0, 0.01, 0.03, 0.05, 0.07, 0.01, 1, 5, 10, 15, 20,
+                             30, 40, 50, 70, 100};  // for kINT7 study
 
+    binCent = AxisVar("Cent", centaxisbin);  // for kINT7 study
     auto binPt = AxisFix("Pt", 200, 0, 20);
     auto binMass = AxisFix("Mass", 2000, 1.0, 3.0);
     binZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10});
@@ -287,8 +286,12 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
     for (auto i = 0u; i < ent.size(); i++)
         hNofEvt->GetXaxis()->SetBinLabel(i + 1, ent.at(i).Data());
 
-    auto binEvent = AxisStr("Event", ent);
-    CreateTHnSparse("hEventNumbers_multi", "", 2, {binEvent, binCent},"s");    
+    // stupid method, should be modified later!
+    const double* centbin_array = &centaxisbin[0];
+    vector<double> eventbin = {0.5,1.5,2.5,3.5,4.5,5.5,6.5,7.5,8.5,9.5};
+    const double* eventbin_array = &eventbin[0];
+
+    fHistos->CreateTH2("hEventNumbers_multi", "", eventbin.size()-1, eventbin_array, centaxisbin.size()-1,centbin_array);
 
     // QA Histograms--------------------------------------------------
     //
@@ -613,38 +616,38 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
 
     // Fill Numver of Events -------------------------------------------------
     fHistos->FillTH1("hEventNumbers", "All", 1);
-    FillTHnSparse("hEventNumbers_multi", {kALL, (double)fCent});
+    fHistos->FillTH2("hEventNumbers_multi", kALL, (double)fCent);
     if (IsSelectedTrig){
         fHistos->FillTH1("hEventNumbers", "Trigger", 1);
-        FillTHnSparse("hEventNumbers_multi", {kTrigger, (double)fCent});
+        fHistos->FillTH2("hEventNumbers_multi", kTrigger, (double)fCent);
     }
     if (IsSelectedTrig && !IncompleteDAQ){
         fHistos->FillTH1("hEventNumbers", "InCompleteDAQ", 1);
-        FillTHnSparse("hEventNumbers_multi", {kInCompleteDAQ, (double)fCent});
+        fHistos->FillTH2("hEventNumbers_multi", kInCompleteDAQ, (double)fCent);
     }
     if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG){
         fHistos->FillTH1("hEventNumbers", "No BG", 1);
-        FillTHnSparse("hEventNumbers_multi", {kNoBG, (double)fCent});
+        fHistos->FillTH2("hEventNumbers_multi", kNoBG, (double)fCent);
     }
     if (IsSelectedTrig && !IncompleteDAQ && !SPDvsClustersBG && IsNotPileUp){
         fHistos->FillTH1("hEventNumbers", "No pile up", 1);
-        FillTHnSparse("hEventNumbers_multi", {kNoPileUp, (double)fCent});
+        fHistos->FillTH2("hEventNumbers_multi", kNoPileUp, (double)fCent);
     }
     if (IsPS && IsGoodVertex){
         fHistos->FillTH1("hEventNumbers", "Good vertex", 1);
-        FillTHnSparse("hEventNumbers_multi", {kGoodVertex, (double)fCent});
+        fHistos->FillTH2("hEventNumbers_multi", kGoodVertex, (double)fCent);
     }
     if (IsPS && IsGoodVertex && IsVtxInZCut){
         fHistos->FillTH1("hEventNumbers", "|Zvtx|<10cm", 1);
-        FillTHnSparse("hEventNumbers_multi", {kZvtx10, (double)fCent});
+        fHistos->FillTH2("hEventNumbers_multi", kZvtx10, (double)fCent);
     }   
     if (IsINEL0Rec){
         fHistos->FillTH1("hEventNumbers", "IENLgtZERO", 1);
-        FillTHnSparse("hEventNumbers_multi", {kIENLgtZERO, (double)fCent});
+        fHistos->FillTH2("hEventNumbers_multi", kIENLgtZERO, (double)fCent);
     }
     if (IsINEL0Rec && IsMultSelcted){
         fHistos->FillTH1("hEventNumbers", "AliMultSelection", 1);
-        FillTHnSparse("hEventNumbers_multi", {kAliMultSelection, (double)fCent});
+        fHistos->FillTH2("hEventNumbers_multi", kAliMultSelection, (double)fCent);
     }
 
     if (IsMC && IsINEL0True)
