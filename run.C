@@ -160,7 +160,7 @@ const int LHC16l[] = {
 class AliAnalysisGrid;
 void run(const char* taskname = "Xi1530",
          const char* option =
-             "LHC16k_pass2_test_GenMC"  // when scanning AOD, add "AOD"
+             "LHC16k_pass2_test_MC"  // when scanning AOD, add "AOD"
          ,
          const char* gridmode = "test"  // or "terminate" to merge
          ,
@@ -274,20 +274,27 @@ void run(const char* taskname = "Xi1530",
         // WARNING: This applies only to the Cascade analysis
         taskWDV->SetUseImprovedFinding();
 
-        taskWDV->SetV0VertexerDCAFirstToPV(0.1);
-        taskWDV->SetV0VertexerDCASecondtoPV(0.1);
-        taskWDV->SetV0VertexerDCAV0Daughters(2.0);
-        taskWDV->SetV0VertexerCosinePA(0.95);
-        taskWDV->SetV0VertexerMinRadius(0.5);
+        //V0-Related topological selections
+        taskWDV->SetV0VertexerDCAFirstToPV(0.05);
+        taskWDV->SetV0VertexerDCASecondtoPV(0.05);
+        taskWDV->SetV0VertexerDCAV0Daughters(1.5);
+        taskWDV->SetV0VertexerCosinePA(0.9);
+        taskWDV->SetV0VertexerMinRadius(0.2);
         taskWDV->SetV0VertexerMaxRadius(200);
 
         // Cascade-Related topological selections
-        taskWDV->SetCascVertexerMinV0ImpactParameter(0.05);
+        taskWDV->SetCascVertexerMinV0ImpactParameter(0.01);
         taskWDV->SetCascVertexerV0MassWindow(0.008);
-        taskWDV->SetCascVertexerDCABachToPV(0.02);
+        taskWDV->SetCascVertexerDCABachToPV(0.01);
         taskWDV->SetCascVertexerDCACascadeDaughters(2.0);
-        taskWDV->SetCascVertexerCascadeMinRadius(.5);
-        taskWDV->SetCascVertexerCascadeCosinePA(.95);
+        taskWDV->SetCascVertexerCascadeMinRadius(0.2);
+        taskWDV->SetCascVertexerCascadeMaxRadius(200);
+        taskWDV->SetCascVertexerCascadeCosinePA(0.98);
+
+        // Test1 track selection
+        //taskWDV-> SetExtraCleanup(kFALSE);
+        // Test2 pre-selection in dE/dx
+        //taskWDV-> SetUseMonteCarloAssociation(kFALSE);
     }
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");
     // AliAnalysisTaskXi1530temp *myTask =
@@ -412,8 +419,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC16k.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC16k.at(i));
+            }
         }
         if (foption.Contains("LHC16l")) {
             if (ismc) {
@@ -439,8 +451,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC16l.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0u; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC16l.at(i));
+            }
         }
         if (foption.Contains("LHC16o")) {
             if (ismc) {
@@ -456,8 +473,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC16o.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0u; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC16o.at(i));
+            }
         }
         if (foption.Contains("LHC16p")) {
             if (ismc) {
@@ -473,8 +495,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC16p.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0u; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC16p.at(i));
+            }
         }
         if (foption.Contains("LHC17k")) {
             if (ismc) {
@@ -490,8 +517,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC17k.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0u; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC17k.at(i));
+            }
         }
 
         if (foption.Contains("LHC17l")) {
@@ -508,8 +540,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC17l.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0u; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC17l.at(i));
+            }
         }
         if (foption.Contains("LHC17m")) {
             if (ismc) {
@@ -525,8 +562,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC17m.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0u; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC17m.at(i));
+            }
         }
         if (foption.Contains("LHC17o")) {
             if (ismc) {
@@ -542,8 +584,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC17o.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0u; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC17o.at(i));
+            }
         }
         if (foption.Contains("LHC17r")) {
             if (ismc) {
@@ -559,8 +606,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC17r.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0u; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC17r.at(i));
+            }
         }
         if (foption.Contains("LHC10b")) {
             if (ismc) {
@@ -573,8 +625,13 @@ void run(const char* taskname = "Xi1530",
             Int_t end = LHC10b.size();
             if (foption.Contains("test"))
                 end = 1;
-            for (auto i = 0u; i < end; i++)
+            for (auto i = 0; i < end; i++){
+                if (foption.Contains("range")){
+                    if(i < istart) continue;
+                    if(i > iend) break;
+                }
                 plugin->AddRunNumber(LHC10b.at(i));
+            }
         }
         if (foption.Contains("SYS"))
             plugin->SetSplitMaxInputFileNumber(4000);

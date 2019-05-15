@@ -22,7 +22,7 @@ taskname=Xi1530
 periods=$1
 method=$2
 
-basepath=/alice/cern.ch/user/b/blim
+basepath=/alice/cern.ch/user/$(echo $USER|perl -pe's|.|$&/$&|')/
 DOWN_DIR=~/Desktop
 DATA_DIR=$DOWN_DIR${basepath}/${taskname}${periods};
 currentdir=$PWD

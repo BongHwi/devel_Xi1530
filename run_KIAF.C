@@ -111,22 +111,27 @@ void run_KIAF(const char* dataset = "test1.list",
                     "AddTaskWeakDecayVertexer.C"));
         taskWDV->SetUseImprovedFinding();
 
-        //______________________________________________________________
-        // Revertexing configuration
-        taskWDV->SetV0VertexerDCAFirstToPV(0.1);
-        taskWDV->SetV0VertexerDCASecondtoPV(0.1);
-        taskWDV->SetV0VertexerDCAV0Daughters(2.0);
-        taskWDV->SetV0VertexerCosinePA(0.95);
-        taskWDV->SetV0VertexerMinRadius(0.5);
+        //V0-Related topological selections
+        taskWDV->SetV0VertexerDCAFirstToPV(0.05);
+        taskWDV->SetV0VertexerDCASecondtoPV(0.05);
+        taskWDV->SetV0VertexerDCAV0Daughters(1.5);
+        taskWDV->SetV0VertexerCosinePA(0.9);
+        taskWDV->SetV0VertexerMinRadius(0.2);
         taskWDV->SetV0VertexerMaxRadius(200);
 
         // Cascade-Related topological selections
-        taskWDV->SetCascVertexerMinV0ImpactParameter(0.05);
+        taskWDV->SetCascVertexerMinV0ImpactParameter(0.01);
         taskWDV->SetCascVertexerV0MassWindow(0.008);
-        taskWDV->SetCascVertexerDCABachToPV(0.02);
+        taskWDV->SetCascVertexerDCABachToPV(0.01);
         taskWDV->SetCascVertexerDCACascadeDaughters(2.0);
-        taskWDV->SetCascVertexerCascadeMinRadius(.5);
-        taskWDV->SetCascVertexerCascadeCosinePA(.95);
+        taskWDV->SetCascVertexerCascadeMinRadius(0.2);
+        taskWDV->SetCascVertexerCascadeMaxRadius(200);
+        taskWDV->SetCascVertexerCascadeCosinePA(0.98);
+
+        // Test1 track selection
+        //taskWDV-> SetExtraCleanup(kFALSE);
+        // Test2 pre-selection in dE/dx
+        //taskWDV-> SetUseMonteCarloAssociation(kFALSE);
     }
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");
     // AliAnalysisTaskXi1530temp *myTask =
@@ -136,10 +141,12 @@ void run_KIAF(const char* dataset = "test1.list",
         reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(
             Form("AddTaskXi1530.C(\"%s\",\"%s\",%i,\"%s\")", taskname, option,
                  nmix, suffix)));
+    /*
     AliAnalysisTaskXi1530temp* myTask2 =
         reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(
             Form("AddTaskXi1530.C(\"%s\",\"%s\",%i,\"%s\")", taskname, option2,
                  nmix, suffix2)));
+    */
     // mgr->SetDebugLevel(1);
     if (!mgr->InitAnalysis())
         return;
