@@ -63,6 +63,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
 
     void SetOption(char* option) { fOption = option; }
     void SetFilterBit(UInt_t filterbit) { fFilterBit = filterbit; }
+    void SetFilterBit_Xi(UInt_t filterbit) { fFilterBit_Xi = filterbit; }
     void SetMixing(Bool_t setmixing) { fsetmixing = setmixing; }
     void SetIsAA(Bool_t isaa) { IsAA = isaa; }
     void SetIsMC(Bool_t ismc) { IsMC = ismc; }
@@ -193,8 +194,14 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
         if (fSysOption == 2)
             fXiMassWindowCut_tight = nXiMassWindowCut;
     }
-    void SetXi1530RapidityCut(Double_t nXi1530RapidityCut) {
-        fXi1530RapidityCut = nXi1530RapidityCut;
+    void SetXi1530RapidityCut_high(Double_t nXi1530RapidityCut) {
+        fXi1530RapidityCut_high = nXi1530RapidityCut;
+    }
+    void SetXi1530RapidityCut_low(Double_t nXi1530RapidityCut) {
+        fXi1530RapidityCut_low = nXi1530RapidityCut;
+    }
+    void SetXi1530MultiplicityEstimator(TString fEstimator) {
+        MultiplicityEstimator = fEstimator;
     }
     void SetXiSysTrackCut(Bool_t cutoption) { fsetXiSysTrackCut = cutoption; }
     void SetSystematics(Bool_t fSystematics) { fsetsystematics = fSystematics; }
@@ -204,22 +211,23 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
         fXiMassWindowCut = 0.015;
         fTPCNsigXi1530PionCut = 1.5;
     }
+    void SetUseSimpleEventCut(Bool_t fInput){ fSimplieEventCut = fInput; };
 
     Bool_t GoodTracksSelection();
     Bool_t GoodCascadeSelection();
     void FillTracks();
+    void FillTracksAOD();
 
     Double_t GetMultiplicty(AliVEvent* fEvt);
-    Bool_t SelectVertex2015pp(AliESDEvent* esd,
-                              Bool_t checkSPDres,
-                              Bool_t requireSPDandTrk,
-                              Bool_t checkProximity);
-    Bool_t IsGoodSPDvertexRes(const AliESDVertex* spdVertex);
     Bool_t IsMCEventTrueINEL0();
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
+    Bool_t IsTrueXi1530AOD(AliAODcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi(AliESDcascade* Xi);
+    Bool_t IsTrueXiAOD(AliAODcascade* Xi);
     void FillMCinput(AliMCEvent* fMCEvent, Int_t check);
+    void FillMCinputAOD(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check);
+    void FillMCinputdXiAOD(AliMCEvent* fMCEvent, Int_t check);
     void FillTrackToEventPool();
 
     TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
@@ -257,7 +265,8 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     AliESDtrackCuts* fTrackCuts2 = nullptr;  //!
     AliESDtrackCuts* fTrackCuts3 = nullptr;  //!
     AliVEvent* fEvt = nullptr;               //!
-    UInt_t fFilterBit;
+    UInt_t fFilterBit = 32;
+    UInt_t fFilterBit_Xi = 128; // not using for the moment.
     AliAnalysisTaskXi1530tempRunTable* fRunTable = nullptr;  //!
 
     Double_t fCent = -1;
@@ -326,7 +335,8 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Double_t fXiMassWindowCut = 0.007;
     Double_t fXiMassWindowCut_tight = 0.006;
 
-    Double_t fXi1530RapidityCut = 0.5;
+    Double_t fXi1530RapidityCut_low = -0.5;
+    Double_t fXi1530RapidityCut_high = 0.5;
 
     Bool_t fsetXiSysTrackCut = kFALSE;
     Bool_t fsetsystematics = kFALSE;
@@ -340,16 +350,17 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Bool_t IsPrimaryMC = kTRUE;
     Bool_t fQA = kTRUE;
     Bool_t fExoticFinder = kFALSE;
+    Bool_t fSimplieEventCut = kFALSE;
+    TString MultiplicityEstimator = "V0M";
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
     AliMCEvent* fMCEvent = nullptr;    //!
-    Int_t fNTracks = 0;
-    Int_t fNCascade = 0;
+
     Double_t PVx = 999;
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530temp, 14);
+    ClassDef(AliAnalysisTaskXi1530, 19);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -366,6 +377,11 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     // 12: Add Exotic option and change default systematic vaule
     // 13: Change Lambda PV Cut default values(reversed)
     // 14: Modify Fill MC input function for the Signal Loss
+    // 15: Separate Rapidity cut option for pA analysis.
+    // 16: Add option for using different Multiplicity Estimators(Default: V0M).
+    // 17: Add Simple event cut option to use AliMultSelection cut only
+    // 18: Enable AOD functionality
+    // 19: Update default filterbit
 };
 
 #endif
