@@ -721,7 +721,7 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
             FillTHnSparse("hV0MSignal", {kIsMulti, (double)fCent, intensity});
     }
     // ----------------------------------------------------------------------
-
+    
     // Signal Loss Correction -----------------------------------------------
     if (IsMC) {
         if (fEvt->IsA() == AliESDEvent::Class()) {
@@ -754,12 +754,13 @@ void AliAnalysisTaskXi1530temp::UserExec(Option_t*) {
         }
     }
     // ----------------------------------------------------------------------
-
+    
     if(fSimplieEventCut) IsINEL0Rec = kTRUE; // for simple event cut, use only IsMultSelcted.
     // Check tracks and casade, Fill histo************************************
     if (IsSelectedTrig && IsINEL0Rec &&
         IsMultSelcted) {  // In Good Event condition: (IsPS && IsGoodVertex &&
                           // IsVtxInZCut) && IsMultSelcted
+        
         // Draw Multiplicity QA plot in only selected event.
         if (fQA) {
             FillTHnSparse("hMult", {(double)fCent});
@@ -846,7 +847,7 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection() {
             continue;
         if (pionZ > fXi1530PionZVertexCut_loose)
             continue;
-        if (pionPt > 0.15)
+        if (pionPt < 0.15)
             continue;
         // if (fabs(track->M() - pionmass) > 0.007) continue;
 
@@ -1108,8 +1109,8 @@ Bool_t AliAnalysisTaskXi1530temp::GoodCascadeSelection() {
             filtermapN = nTrackXi->GetFilterMap();
             filtermapB = bTrackXi->GetFilterMap();
 
-            if ((pTrackXi->Pt() > 0.15) || (nTrackXi->Pt() > 0.15) ||
-                (bTrackXi->Pt() > 0.15))
+            if ((pTrackXi->Pt() < 0.15) || (nTrackXi->Pt() < 0.15) ||
+                (bTrackXi->Pt() < 0.15))
                 continue;
 
             //Disabled in AOD check - need to check further!
