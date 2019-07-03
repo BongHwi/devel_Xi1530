@@ -12,7 +12,7 @@ AliAnalysisTaskXi1530temp* AddTaskXi1530(const char *taskname = "Xi1530"
     }
     TString foption = option;
     AliAnalysisTaskXi1530temp *taskXi1530 = new AliAnalysisTaskXi1530temp(Form("%s%s", taskname,suffix), Form("%s_%s", taskname, option));
-    //taskXi1530 -> SetFilterBit(768);
+    taskXi1530->fEventCuts.fCentralityFramework = 1;
     std::cout << "AliAnaylsisTaskXi1530:: Option: " << option << std::endl;
     if(foption.Contains("MC")){
         taskXi1530->SetIsMC(kTRUE); // default: kFALSE
@@ -26,12 +26,26 @@ AliAnalysisTaskXi1530temp* AddTaskXi1530(const char *taskname = "Xi1530"
         taskXi1530->SetIsAA(kTRUE); // default: kFALSE
         std::cout << "AliAnaylsisTaskXi1530:: AA mode " << std::endl;
     }
+    if(foption.Contains("pA")){
+        taskXi1530->SetIsAA(kTRUE); // default: kFALSE
+        //taskXi1530->SetXi1530RapidityCut_high(0.5); // default: 0.5
+        taskXi1530->SetXi1530RapidityCut_low(0); // default: -0.5
+        std::cout << "AliAnaylsisTaskXi1530:: pA mode " << std::endl;
+    }
+    if(foption.Contains("Ap")){
+        taskXi1530->SetIsAA(kTRUE); // default: kFALSE
+        taskXi1530->SetXi1530RapidityCut_high(0); // default: 0.5
+        //taskXi1530->SetXi1530RapidityCut_low(-0.5); // default: -0.5
+        std::cout << "AliAnaylsisTaskXi1530:: Ap mode " << std::endl;
+    }
     if(foption.Contains("Mix")){
         taskXi1530->SetMixing(kTRUE); // default: kFALSE
         std::cout << "AliAnaylsisTaskXi1530:: Event Mix(" << nmix << ") mode " << std::endl;
     } 
     if(foption.Contains("HM")){
         taskXi1530->SetHighMult(kTRUE); // default: kFALSE
+        taskXi1530->fEventCuts.fTriggerMask =
+            AliVEvent::kHighMultV0;  // default: kINT7
         std::cout << "AliAnaylsisTaskXi1530:: HighMultV0 mode " << std::endl;
     }  
     if(foption.Contains("SYS")){

@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKXi1530TEMP_H
-#define ALIANALYSISTASKXi1530TEMP_H
+#ifndef AliAnalysisTaskXi1530temp_H
+#define AliAnalysisTaskXi1530temp_H
 //
 // Class AliAnalysisTaskXi1530temp
 //
@@ -11,6 +11,8 @@
 #include <AliAnalysisTaskSE.h>
 #include <THnSparse.h>
 #include <deque>
+#include "AliEventCuts.h"
+
 class AliAnalysisTask;
 class AliESDtrackCuts;
 class AliESDEvent;
@@ -19,21 +21,6 @@ class AliAODEvent;
 class AliPIDResponse;
 class AliPIDCombined;
 class THistManager;
-
-class AliAnalysisTaskXi1530tempRunTable {
-   public:
-    enum { kPP, kPA, kAA, kUnknownCollType };
-    AliAnalysisTaskXi1530tempRunTable();
-    AliAnalysisTaskXi1530tempRunTable(Int_t runnumber);
-    ~AliAnalysisTaskXi1530tempRunTable();
-
-    Bool_t IsPP() { return fCollisionType == kPP; }
-    Bool_t IsPA() { return fCollisionType == kPA; }
-    Bool_t IsAA() { return fCollisionType == kAA; }
-
-   private:
-    Int_t fCollisionType = kPP;  //! Is proton-proton collisions?
-};
 
 class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
    public:
@@ -211,15 +198,13 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
         fXiMassWindowCut = 0.015;
         fTPCNsigXi1530PionCut = 1.5;
     }
-    void SetUseSimpleEventCut(Bool_t fInput){ fSimplieEventCut = fInput; };
+    void SetUseSimpleEventCut(Bool_t fInput) { fSimplieEventCut = fInput; };
 
     Bool_t GoodTracksSelection();
     Bool_t GoodCascadeSelection();
     void FillTracks();
     void FillTracksAOD();
 
-    Double_t GetMultiplicty(AliVEvent* fEvt);
-    Bool_t IsMCEventTrueINEL0();
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi1530AOD(AliAODcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi(AliESDcascade* Xi);
@@ -229,6 +214,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     void FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputdXiAOD(AliMCEvent* fMCEvent, Int_t check);
     void FillTrackToEventPool();
+    double GetTPCnSigma(AliVTrack* track, AliPID::EParticleType type);
 
     TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
     TAxis AxisVar(TString name, std::vector<Double_t> bin);
@@ -254,6 +240,8 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
                            std::vector<Double_t> x,
                            Double_t w = 1.);
 
+    AliEventCuts fEventCuts;  // Event cuts
+
    private:
     typedef std::vector<AliVTrack*> tracklist;
     typedef std::deque<tracklist> eventpool;
@@ -266,8 +254,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     AliESDtrackCuts* fTrackCuts3 = nullptr;  //!
     AliVEvent* fEvt = nullptr;               //!
     UInt_t fFilterBit = 32;
-    UInt_t fFilterBit_Xi = 128; // not using for the moment.
-    AliAnalysisTaskXi1530tempRunTable* fRunTable = nullptr;  //!
+    UInt_t fFilterBit_Xi = 128;  // not using for the moment.
 
     Double_t fCent = -1;
     Double_t ftrackmult = -1;
@@ -360,7 +347,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530temp, 19);
+    ClassDef(AliAnalysisTaskXi1530temp, 22);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -382,6 +369,9 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     // 17: Add Simple event cut option to use AliMultSelection cut only
     // 18: Enable AOD functionality
     // 19: Update default filterbit
+    // 20: Remove RunTable Class.
+    // 21: Use AliEventCuts
+    // 22: Remove some function thanks to AliEventCuts
 };
 
 #endif

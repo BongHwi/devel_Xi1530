@@ -54,6 +54,12 @@ vector<Int_t> LHC16p = {264347, 264346, 264345, 264341, 264336, 264312, 264306,
                         264235, 264233, 264232, 264198, 264197, 264194, 264190,
                         264188, 264168, 264164, 264139, 264138, 264137, 264129,
                         264110, 264109, 264086, 264085, 264082, 264078, 264076};
+vector<Int_t> LHC16q = {265525, 265521, 265501, 265500, 265499, 265435, 265427, 
+                        265426, 265425, 265424, 265422, 265421, 265420, 265419, 
+                        265388, 265387, 265385, 265384, 265383, 265381, 265378, 
+                        265377, 265344, 265343, 265342, 265339, 265338, 265336, 
+                        265335, 265334, 265332, 265309};
+
 vector<Int_t> LHC17k = {
     276508, 276507, 276506, 276462, 276439, 276438, 276437, 276435, 276429,
     276351, 276348, 276302, 276297, 276294, 276292, 276290, 276259, 276257,
@@ -160,9 +166,9 @@ const int LHC16l[] = {
 class AliAnalysisGrid;
 void run(const char* taskname = "Xi1530",
          const char* option =
-             "LHC16k_pass2_test_MC"  // when scanning AOD, add "AOD"
+             "LHC16k_pass2_Vertexer_SYS"  // when scanning AOD, add "AOD"
          ,
-         const char* gridmode = "test"  // or "terminate" to merge
+         const char* gridmode = "local"  // or "terminate" to merge
          ,
          UInt_t istart = 0,
          UInt_t iend = 25,
@@ -206,7 +212,7 @@ void run(const char* taskname = "Xi1530",
     int nmix = 20;
     bool highmult = kFALSE;
     TString foption = option;
-    const char* suffix = "test";
+    const char* suffix = "MB";
     if (foption.Contains("MC"))
         ismc = kTRUE;
     if (foption.Contains("Vertex"))
@@ -292,8 +298,10 @@ void run(const char* taskname = "Xi1530",
         taskWDV->SetCascVertexerCascadeCosinePA(0.98);
 
         // Test1 track selection
-        //taskWDV-> SetExtraCleanup(kFALSE);
+        taskWDV-> SetExtraCleanup(kFALSE);
         // Test2 pre-selection in dE/dx
+        taskWDV-> SetPreselectDedx(kFALSE);
+        taskWDV-> SetPreselectDedxLambda(kFALSE);
         //taskWDV-> SetUseMonteCarloAssociation(kFALSE);
     }
     gInterpreter->LoadMacro("AliAnalysisTaskXi1530temp.cxx+g");
@@ -304,6 +312,7 @@ void run(const char* taskname = "Xi1530",
         reinterpret_cast<AliAnalysisTaskXi1530temp*>(gInterpreter->ExecuteMacro(
             Form("AddTaskXi1530.C(\"%s\",\"%s\",%i,\"%s\")", taskname, option,
                  nmix, suffix)));
+    
 #else
     // ROOT 5 MODE
     //
@@ -333,7 +342,7 @@ void run(const char* taskname = "Xi1530",
         AddTaskXi1530(taskname, option, nmix, highmult, isaa, ismc, setmixing);
 #endif
 
-    // mgr->SetDebugLevel(1);
+     //mgr->SetDebugLevel(3);
     if (!mgr->InitAnalysis())
         return;
     mgr->PrintStatus();
@@ -347,19 +356,36 @@ void run(const char* taskname = "Xi1530",
 #if !defined(__CINT__) || defined(__CLING__)
         // ROOT 6 MODE
         std::stringstream esdChain;
-        esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS")
-                 << "/PWG/EMCAL/macros/CreateESDChain.C(";
-        if (!ismc)
-            esdChain << "\""
-                     << "data.txt"
-                     << "\", ";
-        else
-            esdChain << "\""
-                     << "data_MC.txt"
-                     << "\", ";
-        esdChain << 1 << ", ";
-        esdChain << 0 << ", ";
-        esdChain << std::boolalpha << kFALSE << ");";
+        if (foption.Contains("AOD")) {
+            esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS")
+                     << "/PWG/EMCAL/macros/CreateAODChain.C(";
+            if (!ismc)
+                esdChain << "\""
+                         << "data_aod.txt"
+                         << "\", ";
+            else
+                esdChain << "\""
+                         << "data_aod_MC.txt"
+                         << "\", ";
+            esdChain << 1 << ", ";
+            esdChain << 0 << ", ";
+            esdChain << std::boolalpha << kFALSE << ");";
+        }
+        else{
+            esdChain << ".x " << gSystem->Getenv("ALICE_PHYSICS")
+                     << "/PWG/EMCAL/macros/CreateESDChain.C(";
+            if (!ismc)
+                esdChain << "\""
+                         << "data.txt"
+                         << "\", ";
+            else
+                esdChain << "\""
+                         << "data_MC.txt"
+                         << "\", ";
+            esdChain << 1 << ", ";
+            esdChain << 0 << ", ";
+            esdChain << std::boolalpha << kFALSE << ");";
+        }
         chain = reinterpret_cast<TChain*>(
             gROOT->ProcessLine(esdChain.str().c_str()));
 
@@ -387,7 +413,7 @@ void run(const char* taskname = "Xi1530",
         plugin->SetAdditionalLibs(
             "AliAnalysisTaskXi1530temp.cxx AliAnalysisTaskXi1530temp.h "
             "libpythia6_4_21.so");
-        plugin->SetAliPhysicsVersion("vAN-20190309_ROOT6-1");
+        plugin->SetAliPhysicsVersion("vAN-20190701_ROOT6-1");
         plugin->SetAPIVersion("V1.1x");
         if (!ismc)
             plugin->SetRunPrefix("000");
