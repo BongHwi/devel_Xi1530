@@ -1,5 +1,5 @@
-#ifndef AliAnalysisTaskXi1530temp_H
-#define AliAnalysisTaskXi1530temp_H
+#ifndef AliAnalysisTaskXi1530TEMP_H
+#define AliAnalysisTaskXi1530TEMP_H
 //
 // Class AliAnalysisTaskXi1530temp
 //
@@ -207,8 +207,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
 
     Bool_t IsTrueXi1530(AliESDcascade* Xi, AliVTrack* pion);
     Bool_t IsTrueXi1530AOD(AliAODcascade* Xi, AliVTrack* pion);
-    Bool_t IsTrueXi(AliESDcascade* Xi);
-    Bool_t IsTrueXiAOD(AliAODcascade* Xi);
+    Bool_t IsTrueXi(UInt_t xiIndex);
     void FillMCinput(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputAOD(AliMCEvent* fMCEvent, Int_t check);
     void FillMCinputdXi(AliMCEvent* fMCEvent, Int_t check);
@@ -338,6 +337,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Bool_t fQA = kTRUE;
     Bool_t fExoticFinder = kFALSE;
     Bool_t fSimplieEventCut = kFALSE;
+    Bool_t IsNano = kFALSE;
     TString MultiplicityEstimator = "V0M";
     THistManager* fHistos = nullptr;   //!
     TClonesArray* fMCArray = nullptr;  //!
@@ -347,7 +347,7 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     Double_t PVy = 999;
     Double_t PVz = 999;
     Double_t bField = 999;
-    ClassDef(AliAnalysisTaskXi1530temp, 22);
+    ClassDef(AliAnalysisTaskXi1530temp, 24);
     // 1: Frist version
     // 2: Add Track cut2 for the Xi daughter particles
     // 3: Add FillMixingPool function
@@ -372,6 +372,8 @@ class AliAnalysisTaskXi1530temp : public AliAnalysisTaskSE {
     // 20: Remove RunTable Class.
     // 21: Use AliEventCuts
     // 22: Remove some function thanks to AliEventCuts
+    // 23: Integrate true Xi checker(ESD/AOD)
+    // 24: Add IsNano boolean variable
 };
 
 #endif
