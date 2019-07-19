@@ -207,6 +207,7 @@ void run(const char* taskname = "Xi1530",
 
     bool isaa = kFALSE;
     bool ismc = kFALSE;
+    bool isaod = kFALSE;
     bool setmixing = kFALSE;
     bool vertexer = false;
     int nmix = 20;
@@ -217,12 +218,14 @@ void run(const char* taskname = "Xi1530",
         ismc = kTRUE;
     if (foption.Contains("Vertex"))
         vertexer = true;
+    if (foption.Contains("AOD"))
+        isaod = true;
 
     // analysis manager
     AliAnalysisManager* mgr =
         new AliAnalysisManager(Form("%s%s", taskname, option));
     AliInputEventHandler* handler;
-    if (foption.Contains("AOD"))
+    if (isaod)
         handler = new AliAODInputHandler();
     else
         handler = new AliESDInputHandler();
@@ -438,9 +441,15 @@ void run(const char* taskname = "Xi1530",
             } else {
                 plugin->SetGridDataDir("/alice/data/2016/LHC16k");
                 if (foption.Contains("pass2"))
-                    plugin->SetDataPattern("pass2/*/AliESDs.root");
+                    if(!isaod)
+                        plugin->SetDataPattern("pass2/*/AliESDs.root");
+                    else //AOD
+                        plugin->SetDataPattern("pass2/AOD/*/AliAOD.root");
                 else
-                    plugin->SetDataPattern("pass1/*/AliESDs.root");
+                    if(!isaod)
+                        plugin->SetDataPattern("pass1/*/AliESDs.root");
+                    else //AOD
+                        plugin->SetDataPattern("pass1/AOD/*/AliAOD.root");
             }
             Int_t end = LHC16k.size();
             if (foption.Contains("test"))
@@ -468,11 +477,17 @@ void run(const char* taskname = "Xi1530",
                 }
                 plugin->SetDataPattern("*AliESDs.root");
             } else {
-                plugin->SetGridDataDir("/alice/data/2016/LHC16l");
+                plugin->SetGridDataDir("/alice/data/2016/LHC16l");    
                 if (foption.Contains("pass2"))
-                    plugin->SetDataPattern("pass2/*/AliESDs.root");
+                    if(!isaod)
+                        plugin->SetDataPattern("pass2/*/AliESDs.root");
+                    else //AOD
+                        plugin->SetDataPattern("pass2/AOD/*/AliAOD.root");
                 else
-                    plugin->SetDataPattern("pass1/*/AliESDs.root");
+                    if(!isaod)
+                        plugin->SetDataPattern("pass1/*/AliESDs.root");
+                    else //AOD
+                        plugin->SetDataPattern("pass1/AOD/*/AliAOD.root");
             }
             Int_t end = LHC16l.size();
             if (foption.Contains("test"))
