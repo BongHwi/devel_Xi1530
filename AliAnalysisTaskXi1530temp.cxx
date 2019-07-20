@@ -784,7 +784,7 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection() {
     if (fsetmixing) {
         if (!goodtrackindices.size())
             ep->pop_back();
-        if (ep->size() > 5) {
+        if (ep->size() > (int)fnMix) {
             for (auto it : ep->front())
                 delete it;
             ep->pop_front();
