@@ -444,7 +444,7 @@ void run(const char* taskname = "Xi1530",
                     if(!isaod)
                         plugin->SetDataPattern("pass2/*/AliESDs.root");
                     else //AOD
-                        plugin->SetDataPattern("pass2/AOD/*/AliAOD.root");
+                        plugin->SetDataPattern("pass2/AOD208/*/AliAOD.root");
                 else
                     if(!isaod)
                         plugin->SetDataPattern("pass1/*/AliESDs.root");
@@ -482,7 +482,7 @@ void run(const char* taskname = "Xi1530",
                     if(!isaod)
                         plugin->SetDataPattern("pass2/*/AliESDs.root");
                     else //AOD
-                        plugin->SetDataPattern("pass2/AOD/*/AliAOD.root");
+                        plugin->SetDataPattern("pass2/AOD208/*/AliAOD.root");
                 else
                     if(!isaod)
                         plugin->SetDataPattern("pass1/*/AliESDs.root");
