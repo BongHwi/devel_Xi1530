@@ -23,7 +23,7 @@
 //  author: Bong-Hwi Lim (bong-hwi.lim@cern.ch)
 //        , Beomkyu  KIM (kimb@cern.ch)
 //
-//  Last Modified Date: 2019/07/24
+//  Last Modified Date: 2019/07/30
 //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -280,9 +280,11 @@ void AliAnalysisTaskXi1530temp::UserCreateOutputObjects() {
         if (IsHighMult) {
             fHistos->CreateTH1("hMult_QA", "", 100, 0, 0.1, "s");
             fHistos->CreateTH1("hMult_QA_onlyMult", "", 100, 0, 0.1, "s");
+            fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 0.1, "s");
         } else {
             fHistos->CreateTH1("hMult_QA", "", 1000, 0, 100, "s");
             fHistos->CreateTH1("hMult_QA_onlyMult", "", 1000, 0, 100, "s");
+            fHistos->CreateTH1("hMult_SkippedDataQA", "", 100, 0, 100, "s");
         }
         fHistos->CreateTH2("hPhiEta", "", 180, 0, 2 * pi, 40, -2, 2);
         // T P C   P I D
@@ -730,7 +732,7 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection() {
 
     Float_t b[2];
     Float_t bCov[3];
-    Double_t pionZ;
+    Double_t pionZ = -999;
 
     for (UInt_t it = 0; it < ntracks; it++) {
         if (fEvt->IsA() == AliESDEvent::Class()) {
@@ -757,6 +759,7 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection() {
             }
             ((AliAODTrack*)track)->GetImpactParameters(b, bCov);
             Double_t pionPt = track->Pt();
+            pionZ = b[1];
 
             if (abs(track->Eta()) > fXi1530PionEtaCut) {
                 AliInfo(Form("Eta cut failed: track eta: %f, cut: %f",
@@ -773,7 +776,6 @@ Bool_t AliAnalysisTaskXi1530temp::GoodTracksSelection() {
                 continue;
             }
         }  // AOD Case
-        pionZ = b[1];
         Double_t fTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
 
         if (abs(fTPCNSigPion) > fTPCNsigXi1530PionCut_loose) {
@@ -1347,7 +1349,7 @@ void AliAnalysisTaskXi1530temp::FillTracks() {
     // for DCA value
     Float_t b[2];
     Float_t bCov[3];
-    Double_t pionZ = 999;
+    Double_t pionZ = -999;
 
     const UInt_t ncascade = goodcascadeindices.size();
     const UInt_t ntracks = goodtrackindices.size();
@@ -1911,7 +1913,11 @@ void AliAnalysisTaskXi1530temp::FillTracks() {
                 fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
             }
         }
-    }  // mix loop
+    }       // mix loop
+    else {  // Count how many signals we lost due to the event cut
+        if (fsetmixing)
+            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
+    }
 }
 void AliAnalysisTaskXi1530temp::FillTracksAOD() {
     AliVTrack* track1;         // charged track, pion
@@ -2458,8 +2464,6 @@ void AliAnalysisTaskXi1530temp::FillTracksAOD() {
                 // DCA Lambda to PV Check
                 Double_t fDCADist_Lambda_PV =
                     fabs(Xicandidate->DcaV0ToPrimVertex());
-                Double_t fDCADist_Xi_PV =
-                    fabs(Xicandidate->DcaXiToPrimVertex());
                 if (fDCADist_Lambda_PV < fDCADist_Lambda_PVCut)
                     continue;
 
@@ -2488,7 +2492,11 @@ void AliAnalysisTaskXi1530temp::FillTracksAOD() {
                 fHistos->FillTH1("hTotalInvMass_Mix", vecsum.M());
             }
         }
-    }  // mix loop
+    }       // mix loop
+    else {  // Count how many signals we lost due to the event cut
+        if (fsetmixing)
+            fHistos->FillTH1("hMult_SkippedDataQA", (double)fCent);
+    }
 }
 void AliAnalysisTaskXi1530temp::Terminate(Option_t*) {}
 

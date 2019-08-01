@@ -13,6 +13,7 @@ AliAnalysisTaskXi1530temp* AddTaskXi1530(const char *taskname = "Xi1530"
     TString foption = option;
     AliAnalysisTaskXi1530temp *taskXi1530 = new AliAnalysisTaskXi1530temp(Form("%s%s", taskname,suffix), option);
     taskXi1530->fEventCuts.fCentralityFramework = 1;
+    taskXi1530->fEventCuts.SetMaxVertexZposition(10);
     taskXi1530->SetnMix(nmix);
 
     std::cout << "AliAnaylsisTaskXi1530:: Option: " << option << std::endl;
